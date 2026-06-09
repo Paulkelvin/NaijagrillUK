@@ -1,0 +1,62 @@
+import type { Metadata } from "next";
+import { BUSINESS } from "@/lib/business";
+import type { SeoMetadata } from "@/sanity/types";
+
+const siteUrl = BUSINESS.website;
+
+type BuildMetadataOptions = {
+  title?: string;
+  description?: string;
+  path?: string;
+  seo?: SeoMetadata;
+  image?: string | null;
+  type?: "website" | "article";
+  publishedTime?: string;
+  noIndex?: boolean;
+};
+
+export function buildMetadata({
+  title,
+  description,
+  path = "",
+  seo,
+  image,
+  type = "website",
+  publishedTime,
+  noIndex,
+}: BuildMetadataOptions): Metadata {
+  const resolvedTitle = seo?.title ?? title ?? BUSINESS.legalName;
+  const resolvedDescription =
+    seo?.description ?? description ?? BUSINESS.description;
+  const canonical = `${siteUrl}${path}`;
+  const ogImage = image ?? `${siteUrl}/opengraph-image`;
+  const shouldNoIndex = noIndex ?? seo?.noIndex ?? false;
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: resolvedTitle,
+    description: resolvedDescription,
+    alternates: { canonical },
+    robots: shouldNoIndex
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
+    openGraph: {
+      title: resolvedTitle,
+      description: resolvedDescription,
+      url: canonical,
+      siteName: BUSINESS.legalName,
+      locale: "en_GB",
+      type,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: resolvedTitle }],
+      ...(publishedTime && type === "article"
+        ? { publishedTime }
+        : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: resolvedTitle,
+      description: resolvedDescription,
+      images: [ogImage],
+    },
+  };
+}

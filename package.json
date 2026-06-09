@@ -1,0 +1,37 @@
+{
+  "name": "naijagrill-uk",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "sanity:deploy": "sanity deploy",
+    "sanity:schema": "sanity schema deploy",
+    "sanity:seed": "sanity dataset import sanity/seed.ndjson production --replace"
+  },
+  "dependencies": {
+    "@portabletext/react": "^6.2.0",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.30.0",
+    "@supabase/supabase-js": "^2.108.0",
+    "next": "16.2.7",
+    "next-sanity": "^13.0.11",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "sanity": "^5.30.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

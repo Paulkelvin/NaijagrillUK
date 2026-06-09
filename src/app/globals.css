@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --ivory: #f7f4ef;
+  --charcoal: #1a1814;
+  --stone: #8c8578;
+  --gold: #b8956c;
+  --burgundy: #4a2c2a;
+  --cream: #ede8df;
+  --background: var(--ivory);
+  --foreground: var(--charcoal);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ivory: var(--ivory);
+  --color-charcoal: var(--charcoal);
+  --color-stone: var(--stone);
+  --color-gold: var(--gold);
+  --color-burgundy: var(--burgundy);
+  --color-cream: var(--cream);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-cormorant);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--gold) 35%, transparent);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .editorial-caption {
+    @apply text-[0.6875rem] uppercase tracking-[0.28em] text-stone;
+  }
+
+  .editorial-display {
+    font-family: var(--font-display), Georgia, serif;
+  }
+
+  .editorial-link {
+    @apply relative inline-block text-[0.8125rem] uppercase tracking-[0.22em] text-charcoal transition-colors duration-300;
+  }
+
+  .editorial-link::after {
+    content: "";
+    @apply absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-gold transition-transform duration-300;
+  }
+
+  .editorial-link:hover::after {
+    @apply scale-x-100;
+  }
+}

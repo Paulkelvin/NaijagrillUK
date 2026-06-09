@@ -1,0 +1,50 @@
+import type { MetadataRoute } from "next";
+import { BUSINESS } from "@/lib/business";
+import {
+  getAllSlugs,
+  getBlogCategories,
+} from "@/sanity/fetch";
+
+const staticRoutes = [
+  "",
+  "/menu",
+  "/story",
+  "/blog",
+  "/explore-nigerian-cuisine",
+  "/private-dining",
+  "/reservations",
+  "/contact",
+];
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = BUSINESS.website;
+  const [{ blog }, categories] = await Promise.all([
+    getAllSlugs(),
+    getBlogCategories(),
+  ]);
+
+  const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: route === "" ? "weekly" : "monthly",
+    priority: route === "" ? 1 : 0.8,
+  }));
+
+  const blogEntries: MetadataRoute.Sitemap = blog.map(({ slug }) => ({
+    url: `${baseUrl}/blog/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  const categoryEntries: MetadataRoute.Sitemap = categories.map(
+    (category) => ({
+      url: `${baseUrl}/blog/category/${category.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }),
+  );
+
+  return [...staticEntries, ...blogEntries, ...categoryEntries];
+}
