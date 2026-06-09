@@ -50,7 +50,7 @@ In [Supabase Dashboard](https://supabase.com/dashboard) → your project → **S
 
 | Key | Where to put it |
 |-----|-----------------|
-| **Project URL** | `NEXT_PUBLIC_SUPABASE_URL` in `.env.local` |
+| **Project URL** | `NEXT_PUBLIC_SUPABASE_URL` in `.env.local` — use `https://YOUR_REF.supabase.co` only (not `/rest/v1/`) |
 | **anon public** | `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local` |
 | **service_role** (secret) | `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` only — never commit this |
 
