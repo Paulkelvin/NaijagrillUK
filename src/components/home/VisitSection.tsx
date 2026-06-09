@@ -13,7 +13,7 @@ export function VisitSection({
   return (
     <section className="bg-charcoal text-ivory">
       <div className="grid lg:grid-cols-2">
-        <div className="relative min-h-[50vh] lg:min-h-[70vh]">
+        <div className="image-vignette relative min-h-[50vh] lg:min-h-[70vh]">
           <EditorialImage
             src={data.visitImage}
             alt="NaijaGrill restaurant interior"
@@ -21,8 +21,10 @@ export function VisitSection({
           />
         </div>
 
-        <div className="flex flex-col justify-center px-6 py-24 md:px-16 lg:px-20 lg:py-32">
-          <p className="editorial-caption mb-8 text-ivory/60">Visit</p>
+        <div className="flex flex-col justify-center border-l border-ivory/10 px-6 py-24 md:px-16 lg:px-20 lg:py-32">
+          <p className="editorial-eyebrow-rule editorial-caption text-ivory/60">
+            Visit
+          </p>
           <h2 className="editorial-display text-[clamp(2.25rem,4vw,3.75rem)] font-light leading-tight">
             {data.visitHeadline}
           </h2>

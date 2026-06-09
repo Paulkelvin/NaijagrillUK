@@ -7,15 +7,6 @@ type AddressProps = {
 };
 
 export function Address({ contact, className = "" }: AddressProps) {
-  const lines = contact
-    ? [
-        contact.street,
-        contact.area,
-        `${contact.city}, ${contact.postcode}`,
-        contact.country,
-      ]
-    : formattedAddress.split(", ");
-
   return (
     <address className={`not-italic ${className}`}>
       {contact ? (

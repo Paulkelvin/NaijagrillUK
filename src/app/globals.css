@@ -63,4 +63,28 @@ body {
   .editorial-link:hover::after {
     @apply scale-x-100;
   }
+
+  .editorial-eyebrow-rule {
+    @apply mb-8 flex items-center gap-4;
+  }
+
+  .editorial-eyebrow-rule::before {
+    content: "";
+    @apply block h-px w-10 bg-gold/60;
+  }
+
+  .image-vignette::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-t from-charcoal/60 via-charcoal/10 to-charcoal/20;
+  }
+
+  .image-vignette-side::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-r from-charcoal/30 via-transparent to-charcoal/20;
+  }
+
+  .editorial-pull-quote {
+    font-family: var(--font-display), Georgia, serif;
+    @apply border-l-2 border-gold/60 pl-8 text-3xl font-light leading-snug text-charcoal md:text-4xl;
+  }
 }

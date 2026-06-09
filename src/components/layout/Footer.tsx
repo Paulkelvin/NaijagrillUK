@@ -69,7 +69,15 @@ export function Footer({ contact }: { contact: ContactInfoData }) {
 
         <div className="mt-24 flex flex-col gap-4 border-t border-ivory/10 pt-8 text-[0.6875rem] uppercase tracking-[0.22em] text-ivory/40 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {BUSINESS.legalName}</p>
-          <p>Handsworth, Birmingham</p>
+          <div className="flex flex-wrap items-center gap-6">
+            <p>Handsworth, Birmingham</p>
+            <Link
+              href="/studio"
+              className="transition-colors hover:text-gold"
+            >
+              Edit content
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

@@ -11,6 +11,14 @@ import {
   fallbackTestimonials,
   getFallbackRelatedPosts,
 } from "./fallbacks";
+import {
+  mergeBlogPost,
+  mergeBlogPreview,
+  mergeEvent,
+  mergeExplorePage,
+  mergeGalleryImage,
+  mergeHomepage,
+} from "./merge";
 import { sanityClient } from "./client";
 import {
   allSlugsQuery,
@@ -55,7 +63,8 @@ async function fetchFromSanity<T>(
 
 export async function getHomepage(): Promise<HomepageData> {
   const data = await fetchFromSanity<HomepageData>(homepageQuery);
-  return data ?? fallbackHomepage;
+  if (!data) return fallbackHomepage;
+  return mergeHomepage(data, fallbackHomepage);
 }
 
 export async function getMenuItems(): Promise<MenuItemData[]> {
@@ -80,18 +89,23 @@ export async function getContactInfo(): Promise<ContactInfoData> {
 
 export async function getBlogPosts(): Promise<BlogPostPreview[]> {
   const data = await fetchFromSanity<BlogPostPreview[]>(blogPostsQuery);
-  return data?.length
-    ? data
-    : fallbackBlogPosts.map((post) => ({
-        _id: post._id,
-        title: post.title,
-        slug: post.slug,
-        excerpt: post.excerpt,
-        featuredImage: post.featuredImage,
-        author: post.author,
-        publishedAt: post.publishedAt,
-        category: post.category,
-      }));
+  if (!data?.length) {
+    return fallbackBlogPosts.map((post) => ({
+      _id: post._id,
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      featuredImage: post.featuredImage,
+      author: post.author,
+      publishedAt: post.publishedAt,
+      category: post.category,
+    }));
+  }
+
+  return data.map((post) => {
+    const fallback = fallbackBlogPosts.find((p) => p.slug === post.slug);
+    return mergeBlogPreview(post, fallback);
+  });
 }
 
 export async function getBlogPost(slug: string): Promise<BlogPostData | null> {
@@ -99,13 +113,15 @@ export async function getBlogPost(slug: string): Promise<BlogPostData | null> {
     slug,
   });
   if (data) {
-    if (!data.relatedPosts?.length) {
+    const fallback = fallbackBlogPosts.find((post) => post.slug === slug);
+    const merged = mergeBlogPost(data, fallback);
+    if (!merged.relatedPosts?.length) {
       const all = await getBlogPosts();
-      data.relatedPosts = all
+      merged.relatedPosts = all
         .filter((p) => p.slug !== slug)
         .slice(0, 3);
     }
-    return data;
+    return merged;
   }
 
   const fallback = fallbackBlogPosts.find((post) => post.slug === slug);
@@ -124,7 +140,12 @@ export async function getBlogPostsByCategory(
     blogPostsByCategoryQuery,
     { category },
   );
-  if (data?.length) return data;
+  if (data?.length) {
+    return data.map((post) => {
+      const fallback = fallbackBlogPosts.find((p) => p.slug === post.slug);
+      return mergeBlogPreview(post, fallback);
+    });
+  }
 
   return fallbackBlogPosts
     .filter((post) => post.category?.slug === category)
@@ -147,17 +168,30 @@ export async function getBlogCategories(): Promise<BlogCategoryData[]> {
 
 export async function getEvents(): Promise<EventData[]> {
   const data = await fetchFromSanity<EventData[]>(eventsQuery);
-  return data?.length ? data : fallbackEvents;
+  if (!data?.length) return fallbackEvents;
+
+  return data.map((event, index) => {
+    const fallback =
+      fallbackEvents.find((e) => e.slug === event.slug) ??
+      fallbackEvents[index];
+    return fallback ? mergeEvent(event, fallback) : event;
+  });
 }
 
 export async function getGalleryImages(): Promise<GalleryImageData[]> {
   const data = await fetchFromSanity<GalleryImageData[]>(galleryImagesQuery);
-  return data?.length ? data : fallbackGalleryImages;
+  if (!data?.length) return fallbackGalleryImages;
+
+  return data.map((item, index) => {
+    const fallback = fallbackGalleryImages[index] ?? fallbackGalleryImages[0];
+    return mergeGalleryImage(item, fallback);
+  });
 }
 
 export async function getExplorePage(): Promise<ExplorePageData> {
   const data = await fetchFromSanity<ExplorePageData>(explorePageQuery);
-  return data ?? fallbackExplorePage;
+  if (!data) return fallbackExplorePage;
+  return mergeExplorePage(data, fallbackExplorePage);
 }
 
 export async function getAllSlugs(): Promise<{

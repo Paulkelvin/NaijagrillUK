@@ -13,8 +13,9 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function MobileNav() {
+export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
   const [open, setOpen] = useState(false);
+  const barColor = scrolled || open ? "bg-ivory" : "bg-ivory";
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -34,12 +35,12 @@ export function MobileNav() {
         className="relative z-[60] flex h-10 w-10 flex-col items-center justify-center gap-1.5"
       >
         <span
-          className={`block h-px w-6 bg-white transition-all duration-300 ${
+          className={`block h-px w-6 ${barColor} transition-all duration-300 ${
             open ? "translate-y-[3.5px] rotate-45" : ""
           }`}
         />
         <span
-          className={`block h-px w-6 bg-white transition-all duration-300 ${
+          className={`block h-px w-6 ${barColor} transition-all duration-300 ${
             open ? "-translate-y-[3.5px] -rotate-45" : ""
           }`}
         />
