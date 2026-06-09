@@ -1,3 +1,5 @@
+"use client";
+
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
@@ -10,6 +12,7 @@ const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
 export default defineConfig({
   name: "naijagrill",
   title: "NaijaGrill CMS",
+  basePath: "/studio",
   projectId,
   dataset,
   plugins: [structureTool(), visionTool()],
