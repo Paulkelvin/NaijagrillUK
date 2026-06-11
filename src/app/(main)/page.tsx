@@ -1,6 +1,7 @@
 import { CuisineEditorial } from "@/components/home/CuisineEditorial";
 import { EventsSection } from "@/components/home/EventsSection";
 import { ExperienceSection } from "@/components/home/ExperienceSection";
+import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import { NewsletterSection } from "@/components/home/NewsletterSection";
 import { StorySection } from "@/components/home/StorySection";
@@ -47,6 +48,7 @@ export default async function Home() {
       <ExperienceSection data={homepage} />
       <EventsSection events={events} />
       <Testimonials items={testimonials} />
+      <FaqSection />
       <NewsletterSection />
       <VisitSection data={homepage} hours={hours} />
     </>

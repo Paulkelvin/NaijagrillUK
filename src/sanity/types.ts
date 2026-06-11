@@ -46,7 +46,12 @@ export type MenuItemData = {
   price: number;
   section: string;
   image?: SanityImage | string;
+  localImage?: string;
+  badge?: string;
+  orderable?: boolean;
+  uberEatsUrl?: string;
   order?: number;
+  seo?: SeoMetadata;
 };
 
 export type TestimonialData = {

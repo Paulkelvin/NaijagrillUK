@@ -14,6 +14,12 @@ export const menuItem = defineType({
       type: "string",
       options: {
         list: [
+          { title: "Rice Specials", value: "rice-specials" },
+          { title: "Soups & Swallows", value: "soups-swallows" },
+          { title: "Grill & Suya", value: "grill-suya" },
+          { title: "Seafood & Pepper Soup", value: "seafood-pepper" },
+          { title: "Small Chops", value: "small-chops" },
+          { title: "Sides & Drinks", value: "sides-drinks" },
           { title: "From the Fire", value: "from-the-fire" },
           { title: "At the Centre", value: "at-the-centre" },
           { title: "Sides", value: "sides" },
@@ -27,6 +33,30 @@ export const menuItem = defineType({
       title: "Image",
       type: "image",
       options: { hotspot: true },
+    }),
+    defineField({
+      name: "localImage",
+      title: "Local Image Path",
+      description:
+        "Temporary public image path, for example /images/menu/naijagrill-jollof-rice.jpg, until the image is uploaded as a Sanity asset.",
+      type: "string",
+    }),
+    defineField({
+      name: "badge",
+      title: "Badge",
+      description: "Short label shown on featured menu cards.",
+      type: "string",
+    }),
+    defineField({
+      name: "orderable",
+      title: "Available on Uber Eats",
+      type: "boolean",
+      initialValue: true,
+    }),
+    defineField({
+      name: "uberEatsUrl",
+      title: "Uber Eats URL",
+      type: "url",
     }),
     defineField({ name: "order", title: "Sort Order", type: "number" }),
     defineField({ name: "seo", title: "SEO", type: "seoMetadata" }),

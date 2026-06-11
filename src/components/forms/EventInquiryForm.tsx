@@ -29,9 +29,7 @@ export function EventInquiryForm({
       ? "border-ivory/20 text-ivory focus:border-gold"
       : "border-charcoal/20 text-charcoal focus:border-gold"
   }`;
-  const buttonClass = `text-[0.6875rem] uppercase tracking-[0.28em] transition-opacity duration-300 hover:opacity-60 disabled:opacity-40 ${
-    isDark ? "text-gold" : "text-charcoal"
-  }`;
+  const buttonClass = isDark ? "editorial-button-dark" : "editorial-button";
 
   return (
     <form action={formAction} className="mt-16 space-y-12">
@@ -50,7 +48,7 @@ export function EventInquiryForm({
         <FormField variant={variant} label="Phone (optional)" name="phone" type="tel" />
         <FormField
           variant={variant}
-          label="Event Type"
+          label="Event or catering type"
           name="eventType"
           error={state.fieldErrors?.eventType}
         />

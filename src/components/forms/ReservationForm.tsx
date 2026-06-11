@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitReservation } from "@/lib/actions/reservations";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
@@ -9,6 +9,7 @@ import { FormMessage } from "./FormMessage";
 const initialState: ActionResult = { success: false, message: "" };
 
 export function ReservationForm() {
+  const [step, setStep] = useState<1 | 2>(1);
   const [state, formAction, pending] = useActionState(
     async (_prev: typeof initialState, formData: FormData) =>
       submitReservation(formData),
@@ -16,70 +17,130 @@ export function ReservationForm() {
   );
 
   if (state.success) {
-    return <FormMessage success message={state.message} />;
+    return (
+      <div className="mt-8 rounded-[1.5rem] bg-ivory p-6">
+        <FormMessage success message={state.message} />
+      </div>
+    );
   }
 
   const inputClass =
-    "mt-3 w-full border-b border-charcoal/20 bg-transparent py-3 text-charcoal outline-none transition-colors focus:border-gold";
+    "mt-2 w-full border-b border-charcoal/20 bg-transparent py-2.5 text-charcoal outline-none transition-colors focus:border-gold";
+  const guestOptions = [2, 4, 6, 8, 10, 12, 15, 20, 30, 40, 50];
+  const visibleStep =
+    state.fieldErrors?.date || state.fieldErrors?.guests
+      ? 1
+      : state.fieldErrors?.name || state.fieldErrors?.email
+        ? 2
+        : step;
 
   return (
-    <form action={formAction} className="mt-16 space-y-12">
-      <div className="grid gap-12 md:grid-cols-2">
-        <FormField
-          label="Date"
-          name="date"
-          type="date"
-          error={state.fieldErrors?.date}
-        />
-        <FormField label="Guests" name="guests" error={state.fieldErrors?.guests}>
-          <select
-            name="guests"
-            defaultValue="2"
-            className={inputClass}
+    <form action={formAction} className="mt-8">
+      <div className="mb-8 grid grid-cols-2 gap-3">
+        {[
+          ["1", "Request"],
+          ["2", "Confirm details"],
+        ].map(([number, label]) => (
+          <button
+            key={number}
+            type="button"
+            onClick={() => setStep(number === "1" ? 1 : 2)}
+            className={`rounded-full border px-4 py-3 text-left transition-colors ${
+              visibleStep === Number(number)
+                ? "border-gold bg-gold/15 text-charcoal"
+                : "border-charcoal/10 bg-ivory/70 text-stone hover:border-gold/50"
+            }`}
           >
-            {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-              <option key={n} value={n}>
-                {n} guests
-              </option>
-            ))}
-          </select>
+            <span className="mr-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-charcoal text-[0.625rem] text-ivory">
+              {number}
+            </span>
+            <span className="text-[0.6875rem] uppercase tracking-[0.18em]">
+              {label}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className={visibleStep === 1 ? "space-y-7" : "hidden space-y-7"}>
+        <div className="grid gap-8 md:grid-cols-2">
+          <FormField
+            label="Preferred date"
+            name="date"
+            type="date"
+            error={state.fieldErrors?.date}
+          />
+          <FormField
+            label="Party size"
+            name="guests"
+            error={state.fieldErrors?.guests}
+          >
+            <select name="guests" defaultValue="2" className={inputClass}>
+              {guestOptions.map((n) => (
+                <option key={n} value={n}>
+                  {n} guests
+                </option>
+              ))}
+            </select>
+          </FormField>
+        </div>
+
+        <FormField label="Occasion or notes (optional)" name="notes">
+          <textarea
+            name="notes"
+            rows={2}
+            className={inputClass}
+            placeholder="Birthday, anniversary, family dinner..."
+          />
         </FormField>
+
+        <button
+          type="button"
+          onClick={() => setStep(2)}
+          className="editorial-button rounded-full"
+        >
+          Continue
+        </button>
       </div>
 
-      <div className="grid gap-12 md:grid-cols-2">
-        <FormField
-          label="Name"
-          name="name"
-          error={state.fieldErrors?.name}
-        />
-        <FormField
-          label="Email"
-          name="email"
-          type="email"
-          error={state.fieldErrors?.email}
-        />
+      <div className={visibleStep === 2 ? "space-y-7" : "hidden space-y-7"}>
+        <div className="grid gap-8 md:grid-cols-2">
+          <FormField
+            label="Name"
+            name="name"
+            error={state.fieldErrors?.name}
+          />
+          <FormField
+            label="Email"
+            name="email"
+            type="email"
+            error={state.fieldErrors?.email}
+          />
+        </div>
+
+        <FormField label="Phone (optional)" name="phone" type="tel" />
+
+        {state.message && !state.success && (
+          <FormMessage message={state.message} />
+        )}
+
+        <div className="flex flex-wrap items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className="text-[0.6875rem] uppercase tracking-[0.18em] text-stone transition-colors hover:text-charcoal"
+          >
+            Back
+          </button>
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="editorial-button rounded-full"
+          >
+            {pending ? "Sending…" : "Request reservation"}
+          </button>
+        </div>
       </div>
-
-      <FormField label="Phone (optional)" name="phone" type="tel" />
-      <FormField label="Notes (optional)" name="notes">
-        <textarea
-          name="notes"
-          rows={3}
-          className={inputClass}
-        />
-      </FormField>
-
-      {state.message && !state.success && (
-        <FormMessage message={state.message} />
-      )}
-
-      <button
-        type="submit"
-        disabled={pending}
-        className="text-[0.6875rem] uppercase tracking-[0.28em] text-charcoal transition-opacity duration-300 hover:opacity-60 disabled:opacity-40"
-      >
-        {pending ? "Sending…" : "Request reservation"}
-      </button>
     </form>
   );
 }

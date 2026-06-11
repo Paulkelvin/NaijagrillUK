@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { FloatingMobileCta } from "@/components/layout/FloatingMobileCta";
 import { Header } from "@/components/layout/Header";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { AmbientGraphics } from "@/components/ui/AmbientGraphics";
 import {
   localBusinessSchema,
   restaurantSchema,
@@ -28,6 +29,7 @@ export default async function MainLayout({
       <JsonLd
         data={[restaurantSchema(), localBusinessSchema(openingHoursSpec)]}
       />
+      <AmbientGraphics />
       <Header />
       <main className="flex min-h-screen flex-1 flex-col pb-16 lg:pb-0">
         {children}

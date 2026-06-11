@@ -12,62 +12,70 @@ export function EventsSection({ events }: { events: EventData[] }) {
   const upcoming = events.slice(0, 3);
 
   return (
-    <section className="bg-ivory">
+    <section className="bg-charcoal text-ivory">
       <JsonLd
         data={upcoming.map((event) =>
           eventSchema(event, resolveImageSrc(event.featuredImage, 1200)),
         )}
       />
-      <div className="mx-auto max-w-[1600px] px-6 py-28 md:px-12 md:py-36 lg:px-16">
-        <div className="mb-20 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="mx-auto max-w-[1500px] px-6 py-16 md:px-12 md:py-24 lg:px-16">
+        <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="editorial-caption mb-8">Upcoming</p>
-            <h2 className="editorial-display text-[clamp(2.25rem,4vw,3.75rem)] font-light leading-tight text-charcoal">
-              Evenings worth reserving.
+            <p className="editorial-caption mb-3 text-gold">Upcoming</p>
+            <h2 className="editorial-display max-w-3xl text-[clamp(2.6rem,5vw,5.5rem)] font-light leading-[0.9] text-ivory">
+              Supper clubs, celebrations, and room-filling nights.
             </h2>
           </div>
-          <Link href="/private-dining" className="editorial-link shrink-0">
-            Private dining enquiries
+          <Link href="/private-dining" className="luxury-link shrink-0 text-gold">
+            Events & catering enquiries
           </Link>
         </div>
 
-        <div className="divide-y divide-charcoal/10">
+        <div className="grid gap-5 lg:grid-cols-3">
           {upcoming.map((event, index) => (
             <article
               key={event._id}
-              className="grid gap-10 py-16 lg:grid-cols-12 lg:gap-8 lg:py-20"
+              className={`group overflow-hidden rounded-[2rem] border border-ivory/10 bg-ivory/[0.06] shadow-[0_28px_90px_rgba(0,0,0,0.24)] ${
+                index === 0 ? "lg:col-span-2" : ""
+              }`}
             >
               <div
-                className={`relative aspect-[5/4] lg:col-span-5 ${
-                  index % 2 === 1 ? "lg:col-start-8" : ""
+                className={`image-vignette-side relative overflow-hidden ${
+                  index === 0 ? "aspect-[16/9]" : "aspect-[4/3]"
                 }`}
               >
                 <EditorialImage
                   src={event.featuredImage}
                   alt={event.title}
-                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  sizes={
+                    index === 0
+                      ? "(max-width: 1024px) 100vw, 62vw"
+                      : "(max-width: 1024px) 100vw, 28vw"
+                  }
+                  className="object-cover transition-[transform,filter] duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] group-hover:saturate-[0.92] group-hover:contrast-[1.06]"
                 />
+                <div className="absolute left-5 top-5 rounded-full bg-gold px-4 py-2 text-[0.68rem] font-black uppercase tracking-[0.16em] text-charcoal">
+                  {formatDate(event.eventDate)}
+                </div>
               </div>
 
-              <div
-                className={`flex flex-col justify-center lg:col-span-5 ${
-                  index % 2 === 1
-                    ? "lg:col-start-2 lg:row-start-1"
-                    : "lg:col-start-7"
-                }`}
-              >
-                <p className="editorial-caption mb-4">
-                  {formatDate(event.eventDate)} &middot; {event.location}
+              <div className="p-6 md:p-8">
+                <p className="editorial-caption mb-3 text-gold/85">
+                  {event.location}
                 </p>
-                <h3 className="editorial-display text-4xl font-light text-charcoal md:text-5xl">
+                <h3
+                  className={`editorial-display font-light leading-[0.95] text-ivory ${
+                    index === 0 ? "text-5xl md:text-6xl" : "text-4xl"
+                  }`}
+                >
                   {event.title}
                 </h3>
-                <p className="mt-6 text-base leading-[1.8] text-stone md:text-lg">
+                <p className="mt-5 max-w-xl text-sm leading-[1.7] text-ivory/72 md:text-base">
                   {event.excerpt}
                 </p>
                 <Link
                   href="/reservations"
-                  className="editorial-link mt-10"
+                  className="mt-8 inline-flex rounded-full border border-gold/45 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-gold transition-colors hover:bg-gold hover:text-charcoal"
                 >
                   Reserve for this evening
                 </Link>

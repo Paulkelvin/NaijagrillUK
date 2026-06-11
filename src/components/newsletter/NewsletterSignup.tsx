@@ -7,6 +7,7 @@ import { FormMessage } from "@/components/forms/FormMessage";
 type NewsletterSignupProps = {
   source: string;
   variant?: "light" | "dark";
+  compact?: boolean;
 };
 
 const initialState = { success: false, message: "" };
@@ -14,6 +15,7 @@ const initialState = { success: false, message: "" };
 export function NewsletterSignup({
   source,
   variant = "light",
+  compact = false,
 }: NewsletterSignupProps) {
   const [state, formAction, pending] = useActionState(
     async (_prev: typeof initialState, formData: FormData) => {
@@ -28,14 +30,16 @@ export function NewsletterSignup({
   return (
     <div>
       <p
-        className={`editorial-display text-2xl font-light md:text-3xl ${
+        className={`editorial-display font-light ${
+          compact ? "text-2xl" : "text-2xl md:text-3xl"
+        } ${
           isDark ? "text-ivory" : "text-charcoal"
         }`}
       >
         Get &pound;10 Off Your First Visit
       </p>
       <p
-        className={`mt-4 max-w-md text-sm leading-relaxed ${
+        className={`${compact ? "mt-3" : "mt-4"} max-w-md text-sm leading-relaxed ${
           isDark ? "text-ivory/70" : "text-stone"
         }`}
       >
@@ -43,7 +47,10 @@ export function NewsletterSignup({
         worth reserving.
       </p>
 
-      <form action={formAction} className="mt-8 flex flex-col gap-6 sm:flex-row">
+      <form
+        action={formAction}
+        className={`${compact ? "mt-5" : "mt-8"} flex flex-col gap-4 sm:flex-row`}
+      >
         <input type="hidden" name="source" value={source} />
         <input
           type="email"
@@ -60,9 +67,7 @@ export function NewsletterSignup({
         <button
           type="submit"
           disabled={pending}
-          className={`shrink-0 text-[0.6875rem] uppercase tracking-[0.28em] transition-opacity duration-300 hover:opacity-60 disabled:opacity-40 ${
-            isDark ? "text-gold" : "text-charcoal"
-          }`}
+          className={isDark ? "editorial-button-dark shrink-0" : "editorial-button shrink-0"}
         >
           {pending ? "Sending…" : "Subscribe"}
         </button>

@@ -7,7 +7,7 @@ export const homepageQuery = `*[_type == "homepage"][0]{
 }`;
 
 export const menuItemsQuery = `*[_type == "menuItem"] | order(order asc){
-  _id, title, description, price, section, image, order
+  _id, title, description, price, section, image, localImage, badge, orderable, uberEatsUrl, order, seo
 }`;
 
 export const testimonialsQuery = `*[_type == "testimonial"] | order(order asc){

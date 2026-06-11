@@ -4,64 +4,60 @@ import { EditorialImage } from "@/components/ui/EditorialImage";
 import type { HomepageData } from "@/sanity/types";
 
 export function CuisineEditorial({ data }: { data: HomepageData }) {
+  const movingFeatures = [...data.cuisineFeatures, ...data.cuisineFeatures];
+
   return (
     <section className="bg-cream">
-      <div className="mx-auto max-w-[1600px] px-6 py-28 md:px-12 md:py-36 lg:px-16">
-        <div className="mb-24 max-w-2xl border-b border-charcoal/10 pb-12">
+      <div className="mx-auto grid max-w-[1500px] gap-10 px-6 py-14 md:px-12 md:py-16 lg:grid-cols-[0.34fr_1fr] lg:px-16">
+        <div className="lg:pt-4">
           <p className="editorial-eyebrow-rule editorial-caption">
             {data.cuisineEyebrow}
           </p>
-          <h2 className="editorial-display text-[clamp(2.25rem,4vw,3.75rem)] font-light leading-tight text-charcoal">
+          <h2 className="editorial-display text-[clamp(2.25rem,4vw,3.75rem)] font-light leading-[0.96] text-charcoal">
             {data.cuisineHeadline}
           </h2>
+          <div className="mt-10">
+            <Link href="/menu" className="editorial-link">
+              Explore the full menu
+            </Link>
+          </div>
         </div>
 
-        <div className="space-y-36 md:space-y-48">
-          {data.cuisineFeatures.map((feature, index) => (
+        <div className="kitchen-marquee overflow-hidden">
+          <div className="kitchen-marquee-track flex w-max gap-6 pr-6">
+          {movingFeatures.map((feature, index) => (
             <article
-              key={feature.title}
-              className={`grid items-center gap-12 lg:grid-cols-12 lg:gap-10 ${
-                feature.align === "right" ? "lg:[&>div:first-child]:order-2" : ""
-              }`}
+              key={`${feature.title}-${index}`}
+              className="group w-[78vw] shrink-0 rounded-[1.65rem] border border-charcoal/10 bg-ivory/70 p-5 md:w-[420px] lg:w-[430px]"
             >
-              <div className="relative lg:col-span-7">
+              <div className="relative">
                 <EditorialFrame>
-                  <div className="image-vignette-side relative aspect-[5/4]">
+                  <div className="image-vignette-side relative aspect-[16/10] overflow-hidden rounded-[1.35rem]">
                     <EditorialImage
                       src={feature.image}
                       alt={feature.title}
-                      sizes="(max-width: 1024px) 100vw, 58vw"
+                      sizes="(max-width: 1024px) 92vw, 28vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     />
                   </div>
                 </EditorialFrame>
-                <span className="editorial-caption absolute -top-6 left-0 hidden md:block">
-                  0{index + 1}
+                <span className="editorial-caption absolute left-5 top-5 rounded-full bg-charcoal/75 px-3 py-2 text-ivory/75 backdrop-blur">
+                  0{(index % data.cuisineFeatures.length) + 1}
                 </span>
               </div>
 
-              <div
-                className={`lg:col-span-4 ${
-                  feature.align === "left"
-                    ? "lg:col-start-9 lg:pl-6"
-                    : "lg:col-start-2 lg:pr-6"
-                }`}
-              >
-                <p className="editorial-caption mb-5">{feature.subtitle}</p>
-                <h3 className="editorial-display text-5xl font-light text-charcoal md:text-6xl">
+              <div className="px-2 pb-3 pt-6">
+                <p className="editorial-caption mb-4">{feature.subtitle}</p>
+                <h3 className="editorial-display text-4xl font-light leading-[0.98] text-charcoal md:text-5xl">
                   {feature.title}
                 </h3>
-                <p className="mt-8 text-base leading-[1.85] text-stone md:text-lg">
+                <p className="mt-5 text-sm leading-[1.75] text-stone">
                   {feature.description}
                 </p>
               </div>
             </article>
           ))}
-        </div>
-
-        <div className="mt-28 text-center">
-          <Link href="/menu" className="editorial-link">
-            Explore the full menu
-          </Link>
+          </div>
         </div>
       </div>
     </section>

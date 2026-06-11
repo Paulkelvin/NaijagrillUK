@@ -65,38 +65,264 @@ export const fallbackHomepage: HomepageData = {
   },
 };
 
+const UBER_EATS_URL =
+  "https://www.ubereats.com/store-browse-uuid/ed5cf926-4f43-460d-960b-135912d864fb?diningMode=DELIVERY";
+
 export const fallbackMenuItems: MenuItemData[] = [
   {
-    _id: "1",
-    title: "Suya",
-    description: "Peanut-spiced beef, charcoal grill, pickled onion",
-    price: 18,
-    section: "from-the-fire",
+    _id: "menu-white-rice-ofada-stew",
+    title: "White Rice with Ofada Stew",
+    description:
+      "Steamed white rice with rich ofada sauce, peppers, locust beans, and assorted meat.",
+    price: 14.99,
+    section: "rice-specials",
+    image: "/images/menu/naijagrill-white-rice-ofada-stew.jpg",
+    localImage: "/images/menu/naijagrill-white-rice-ofada-stew.jpg",
+    badge: "Featured",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
     order: 1,
+    seo: {
+      title: "White Rice with Ofada Stew | NaijaGrill Birmingham",
+      description:
+        "Order white rice with ofada stew from NaijaGrill in Handsworth, Birmingham.",
+    },
   },
   {
-    _id: "2",
-    title: "Asun",
-    description: "Slow-braised goat, scotch bonnet, bell pepper",
-    price: 22,
-    section: "from-the-fire",
+    _id: "menu-white-rice-ayamase",
+    title: "White Rice with Ayamase",
+    description:
+      "Green pepper stew with deep savoury heat, served over fluffy white rice.",
+    price: 14.99,
+    section: "rice-specials",
+    image: "/images/menu/naijagrill-white-rice-ayamase-stew.jpg",
+    localImage: "/images/menu/naijagrill-white-rice-ayamase-stew.jpg",
+    badge: "Delivery favourite",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
     order: 2,
+    seo: {
+      title: "White Rice with Ayamase | NaijaGrill Birmingham",
+      description:
+        "Order white rice with ayamase, a rich Nigerian green pepper stew, from NaijaGrill.",
+    },
   },
   {
-    _id: "3",
-    title: "Party Jollof",
-    description: "Smoked tomato rice, bay leaf, wood-fire finish",
-    price: 24,
-    section: "at-the-centre",
+    _id: "menu-jollof-rice",
+    title: "Jollof Rice",
+    description:
+      "Party-style tomato rice with smoky pepper flavour, plantain, and your choice of protein.",
+    price: 12.99,
+    section: "rice-specials",
+    image: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+    localImage: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
     order: 3,
   },
   {
-    _id: "4",
-    title: "Egusi & Pounded Yam",
-    description: "Melon seed stew, hand-pounded yam, stockfish",
-    price: 26,
-    section: "at-the-centre",
+    _id: "menu-fried-rice",
+    title: "Fried Rice",
+    description:
+      "Colourful Nigerian fried rice with vegetables, peppered fish, and caramelised plantain.",
+    price: 12.99,
+    section: "rice-specials",
+    image: "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
+    localImage: "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
     order: 4,
+  },
+  {
+    _id: "menu-poundo-egusi",
+    title: "Poundo with Egusi",
+    description:
+      "Soft poundo served with melon seed egusi soup, greens, stockfish, and tender meat.",
+    price: 16.99,
+    section: "soups-swallows",
+    image: "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+    localImage: "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+    badge: "Featured",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 5,
+    seo: {
+      title: "Poundo with Egusi | NaijaGrill Birmingham",
+      description:
+        "Order poundo with egusi soup, a Nigerian soup and swallow favourite, from NaijaGrill.",
+    },
+  },
+  {
+    _id: "menu-efo-riro",
+    title: "Efo Riro",
+    description:
+      "Spinach stew cooked with peppers, iru, palm oil, and your chosen protein.",
+    price: 14.99,
+    section: "soups-swallows",
+    image: "/images/menu/naijagrill-efo-riro-soup.jpg",
+    localImage: "/images/menu/naijagrill-efo-riro-soup.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 6,
+  },
+  {
+    _id: "menu-assorted-meat-pepper-soup",
+    title: "Assorted Meat Pepper Soup",
+    description:
+      "Aromatic pepper soup with mixed meats, herbs, chilli, and warming spice.",
+    price: 13.99,
+    section: "seafood-pepper",
+    image: "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+    localImage: "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+    badge: "Featured",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 7,
+    seo: {
+      title: "Assorted Meat Pepper Soup | NaijaGrill Birmingham",
+      description:
+        "Order assorted meat pepper soup from NaijaGrill in Handsworth, Birmingham.",
+    },
+  },
+  {
+    _id: "menu-peppered-hake-fish",
+    title: "Peppered Hake Fish",
+    description:
+      "Hake fish in a bold pepper sauce with fried rice, plantain, onions, and peppers.",
+    price: 15.99,
+    section: "seafood-pepper",
+    image: "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
+    localImage: "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
+    badge: "Featured",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 8,
+    seo: {
+      title: "Peppered Hake Fish | NaijaGrill Birmingham",
+      description:
+        "Order peppered hake fish with Nigerian sides from NaijaGrill.",
+    },
+  },
+  {
+    _id: "menu-grilled-tilapia",
+    title: "Grilled Tilapia",
+    description:
+      "Whole tilapia grilled with peppers, onions, herbs, chips, and plantain on the side.",
+    price: 18.99,
+    section: "seafood-pepper",
+    image: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+    localImage: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 9,
+  },
+  {
+    _id: "menu-beef-suya",
+    title: "Beef Suya",
+    description:
+      "Thin-cut beef coated in yaji spice, grilled hot, and finished with onions.",
+    price: 10.99,
+    section: "grill-suya",
+    image:
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1400&q=85",
+    badge: "Featured",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 10,
+    seo: {
+      title: "Beef Suya | NaijaGrill Birmingham",
+      description:
+        "Order beef suya with yaji spice from NaijaGrill in Handsworth, Birmingham.",
+    },
+  },
+  {
+    _id: "menu-chicken-suya",
+    title: "Chicken Suya",
+    description:
+      "Grilled chicken with suya spice, fresh onions, tomatoes, and chilli.",
+    price: 10.99,
+    section: "grill-suya",
+    image:
+      "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=1400&q=85",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 11,
+  },
+  {
+    _id: "menu-suya-chicken-wings",
+    title: "Suya Chicken Wings",
+    description:
+      "Crispy wings tossed with suya seasoning and served with a pepper dip.",
+    price: 8.99,
+    section: "grill-suya",
+    image:
+      "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1400&q=85",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 12,
+  },
+  {
+    _id: "menu-small-chops",
+    title: "Small Chops Platter",
+    description:
+      "Puff puff, chicken, samosas, and snackable bites for the table or delivery bag.",
+    price: 9.99,
+    section: "small-chops",
+    image: "/images/menu/naijagrill-small-chops-platter.jpg",
+    localImage: "/images/menu/naijagrill-small-chops-platter.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 13,
+  },
+  {
+    _id: "menu-puff-puff",
+    title: "Puff Puff",
+    description:
+      "Golden sweet dough bites, soft inside and perfect before the main order.",
+    price: 4.99,
+    section: "small-chops",
+    image: "/images/menu/naijagrill-small-chops-platter.jpg",
+    localImage: "/images/menu/naijagrill-small-chops-platter.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 14,
+  },
+  {
+    _id: "menu-beans-plantain",
+    title: "Beans with Plantain",
+    description:
+      "Stewed beans served with sweet fried plantain and a spoon of pepper sauce.",
+    price: 8.99,
+    section: "sides-drinks",
+    image: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+    localImage: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 15,
+  },
+  {
+    _id: "menu-fried-plantain",
+    title: "Fried Plantain",
+    description: "Sweet ripe plantain fried until caramelised at the edges.",
+    price: 4.99,
+    section: "sides-drinks",
+    image: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+    localImage: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 16,
+  },
+  {
+    _id: "menu-soft-drinks",
+    title: "Soft Drinks",
+    description: "Cold drinks to balance pepper soup, suya, and rice plates.",
+    price: 2.5,
+    section: "sides-drinks",
+    image:
+      "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=1400&q=85",
+    orderable: true,
+    uberEatsUrl: UBER_EATS_URL,
+    order: 17,
   },
 ];
 

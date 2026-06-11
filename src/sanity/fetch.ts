@@ -18,6 +18,7 @@ import {
   mergeExplorePage,
   mergeGalleryImage,
   mergeHomepage,
+  mergeMenuItems,
 } from "./merge";
 import { sanityClient } from "./client";
 import {
@@ -69,7 +70,7 @@ export async function getHomepage(): Promise<HomepageData> {
 
 export async function getMenuItems(): Promise<MenuItemData[]> {
   const data = await fetchFromSanity<MenuItemData[]>(menuItemsQuery);
-  return data?.length ? data : fallbackMenuItems;
+  return data?.length ? mergeMenuItems(data, fallbackMenuItems) : fallbackMenuItems;
 }
 
 export async function getTestimonials(): Promise<TestimonialData[]> {

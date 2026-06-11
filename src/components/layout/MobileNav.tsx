@@ -8,7 +8,7 @@ const navLinks = [
   { href: "/story", label: "Our Story" },
   { href: "/blog", label: "Journal" },
   { href: "/explore-nigerian-cuisine", label: "Explore" },
-  { href: "/private-dining", label: "Private Dining" },
+  { href: "/private-dining", label: "Events & Catering" },
   { href: "/reservations", label: "Reservations" },
   { href: "/contact", label: "Contact" },
 ];

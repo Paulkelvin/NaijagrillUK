@@ -10,18 +10,24 @@ export function VisitSection({
   data: HomepageData;
   hours: OpeningHoursData;
 }) {
+  const visitImage =
+    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1600&q=85";
+
   return (
-    <section className="bg-charcoal text-ivory">
-      <div className="grid lg:grid-cols-2">
-        <div className="image-vignette relative min-h-[50vh] lg:min-h-[70vh]">
-          <EditorialImage
-            src={data.visitImage}
-            alt="NaijaGrill restaurant interior"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
+    <section className="bg-charcoal px-6 py-14 text-ivory md:px-12 md:py-20 lg:px-16">
+      <div className="mx-auto grid max-w-[1500px] items-center gap-10 lg:grid-cols-[0.78fr_1fr]">
+        <div className="relative">
+          <div className="image-vignette relative aspect-[16/10] overflow-hidden">
+            <EditorialImage
+              src={visitImage}
+              alt="NaijaGrill restaurant interior"
+              sizes="(max-width: 1024px) 100vw, 42vw"
+            />
+          </div>
+          <div className="absolute -bottom-4 -right-4 hidden h-28 w-28 border border-gold/35 md:block" />
         </div>
 
-        <div className="flex flex-col justify-center border-l border-ivory/10 px-6 py-24 md:px-16 lg:px-20 lg:py-32">
+        <div className="border-l border-ivory/10 pl-8 lg:pl-14">
           <p className="editorial-eyebrow-rule editorial-caption text-ivory/60">
             Visit
           </p>
@@ -30,14 +36,14 @@ export function VisitSection({
           </h2>
           <OpeningHours
             hours={hours}
-            className="mt-10 space-y-2 text-base leading-relaxed text-ivory/75"
+            className="mt-8 space-y-2 text-base leading-relaxed text-ivory/75"
           />
           <p className="pt-4 text-base text-ivory/75">
             77B Rookery Road, Handsworth, Birmingham
           </p>
           <Link
             href="/reservations"
-            className="mt-12 inline-block text-[0.6875rem] uppercase tracking-[0.28em] text-gold transition-opacity duration-300 hover:opacity-70"
+            className="mt-9 inline-block text-[0.6875rem] uppercase tracking-[0.28em] text-gold transition-opacity duration-300 hover:opacity-70"
           >
             Make a reservation
           </Link>

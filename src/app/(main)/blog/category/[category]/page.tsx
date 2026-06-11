@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { PageHero } from "@/components/ui/PageHero";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import {
@@ -45,7 +46,7 @@ export default async function BlogCategoryPage({ params }: PageProps) {
   if (!category) notFound();
 
   return (
-    <div className="bg-ivory pt-32">
+    <div className="bg-ivory">
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", path: "/" },
@@ -53,16 +54,21 @@ export default async function BlogCategoryPage({ params }: PageProps) {
           { name: category.title, path: `/blog/category/${category.slug}` },
         ])}
       />
-      <div className="mx-auto max-w-[1600px] px-6 py-24 md:px-12 md:py-36 lg:px-16">
+      <PageHero
+        eyebrow="Journal"
+        title={category.title}
+        description={category.description ?? "Stories from the NaijaGrill journal."}
+        image="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=2400&q=85"
+        imageAlt={`${category.title} journal category`}
+        heightClassName="min-h-[58vh]"
+      />
+
+      <div className="mx-auto max-w-[1600px] px-6 py-24 md:px-12 md:py-32 lg:px-16">
         <Link href="/blog" className="editorial-link">
           All articles
         </Link>
-        <p className="editorial-caption mb-8 mt-12">{category.title}</p>
-        <h1 className="editorial-display max-w-3xl text-[clamp(2.5rem,5vw,4rem)] font-light text-charcoal">
-          {category.description ?? category.title}
-        </h1>
 
-        <div className="mt-20 grid gap-16 md:grid-cols-2 lg:grid-cols-3 lg:gap-12">
+        <div className="mt-16 grid gap-14 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
             <BlogCard key={post._id} post={post} />
           ))}

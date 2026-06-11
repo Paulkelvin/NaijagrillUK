@@ -32,7 +32,9 @@ export default function RootLayout({
       lang="en"
       className={`${cormorant.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-ivory text-charcoal">{children}</body>
+      <body className="min-h-full bg-ivory text-charcoal">
+        <div className="relative z-10">{children}</div>
+      </body>
     </html>
   );
 }

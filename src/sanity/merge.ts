@@ -5,6 +5,7 @@ import type {
   ExplorePageData,
   GalleryImageData,
   HomepageData,
+  MenuItemData,
 } from "./types";
 
 function hasImage(
@@ -128,4 +129,37 @@ export function mergeGalleryImage(
     ...cms,
     image: hasImage(cms.image) ? cms.image : fallback.image,
   };
+}
+
+function normaliseTitle(title: string) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+export function mergeMenuItems(
+  cmsItems: MenuItemData[],
+  fallbackItems: MenuItemData[],
+): MenuItemData[] {
+  const fallbackByTitle = new Map(
+    fallbackItems.map((item) => [normaliseTitle(item.title), item]),
+  );
+  const cmsTitles = new Set(cmsItems.map((item) => normaliseTitle(item.title)));
+
+  return [
+    ...cmsItems.map((item) => {
+      const fallback = fallbackByTitle.get(normaliseTitle(item.title));
+      if (!fallback) return item;
+
+      return {
+        ...fallback,
+        ...item,
+        image: hasImage(item.image) ? item.image : fallback.image,
+        localImage: item.localImage ?? fallback.localImage,
+        badge: item.badge ?? fallback.badge,
+        orderable: item.orderable ?? fallback.orderable,
+        uberEatsUrl: item.uberEatsUrl ?? fallback.uberEatsUrl,
+        seo: { ...fallback.seo, ...item.seo },
+      };
+    }),
+    ...fallbackItems.filter((item) => !cmsTitles.has(normaliseTitle(item.title))),
+  ].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }

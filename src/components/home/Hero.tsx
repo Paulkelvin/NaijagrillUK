@@ -5,7 +5,7 @@ import type { HomepageData } from "@/sanity/types";
 export function Hero({ data }: { data: HomepageData }) {
   return (
     <section className="relative min-h-screen overflow-hidden">
-      <div className="image-vignette relative absolute inset-0">
+      <div className="image-vignette absolute inset-0">
         <EditorialImage
           src={data.heroImage}
           alt="Nigerian cuisine at NaijaGrill"
@@ -17,13 +17,13 @@ export function Hero({ data }: { data: HomepageData }) {
 
       <div className="relative flex min-h-screen flex-col justify-end px-6 pb-24 md:px-12 md:pb-28 lg:px-16">
         <div className="mx-auto w-full max-w-[1600px]">
-          <p className="editorial-eyebrow-rule editorial-caption text-ivory/80">
+          <p className="editorial-eyebrow-rule editorial-caption image-text-contrast text-ivory/82">
             {data.heroEyebrow}
           </p>
-          <h1 className="editorial-display max-w-4xl whitespace-pre-line text-[clamp(3rem,8vw,7.5rem)] font-light leading-[0.95] tracking-tight text-ivory">
+          <h1 className="editorial-display image-text-contrast mt-10 max-w-4xl whitespace-pre-line text-[clamp(3rem,8vw,7.5rem)] font-light leading-[0.94] tracking-tight text-ivory">
             {data.heroHeadline}
           </h1>
-          <p className="mt-8 max-w-lg text-base leading-relaxed text-ivory/85 md:text-lg">
+          <p className="image-text-contrast mt-7 max-w-lg text-base leading-[1.6] text-ivory/90 md:text-lg">
             {data.heroSubtext}
           </p>
           <div className="mt-14 flex flex-wrap items-center gap-8 border-t border-ivory/15 pt-10">

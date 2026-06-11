@@ -47,7 +47,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="text-[0.6875rem] uppercase tracking-[0.28em] text-charcoal transition-opacity duration-300 hover:opacity-60 disabled:opacity-40"
+        className="editorial-button"
       >
         {pending ? "Sending…" : "Send message"}
       </button>
