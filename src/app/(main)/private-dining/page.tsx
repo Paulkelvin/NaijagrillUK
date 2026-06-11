@@ -3,7 +3,10 @@ import { EditorialImage } from "@/components/ui/EditorialImage";
 import { PageHero } from "@/components/ui/PageHero";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata } from "@/lib/seo/metadata";
-import { breadcrumbSchema } from "@/lib/seo/structured-data";
+import {
+  breadcrumbSchema,
+  cateringServiceSchema,
+} from "@/lib/seo/structured-data";
 
 const eventBooking = [
   {
@@ -50,10 +53,13 @@ export default function PrivateDiningPage() {
   return (
     <div className="bg-charcoal text-ivory">
       <JsonLd
-        data={breadcrumbSchema([
-          { name: "Home", path: "/" },
-          { name: "Events & Catering", path: "/private-dining" },
-        ])}
+        data={[
+          breadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Events & Catering", path: "/private-dining" },
+          ]),
+          cateringServiceSchema(),
+        ]}
       />
       <PageHero
         eyebrow="Events & Catering"

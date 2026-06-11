@@ -1,4 +1,5 @@
 import { ReservationForm } from "@/components/forms/ReservationForm";
+import { ReviewProof } from "@/components/reviews/ReviewProof";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PageHero } from "@/components/ui/PageHero";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -93,6 +94,8 @@ export default async function ReservationsPage() {
                 {contact.email}
               </Link>
             </p>
+
+            <ReviewProof className="mt-8 rounded-[1.25rem] bg-ivory/75 p-5" />
           </aside>
 
           <div className="rounded-[1.5rem] bg-ivory p-5 md:p-7">

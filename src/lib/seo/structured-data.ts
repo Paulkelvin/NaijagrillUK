@@ -1,6 +1,68 @@
 import { BUSINESS, formattedAddress } from "@/lib/business";
 import type { BlogPostData, EventData, FaqItem } from "@/sanity/types";
 
+export type OpeningHoursSpecification = {
+  "@type": "OpeningHoursSpecification";
+  dayOfWeek: string;
+  opens: string;
+  closes: string;
+};
+
+function sameAsLinks() {
+  return [
+    BUSINESS.social.instagram,
+    BUSINESS.reviews.readReviewsUrl,
+  ].filter(Boolean);
+}
+
+function aggregateRating() {
+  const { rating, reviewCount } = BUSINESS.reviews;
+  if (typeof rating !== "number" || typeof reviewCount !== "number") {
+    return undefined;
+  }
+
+  return {
+    "@type": "AggregateRating",
+    ratingValue: rating,
+    reviewCount,
+    bestRating: 5,
+    worstRating: 1,
+  };
+}
+
+function commonRestaurantFields(openingHours?: OpeningHoursSpecification[]) {
+  return {
+    sameAs: sameAsLinks(),
+    hasMenu: `${BUSINESS.website}/menu`,
+    potentialAction: [
+      {
+        "@type": "OrderAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: BUSINESS.order.uberEatsUrl,
+          actionPlatform: [
+            "https://schema.org/DesktopWebPlatform",
+            "https://schema.org/MobileWebPlatform",
+          ],
+        },
+      },
+      {
+        "@type": "ReserveAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${BUSINESS.website}/reservations`,
+          actionPlatform: [
+            "https://schema.org/DesktopWebPlatform",
+            "https://schema.org/MobileWebPlatform",
+          ],
+        },
+      },
+    ],
+    ...(openingHours?.length ? { openingHoursSpecification: openingHours } : {}),
+    ...(aggregateRating() ? { aggregateRating: aggregateRating() } : {}),
+  };
+}
+
 export function restaurantSchema() {
   return {
     "@context": "https://schema.org",
@@ -30,10 +92,11 @@ export function restaurantSchema() {
       "@type": "City",
       name: "Birmingham",
     },
+    ...commonRestaurantFields(),
   };
 }
 
-export function localBusinessSchema(openingHours?: string[]) {
+export function localBusinessSchema(openingHours?: OpeningHoursSpecification[]) {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -57,7 +120,30 @@ export function localBusinessSchema(openingHours?: string[]) {
       latitude: BUSINESS.geo.latitude,
       longitude: BUSINESS.geo.longitude,
     },
-    ...(openingHours?.length ? { openingHoursSpecification: openingHours } : {}),
+    ...commonRestaurantFields(openingHours),
+  };
+}
+
+export function cateringServiceSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "NaijaGrill Nigerian catering",
+    description:
+      "Nigerian catering for weddings, engagements, naming ceremonies, corporate trays, family celebrations, and community events in Birmingham.",
+    serviceType: "Nigerian catering",
+    provider: {
+      "@type": "Restaurant",
+      name: BUSINESS.name,
+      url: BUSINESS.website,
+      telephone: BUSINESS.phone,
+      address: formattedAddress,
+    },
+    areaServed: {
+      "@type": "City",
+      name: "Birmingham",
+    },
+    url: `${BUSINESS.website}/private-dining`,
   };
 }
 

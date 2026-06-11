@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { UberEatsLink } from "@/components/order/UberEatsLink";
+import { ReviewProof } from "@/components/reviews/ReviewProof";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import type { HomepageData } from "@/sanity/types";
 
@@ -40,7 +42,18 @@ export function Hero({ data }: { data: HomepageData }) {
             >
               View the menu
             </Link>
+            <UberEatsLink
+              label="Homepage hero"
+              className="text-[0.6875rem] uppercase tracking-[0.28em] text-gold transition-colors duration-300 hover:text-ivory"
+            >
+              Order on Uber Eats
+            </UberEatsLink>
           </div>
+          <ReviewProof
+            variant="dark"
+            compact
+            className="mt-8 max-w-xl border-l border-gold/45 pl-5"
+          />
         </div>
       </div>
     </section>

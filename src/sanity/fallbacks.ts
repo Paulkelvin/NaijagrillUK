@@ -65,9 +65,6 @@ export const fallbackHomepage: HomepageData = {
   },
 };
 
-const UBER_EATS_URL =
-  "https://www.ubereats.com/store-browse-uuid/ed5cf926-4f43-460d-960b-135912d864fb?diningMode=DELIVERY";
-
 export const fallbackMenuItems: MenuItemData[] = [
   {
     _id: "menu-white-rice-ofada-stew",
@@ -80,7 +77,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     localImage: "/images/menu/naijagrill-white-rice-ofada-stew.jpg",
     badge: "Featured",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 1,
     seo: {
       title: "White Rice with Ofada Stew | NaijaGrill Birmingham",
@@ -99,7 +96,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     localImage: "/images/menu/naijagrill-white-rice-ayamase-stew.jpg",
     badge: "Delivery favourite",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 2,
     seo: {
       title: "White Rice with Ayamase | NaijaGrill Birmingham",
@@ -117,7 +114,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
     localImage: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 3,
   },
   {
@@ -130,7 +127,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
     localImage: "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 4,
   },
   {
@@ -144,7 +141,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     localImage: "/images/menu/naijagrill-poundo-egusi-soup.jpg",
     badge: "Featured",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 5,
     seo: {
       title: "Poundo with Egusi | NaijaGrill Birmingham",
@@ -162,7 +159,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-efo-riro-soup.jpg",
     localImage: "/images/menu/naijagrill-efo-riro-soup.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 6,
   },
   {
@@ -176,7 +173,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     localImage: "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
     badge: "Featured",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 7,
     seo: {
       title: "Assorted Meat Pepper Soup | NaijaGrill Birmingham",
@@ -195,7 +192,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     localImage: "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
     badge: "Featured",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 8,
     seo: {
       title: "Peppered Hake Fish | NaijaGrill Birmingham",
@@ -213,7 +210,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
     localImage: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 9,
   },
   {
@@ -227,7 +224,7 @@ export const fallbackMenuItems: MenuItemData[] = [
       "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1400&q=85",
     badge: "Featured",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 10,
     seo: {
       title: "Beef Suya | NaijaGrill Birmingham",
@@ -245,7 +242,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image:
       "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=1400&q=85",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 11,
   },
   {
@@ -258,7 +255,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image:
       "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1400&q=85",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 12,
   },
   {
@@ -271,7 +268,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-small-chops-platter.jpg",
     localImage: "/images/menu/naijagrill-small-chops-platter.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 13,
   },
   {
@@ -284,7 +281,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-small-chops-platter.jpg",
     localImage: "/images/menu/naijagrill-small-chops-platter.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 14,
   },
   {
@@ -297,7 +294,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
     localImage: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 15,
   },
   {
@@ -309,7 +306,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
     localImage: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 16,
   },
   {
@@ -321,7 +318,7 @@ export const fallbackMenuItems: MenuItemData[] = [
     image:
       "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=1400&q=85",
     orderable: true,
-    uberEatsUrl: UBER_EATS_URL,
+    uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 17,
   },
 ];

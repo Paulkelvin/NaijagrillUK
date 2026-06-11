@@ -24,6 +24,19 @@ export const BUSINESS = {
   social: {
     instagram: "https://instagram.com/naijagrill",
   },
+  order: {
+    uberEatsUrl:
+      "https://www.ubereats.com/store-browse-uuid/ed5cf926-4f43-460d-960b-135912d864fb?diningMode=DELIVERY",
+  },
+  reviews: {
+    provider: "Google",
+    rating: undefined as number | undefined,
+    reviewCount: undefined as number | undefined,
+    readReviewsUrl:
+      "https://www.google.com/search?q=NaijaGrill%2077B%20Rookery%20Road%20reviews",
+    leaveReviewUrl:
+      "https://www.google.com/search?q=NaijaGrill%2077B%20Rookery%20Road%20leave%20a%20review",
+  },
 } as const;
 
 export const formattedAddress = `${BUSINESS.address.street}, ${BUSINESS.address.area}, ${BUSINESS.address.city}, ${BUSINESS.address.postcode}, ${BUSINESS.address.country}`;

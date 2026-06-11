@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AmbientGraphics } from "@/components/ui/AmbientGraphics";
 import {
+  type OpeningHoursSpecification,
   localBusinessSchema,
   restaurantSchema,
 } from "@/lib/seo/structured-data";
@@ -22,7 +23,12 @@ export default async function MainLayout({
 
   const openingHoursSpec = hours.schedule
     .filter((day) => !day.closed && day.open && day.close)
-    .map((day) => `${day.day.slice(0, 2)} ${day.open}-${day.close}`);
+    .map<OpeningHoursSpecification>((day) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: `https://schema.org/${day.day}`,
+      opens: day.open as string,
+      closes: day.close as string,
+    }));
 
   return (
     <>

@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { BUSINESS, googleMapsDirectionsUrl } from "@/lib/business";
 
 export function FloatingMobileCta() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-charcoal/10 bg-ivory/95 backdrop-blur-sm lg:hidden">
-      <div className="grid grid-cols-3 divide-x divide-charcoal/10">
+      <div className="grid grid-cols-4 divide-x divide-charcoal/10">
         <a
           href={`tel:${BUSINESS.phone.replace(/\s/g, "")}`}
           className="flex flex-col items-center gap-1 py-4 text-[0.625rem] uppercase tracking-[0.22em] text-charcoal transition-colors hover:text-gold"
@@ -30,6 +31,13 @@ export function FloatingMobileCta() {
           <span aria-hidden>◆</span>
           Reserve
         </Link>
+        <UberEatsLink
+          label="Mobile sticky action"
+          className="flex flex-col items-center gap-1 py-4 text-[0.625rem] uppercase tracking-[0.22em] text-burgundy transition-colors hover:text-gold"
+        >
+          <span aria-hidden>↗</span>
+          Order
+        </UberEatsLink>
       </div>
     </div>
   );

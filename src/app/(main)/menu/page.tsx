@@ -1,4 +1,5 @@
 import { JsonLd } from "@/components/seo/JsonLd";
+import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import { BUSINESS } from "@/lib/business";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -6,9 +7,6 @@ import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import { getMenuItems } from "@/sanity/fetch";
 import type { MenuItemData, SanityImage } from "@/sanity/types";
 import Link from "next/link";
-
-const UBER_EATS_URL =
-  "https://www.ubereats.com/store-browse-uuid/ed5cf926-4f43-460d-960b-135912d864fb?diningMode=DELIVERY";
 
 type MenuDish = {
   title: string;
@@ -342,7 +340,7 @@ function menuPageSchema(items: MenuDish[]) {
             "@type": "Offer",
             priceCurrency: "GBP",
             price: item.price.replace("from £", ""),
-            url: UBER_EATS_URL,
+            url: BUSINESS.order.uberEatsUrl,
           },
         })),
     })),
@@ -411,12 +409,12 @@ export default async function MenuPage() {
               small chops, rice plates, and sides.
             </p>
             <div className="mt-9 flex flex-wrap gap-4">
-              <Link
-                href={UBER_EATS_URL}
+              <UberEatsLink
+                label="Menu hero"
                 className="inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
               >
                 Order on Uber Eats
-              </Link>
+              </UberEatsLink>
               <Link
                 href="/reservations"
                 className="inline-flex rounded-full border border-ivory/25 bg-ivory/10 px-7 py-4 text-sm font-bold uppercase tracking-[0.16em] text-ivory backdrop-blur transition-colors hover:bg-ivory hover:text-charcoal"
@@ -542,12 +540,12 @@ export default async function MenuPage() {
               checkout. Our live Uber Eats menu is set up for delivery across
               Handsworth and nearby Birmingham neighbourhoods.
             </p>
-            <Link
-              href={UBER_EATS_URL}
+            <UberEatsLink
+              label="Menu delivery favourites"
               className="mt-8 inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
             >
               Order on Uber Eats
-            </Link>
+            </UberEatsLink>
           </div>
 
           <div className="no-scrollbar flex gap-5 overflow-x-auto pb-2">
@@ -706,12 +704,12 @@ export default async function MenuPage() {
           Order the favourites or book the full table.
         </h2>
         <div className="mt-9 flex flex-wrap justify-center gap-4">
-          <Link
-            href={UBER_EATS_URL}
+          <UberEatsLink
+            label="Menu final CTA"
             className="inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal"
           >
             Order on Uber Eats
-          </Link>
+          </UberEatsLink>
           <Link
             href="/reservations"
             className="inline-flex rounded-full border border-ivory/20 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-ivory transition-colors hover:bg-ivory hover:text-charcoal"

@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { BUSINESS } from "@/lib/business";
-import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
 import { Address } from "@/components/local/Address";
+import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
+import { UberEatsLink } from "@/components/order/UberEatsLink";
+import { BUSINESS } from "@/lib/business";
 import type { ContactInfoData } from "@/sanity/types";
 
 export function Footer({ contact }: { contact: ContactInfoData }) {
@@ -44,6 +45,12 @@ export function Footer({ contact }: { contact: ContactInfoData }) {
               >
                 Reservations
               </Link>
+              <UberEatsLink
+                label="Footer nav"
+                className="transition-colors hover:text-gold"
+              >
+                Order on Uber Eats
+              </UberEatsLink>
               <Link
                 href="/contact"
                 className="transition-colors hover:text-gold"
