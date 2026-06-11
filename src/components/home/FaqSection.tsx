@@ -49,9 +49,13 @@ export function FaqSection() {
                 +
               </span>
             </summary>
-            <p className="mt-5 max-w-2xl text-sm leading-[1.62] text-stone md:text-base">
-              {faq.answer}
-            </p>
+            <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-open:grid-rows-[1fr]">
+              <div className="overflow-hidden">
+                <p className="max-w-2xl pt-5 text-sm leading-[1.62] text-stone opacity-0 transition-opacity duration-300 group-open:opacity-100 md:text-base">
+                  {faq.answer}
+                </p>
+              </div>
+            </div>
           </details>
         ))}
       </div>

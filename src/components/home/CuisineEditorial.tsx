@@ -28,7 +28,7 @@ export function CuisineEditorial({ data }: { data: HomepageData }) {
           {movingFeatures.map((feature, index) => (
             <article
               key={`${feature.title}-${index}`}
-              className="group w-[78vw] shrink-0 rounded-[1.65rem] border border-charcoal/10 bg-ivory/70 p-5 md:w-[420px] lg:w-[430px]"
+              className="group w-[78vw] shrink-0 rounded-[1.65rem] border border-charcoal/10 bg-ivory/70 p-4 md:w-[420px] lg:w-[430px]"
             >
               <div className="relative">
                 <EditorialFrame>
@@ -46,12 +46,12 @@ export function CuisineEditorial({ data }: { data: HomepageData }) {
                 </span>
               </div>
 
-              <div className="px-2 pb-3 pt-6">
-                <p className="editorial-caption mb-4">{feature.subtitle}</p>
-                <h3 className="editorial-display text-4xl font-light leading-[0.98] text-charcoal md:text-5xl">
+              <div className="px-2 pb-1 pt-4">
+                <p className="editorial-caption mb-2">{feature.subtitle}</p>
+                <h3 className="editorial-display text-3xl font-light leading-[0.98] text-charcoal md:text-4xl">
                   {feature.title}
                 </h3>
-                <p className="mt-5 text-sm leading-[1.75] text-stone">
+                <p className="mt-3 text-sm leading-[1.55] text-stone">
                   {feature.description}
                 </p>
               </div>

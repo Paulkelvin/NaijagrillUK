@@ -15,6 +15,23 @@ const atmosphereImages = [
   "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&q=85",
 ];
 
+function RatingStars() {
+  return (
+    <div className="flex items-center gap-1 text-gold" aria-label="5 star review">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <svg
+          key={index}
+          viewBox="0 0 24 24"
+          className="h-4 w-4 fill-current"
+          aria-hidden="true"
+        >
+          <path d="M12 2 9.3 8.4 2.4 9l5.2 4.5-1.6 6.8 6-3.6 6 3.6-1.6-6.8L21.6 9l-6.9-.6L12 2Z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 function QuoteCard({
   item,
   index,
@@ -24,14 +41,12 @@ function QuoteCard({
 }) {
   return (
     <figure
-      className="flex min-h-[360px] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-[1.9rem] border border-charcoal/10 bg-cream/90 p-6 shadow-[0_28px_90px_rgba(22,15,11,0.12)] md:w-[410px] lg:w-[455px]"
+      className="flex min-h-[360px] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-[1.9rem] border border-charcoal/10 bg-ivory p-6 shadow-[0_28px_90px_rgba(22,15,11,0.12)] md:w-[410px] lg:w-[455px]"
     >
       <div>
         <div className="mb-6 flex items-center justify-between gap-4">
           <p className="editorial-caption text-gold">Guest note</p>
-          <p className="text-xs font-black tracking-[0.24em] text-burgundy">
-            5.0
-          </p>
+          <RatingStars />
         </div>
         <blockquote className="editorial-display text-[1.5rem] font-light leading-[1.28] text-charcoal md:text-[1.78rem]">
           &ldquo;{item.quote}&rdquo;
@@ -75,15 +90,21 @@ export function Testimonials({ items }: { items: TestimonialData[] }) {
     <section className="overflow-hidden bg-ivory">
       <div className="mx-auto max-w-[1500px] px-6 py-16 md:px-12 md:py-24 lg:px-16">
         <div className="mb-9 flex flex-col gap-6 border-t border-charcoal/10 pt-10 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="editorial-caption mb-3 text-gold">Guest Notes</p>
-            <h2 className="editorial-display max-w-3xl text-5xl font-light leading-[0.92] text-charcoal md:text-7xl">
-              The kind of table guests talk about later.
-            </h2>
-            <p className="mt-5 max-w-xl text-sm leading-[1.75] text-stone md:text-base">
-              Warm service, serious pepper, generous plates, and enough rhythm in
-              the room to make a quick meal turn into an evening.
-            </p>
+            <div className="testimonial-heading-marquee overflow-hidden">
+              <div className="testimonial-heading-track flex w-max">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <h2
+                    key={index}
+                    className="editorial-display whitespace-nowrap pr-8 text-[clamp(2.2rem,9vw,5.25rem)] font-light leading-[0.92] text-charcoal"
+                    aria-hidden={index > 0}
+                  >
+                    What they say about us
+                  </h2>
+                ))}
+              </div>
+            </div>
           </div>
           <div className="hidden items-center gap-3 lg:flex">
             <button

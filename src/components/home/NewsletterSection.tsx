@@ -14,7 +14,7 @@ export function NewsletterSection() {
             </p>
           </div>
 
-          <div className="relative min-h-[320px] overflow-hidden lg:min-h-full">
+          <div className="relative hidden min-h-[320px] overflow-hidden lg:block lg:min-h-full">
             <EditorialImage
               src="https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1800&q=85"
               alt="Nigerian food served for a welcome offer"

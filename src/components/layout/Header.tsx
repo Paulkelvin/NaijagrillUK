@@ -59,12 +59,6 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/studio"
-            className={`ml-2 border-l border-ivory/20 pl-6 text-[0.625rem] uppercase tracking-[0.24em] transition-colors duration-300 ${textClass}`}
-          >
-            CMS
-          </Link>
         </nav>
 
         <MobileNav scrolled={scrolled} />

@@ -4,6 +4,7 @@ import { ExperienceSection } from "@/components/home/ExperienceSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import { NewsletterSection } from "@/components/home/NewsletterSection";
+import { PrivateDiningTeaser } from "@/components/home/PrivateDiningTeaser";
 import { StorySection } from "@/components/home/StorySection";
 import { Testimonials } from "@/components/home/Testimonials";
 import { VisitSection } from "@/components/home/VisitSection";
@@ -45,6 +46,7 @@ export default async function Home() {
       <Hero data={homepage} />
       <StorySection data={homepage} />
       <CuisineEditorial data={homepage} />
+      <PrivateDiningTeaser />
       <ExperienceSection data={homepage} />
       <EventsSection events={events} />
       <Testimonials items={testimonials} />

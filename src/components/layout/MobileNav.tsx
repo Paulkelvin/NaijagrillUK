@@ -48,16 +48,16 @@ export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
 
       <div
         id="mobile-menu"
-        className={`fixed inset-0 z-[55] bg-charcoal/95 transition-opacity duration-500 ${
+        className={`fixed inset-0 z-[55] bg-charcoal transition-opacity duration-500 ${
           open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
         aria-hidden={!open}
       >
         <nav
           aria-label="Mobile"
-          className="flex h-full flex-col justify-center px-10"
+          className="flex h-dvh flex-col overflow-y-auto px-8 pb-12 pt-28"
         >
-          <ul className="space-y-8">
+          <ul className="space-y-6">
             {navLinks.map((link, index) => (
               <li
                 key={link.href}
@@ -71,7 +71,7 @@ export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
                 <Link
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="editorial-display text-4xl font-light text-ivory transition-colors hover:text-gold"
+                  className="editorial-display block text-[clamp(2.15rem,11vw,3.4rem)] font-light leading-[1.02] text-ivory transition-colors hover:text-gold"
                 >
                   {link.label}
                 </Link>

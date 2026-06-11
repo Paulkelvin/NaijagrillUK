@@ -159,6 +159,10 @@ body::before {
     animation-play-state: paused;
   }
 
+  .testimonial-heading-track {
+    animation: testimonial-heading-marquee 16s linear infinite;
+  }
+
   .ambient-graphics {
     @apply pointer-events-none fixed inset-0 z-20 overflow-hidden;
     mix-blend-mode: multiply;
@@ -255,10 +259,20 @@ body::before {
   }
 }
 
+@keyframes testimonial-heading-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ambient-blob,
   .ambient-mark,
-  .kitchen-marquee-track {
+  .kitchen-marquee-track,
+  .testimonial-heading-track {
     animation: none;
   }
 }
