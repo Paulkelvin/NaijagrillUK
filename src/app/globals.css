@@ -159,8 +159,21 @@ body::before {
     animation-play-state: paused;
   }
 
-  .testimonial-heading-track {
-    animation: testimonial-heading-marquee 16s linear infinite;
+  .testimonial-marquee-track {
+    animation: testimonial-card-marquee 30s linear infinite;
+  }
+
+  .testimonial-marquee:hover .testimonial-marquee-track {
+    animation-play-state: paused;
+  }
+
+  .smooth-card-motion {
+    transition:
+      transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 500ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 300ms ease,
+      background-color 300ms ease,
+      color 300ms ease;
   }
 
   .ambient-graphics {
@@ -259,7 +272,7 @@ body::before {
   }
 }
 
-@keyframes testimonial-heading-marquee {
+@keyframes testimonial-card-marquee {
   from {
     transform: translate3d(0, 0, 0);
   }
@@ -272,7 +285,7 @@ body::before {
   .ambient-blob,
   .ambient-mark,
   .kitchen-marquee-track,
-  .testimonial-heading-track {
+  .testimonial-marquee-track {
     animation: none;
   }
 }

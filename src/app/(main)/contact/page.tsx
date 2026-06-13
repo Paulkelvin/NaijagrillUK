@@ -91,7 +91,19 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-[1500px] gap-10 px-6 pb-16 md:px-12 md:pb-20 lg:grid-cols-[0.82fr_1.18fr] lg:px-16">
+      <section className="mx-auto grid max-w-[1500px] gap-10 px-6 pb-16 md:px-12 md:pb-20 lg:grid-cols-[1.18fr_0.82fr] lg:px-16">
+        <div className="rounded-[2rem] bg-cream/75 p-6 shadow-[0_24px_70px_rgba(22,15,11,0.08)] md:p-10 lg:p-12">
+          <p className="editorial-caption mb-4 text-gold">Message us</p>
+          <h2 className="editorial-display text-4xl font-light leading-[1] text-charcoal md:text-5xl">
+            Tell us what you need.
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-[1.58] text-stone">
+            Send a note for questions, collaborations, press, or anything that
+            needs a proper reply from the team.
+          </p>
+          <ContactForm />
+        </div>
+
         <aside className="rounded-[2rem] bg-charcoal p-8 text-ivory shadow-[0_24px_80px_rgba(22,15,11,0.18)] md:p-10">
           <p className="editorial-caption mb-4 text-gold">Visit us</p>
           <h2 className="editorial-display text-4xl font-light leading-[1] md:text-5xl">
@@ -130,18 +142,6 @@ export default async function ContactPage() {
             <OpeningHours hours={hours} variant="detailed" />
           </div>
         </aside>
-
-        <div className="rounded-[2rem] bg-cream/75 p-6 shadow-[0_24px_70px_rgba(22,15,11,0.08)] md:p-10 lg:p-12">
-          <p className="editorial-caption mb-4 text-gold">Message us</p>
-          <h2 className="editorial-display text-4xl font-light leading-[1] text-charcoal md:text-5xl">
-            Tell us what you need.
-          </h2>
-          <p className="mt-4 max-w-xl text-sm leading-[1.58] text-stone">
-            Send a note for questions, collaborations, press, or anything that
-            needs a proper reply from the team.
-          </p>
-          <ContactForm />
-        </div>
       </section>
 
       <section className="px-6 pb-20 md:px-12 lg:px-16">

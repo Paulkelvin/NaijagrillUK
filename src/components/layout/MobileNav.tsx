@@ -32,7 +32,11 @@ export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
         aria-controls="mobile-menu"
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((prev) => !prev)}
-        className="relative z-[60] flex h-10 w-10 flex-col items-center justify-center gap-1.5"
+        className={`relative z-[60] flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-full border transition-all duration-300 ${
+          open
+            ? "border-gold/35 bg-charcoal shadow-[0_12px_32px_rgba(0,0,0,0.35)]"
+            : "border-ivory/15 bg-charcoal/35 backdrop-blur-sm"
+        }`}
       >
         <span
           className={`block h-px w-6 ${barColor} transition-all duration-300 ${

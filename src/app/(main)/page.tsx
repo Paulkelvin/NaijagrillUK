@@ -1,5 +1,4 @@
 import { CuisineEditorial } from "@/components/home/CuisineEditorial";
-import { EventsSection } from "@/components/home/EventsSection";
 import { ExperienceSection } from "@/components/home/ExperienceSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
@@ -13,7 +12,6 @@ import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import { resolveImageSrc } from "@/sanity/resolve-image";
 import {
-  getEvents,
   getHomepage,
   getOpeningHours,
   getTestimonials,
@@ -31,11 +29,10 @@ export async function generateMetadata() {
 }
 
 export default async function Home() {
-  const [homepage, testimonials, hours, events] = await Promise.all([
+  const [homepage, testimonials, hours] = await Promise.all([
     getHomepage(),
     getTestimonials(),
     getOpeningHours(),
-    getEvents(),
   ]);
 
   return (
@@ -48,7 +45,6 @@ export default async function Home() {
       <CuisineEditorial data={homepage} />
       <PrivateDiningTeaser />
       <ExperienceSection data={homepage} />
-      <EventsSection events={events} />
       <Testimonials items={testimonials} />
       <FaqSection />
       <NewsletterSection />

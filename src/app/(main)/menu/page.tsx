@@ -27,6 +27,31 @@ type MenuSection = {
 const fallbackImage =
   "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg";
 
+const localMenuImages: Record<string, string> = {
+  "White Rice with Ofada Stew":
+    "/images/menu/naijagrill-white-rice-ofada-stew.jpg",
+  "White Rice with Ayamase":
+    "/images/menu/naijagrill-white-rice-ayamase-stew.jpg",
+  "Jollof Rice":
+    "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+  "Fried Rice":
+    "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
+  "Poundo with Egusi": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+  "Egusi Soup": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+  "Efo Riro": "/images/menu/naijagrill-efo-riro-soup.jpg",
+  "Assorted Meat Pepper Soup":
+    "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+  "Peppered Hake Fish":
+    "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
+  "Grilled Tilapia":
+    "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+  "Puff Puff": "/images/menu/naijagrill-small-chops-platter.jpg",
+  "Vegetable Samosa": "/images/menu/naijagrill-small-chops-platter.jpg",
+  "Spring Rolls": "/images/menu/naijagrill-small-chops-platter.jpg",
+  "Fried Plantain": "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+  "Moi Moi": "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+};
+
 const menuSections: MenuSection[] = [
   {
     id: "rice-specials",
@@ -294,11 +319,16 @@ function formatPrice(price: number) {
 }
 
 function menuImageForItem(item: MenuItemData) {
-  return item.image ?? item.localImage ?? fallbackImage;
+  return localMenuImages[item.title] ?? item.localImage ?? item.image ?? fallbackImage;
 }
 
 function buildMenuDishes(cmsItems: MenuItemData[]) {
-  if (!cmsItems.length) return curatedMenu;
+  if (!cmsItems.length) {
+    return curatedMenu.map((item) => ({
+      ...item,
+      image: localMenuImages[item.title] ?? item.image,
+    }));
+  }
 
   return cmsItems.map<MenuDish>((item) => ({
     title: item.title,
@@ -408,11 +438,17 @@ export default async function MenuPage() {
               Eats: ayamase, ofada stew, egusi, suya, pepper soup, grilled fish,
               small chops, rice plates, and sides.
             </p>
+            <p className="mt-5 inline-flex rounded-full border border-ivory/18 bg-ivory/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-ivory/82 backdrop-blur">
+              Uber Eats official ordering
+            </p>
             <div className="mt-9 flex flex-wrap gap-4">
               <UberEatsLink
                 label="Menu hero"
-                className="inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
+                className="inline-flex items-center gap-3 rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
               >
+                <span className="rounded-full bg-charcoal px-2.5 py-1 text-[0.62rem] tracking-[0.12em] text-ivory">
+                  Uber Eats
+                </span>
                 Order on Uber Eats
               </UberEatsLink>
               <Link
@@ -424,7 +460,7 @@ export default async function MenuPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="hidden gap-4 sm:grid sm:grid-cols-3 lg:grid-cols-1">
             {featuredItems.slice(0, 3).map((item) => (
               <article
                 key={item.title}
@@ -457,14 +493,14 @@ export default async function MenuPage() {
 
       <nav
         aria-label="Menu categories"
-        className="sticky top-0 z-30 border-b border-charcoal/10 bg-ivory/92 px-6 py-4 backdrop-blur-xl md:px-12 lg:px-16"
+        className="sticky top-[72px] z-40 border-b border-charcoal/10 bg-ivory/96 px-6 py-4 shadow-[0_12px_32px_rgba(22,15,11,0.08)] backdrop-blur-xl md:px-12 lg:px-16"
       >
-        <div className="no-scrollbar mx-auto flex max-w-[1600px] gap-3 overflow-x-auto">
+        <div className="no-scrollbar mx-auto flex max-w-[1600px] snap-x gap-3 overflow-x-auto pr-[18vw] scroll-smooth md:pr-0">
           {menuSections.map((section) => (
             <a
               key={section.id}
               href={`#${section.id}`}
-              className="shrink-0 rounded-full border border-charcoal/10 bg-cream/70 px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-charcoal transition-colors hover:border-gold hover:bg-gold/20"
+              className="w-[68vw] shrink-0 snap-start rounded-full border border-charcoal/10 bg-cream/70 px-5 py-3 text-center text-xs font-black uppercase tracking-[0.16em] text-charcoal transition-colors hover:border-gold hover:bg-gold/20 sm:w-auto"
             >
               {section.label}
             </a>
@@ -479,7 +515,7 @@ export default async function MenuPage() {
               Featured dishes
             </p>
             <h2 className="mt-3 max-w-3xl font-display text-5xl font-black leading-[0.95] tracking-[-0.04em] text-charcoal md:text-7xl">
-              Start with what people order again.
+              What people order
             </h2>
           </div>
           <p className="max-w-md text-base leading-[1.7] text-stone">
@@ -492,7 +528,7 @@ export default async function MenuPage() {
           {featuredItems.map((item) => (
             <article
               key={item.title}
-              className="group overflow-hidden rounded-[2rem] border border-charcoal/10 bg-cream/80 shadow-[0_22px_70px_rgba(22,15,11,0.08)]"
+              className="smooth-card-motion group overflow-hidden rounded-[2rem] border border-charcoal/10 bg-cream/80 shadow-[0_22px_70px_rgba(22,15,11,0.08)] hover:-translate-y-1"
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-charcoal/5">
                 <EditorialImage
@@ -540,10 +576,16 @@ export default async function MenuPage() {
               checkout. Our live Uber Eats menu is set up for delivery across
               Handsworth and nearby Birmingham neighbourhoods.
             </p>
+            <p className="mt-5 inline-flex rounded-full border border-ivory/14 bg-ivory/10 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-ivory/80">
+              Uber Eats delivery menu
+            </p>
             <UberEatsLink
               label="Menu delivery favourites"
-              className="mt-8 inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
+              className="mt-8 inline-flex items-center gap-3 rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
             >
+              <span className="rounded-full bg-charcoal px-2.5 py-1 text-[0.62rem] tracking-[0.12em] text-ivory">
+                Uber Eats
+              </span>
               Order on Uber Eats
             </UberEatsLink>
           </div>
@@ -621,7 +663,7 @@ export default async function MenuPage() {
                     {sectionItems.map((item) => (
                       <article
                         key={`${section.id}-${item.title}`}
-                        className="grid grid-cols-[76px_1fr] gap-4 rounded-[1.35rem] bg-ivory/72 p-3 transition-colors hover:bg-ivory"
+                        className="smooth-card-motion grid grid-cols-[76px_1fr] gap-4 rounded-[1.35rem] bg-ivory/72 p-3 hover:bg-ivory"
                       >
                         <div className="relative aspect-square overflow-hidden rounded-[1rem] bg-charcoal/5">
                           <EditorialImage
@@ -706,8 +748,11 @@ export default async function MenuPage() {
         <div className="mt-9 flex flex-wrap justify-center gap-4">
           <UberEatsLink
             label="Menu final CTA"
-            className="inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal"
+            className="inline-flex items-center gap-3 rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
           >
+            <span className="rounded-full bg-charcoal px-2.5 py-1 text-[0.62rem] tracking-[0.12em] text-ivory">
+              Uber Eats
+            </span>
             Order on Uber Eats
           </UberEatsLink>
           <Link

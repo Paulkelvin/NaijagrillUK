@@ -3,6 +3,24 @@ import { EditorialFrame } from "@/components/ui/EditorialFrame";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import type { HomepageData } from "@/sanity/types";
 
+const localCuisineImages: Record<string, string> = {
+  jollof: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+  "jollof rice": "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+  "white rice with ofada stew": "/images/menu/naijagrill-white-rice-ofada-stew.jpg",
+  "white rice with ayamase": "/images/menu/naijagrill-white-rice-ayamase-stew.jpg",
+  "fried rice": "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
+  "poundo with egusi": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+  "egusi soup": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+  "efo riro": "/images/menu/naijagrill-efo-riro-soup.jpg",
+  "assorted meat pepper soup":
+    "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+  "grilled tilapia": "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+};
+
+function imageForCuisineFeature(feature: HomepageData["cuisineFeatures"][number]) {
+  return localCuisineImages[feature.title.toLowerCase()] ?? feature.image;
+}
+
 export function CuisineEditorial({ data }: { data: HomepageData }) {
   const movingFeatures = [...data.cuisineFeatures, ...data.cuisineFeatures];
 
@@ -34,7 +52,7 @@ export function CuisineEditorial({ data }: { data: HomepageData }) {
                 <EditorialFrame>
                   <div className="image-vignette-side relative aspect-[16/10] overflow-hidden rounded-[1.35rem]">
                     <EditorialImage
-                      src={feature.image}
+                      src={imageForCuisineFeature(feature)}
                       alt={feature.title}
                       sizes="(max-width: 1024px) 92vw, 28vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"

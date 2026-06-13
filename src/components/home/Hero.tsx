@@ -28,23 +28,16 @@ export function Hero({ data }: { data: HomepageData }) {
           <p className="image-text-contrast mt-8 max-w-lg text-base leading-[1.6] text-ivory/90 md:text-lg">
             {data.heroSubtext}
           </p>
-          <div className="mt-12 flex flex-wrap items-center gap-8 border-t border-ivory/15 pt-8">
+          <div className="mt-12 flex flex-wrap items-center gap-4 border-t border-ivory/15 pt-8">
             <Link
               href="/reservations"
-              className="group inline-flex items-center gap-3 text-[0.6875rem] uppercase tracking-[0.28em] text-ivory transition-colors duration-300 hover:text-gold"
+              className="inline-flex rounded-full bg-gold px-7 py-4 text-[0.6875rem] font-black uppercase tracking-[0.22em] text-charcoal shadow-[0_18px_44px_rgba(0,0,0,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-ivory"
             >
-              <span className="h-px w-8 bg-gold/70 transition-all duration-300 group-hover:w-12" />
               Reserve a table
-            </Link>
-            <Link
-              href="/menu"
-              className="text-[0.6875rem] uppercase tracking-[0.28em] text-ivory/70 transition-colors duration-300 hover:text-ivory"
-            >
-              View the menu
             </Link>
             <UberEatsLink
               label="Homepage hero"
-              className="text-[0.6875rem] uppercase tracking-[0.28em] text-gold transition-colors duration-300 hover:text-ivory"
+              className="inline-flex rounded-full border border-ivory/25 bg-charcoal/35 px-7 py-4 text-[0.6875rem] font-bold uppercase tracking-[0.22em] text-ivory backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-gold hover:text-gold"
             >
               Order on Uber Eats
             </UberEatsLink>

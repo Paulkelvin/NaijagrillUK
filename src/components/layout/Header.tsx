@@ -26,19 +26,19 @@ export function Header() {
 
   const textClass = scrolled
     ? "text-ivory hover:text-gold"
-    : "text-ivory drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)] hover:text-gold";
+    : "text-ivory hover:text-gold";
 
   const logoClass = scrolled ? "text-ivory" : "text-ivory";
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
+      className={`fixed inset-x-0 top-0 z-50 translate-y-0 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ${
         scrolled
-          ? "border-b border-gold/20 bg-charcoal/98 py-4 shadow-[0_8px_32px_rgba(26,24,20,0.22)] backdrop-blur-md"
-          : "bg-gradient-to-b from-charcoal/45 to-transparent py-8"
+          ? "border-b border-gold/20 bg-charcoal/98 shadow-[0_8px_32px_rgba(26,24,20,0.22)] backdrop-blur-md"
+          : "border-b border-ivory/10 bg-charcoal/86 shadow-[0_8px_32px_rgba(26,24,20,0.12)] backdrop-blur-sm"
       }`}
     >
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 md:px-12 lg:px-16">
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4 md:px-12 lg:px-16">
         <Link
           href="/"
           className={`editorial-display text-xl font-light tracking-[0.18em] uppercase drop-shadow-[0_2px_14px_rgba(0,0,0,0.5)] transition-colors duration-300 md:text-2xl ${logoClass}`}
