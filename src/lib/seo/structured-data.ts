@@ -143,7 +143,7 @@ export function cateringServiceSchema() {
       "@type": "City",
       name: "Birmingham",
     },
-    url: `${BUSINESS.website}/private-dining`,
+    url: `${BUSINESS.website}/events-catering`,
   };
 }
 

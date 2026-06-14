@@ -9,7 +9,7 @@ const reservationSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   phone: z.string().optional(),
   date: z.string().min(1, "Please select a date"),
-  guests: z.coerce.number().int().min(2).max(80),
+  guests: z.coerce.number().int().min(2).max(25),
   notes: z.string().optional(),
 });
 

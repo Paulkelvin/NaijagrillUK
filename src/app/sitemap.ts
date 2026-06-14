@@ -10,9 +10,8 @@ const staticRoutes = [
   "/menu",
   "/story",
   "/blog",
-  "/explore-nigerian-cuisine",
   "/nigerian-restaurant-birmingham",
-  "/private-dining",
+  "/events-catering",
   "/reservations",
   "/contact",
 ];

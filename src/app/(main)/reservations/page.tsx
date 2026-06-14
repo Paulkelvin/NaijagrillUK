@@ -77,7 +77,7 @@ export default async function ReservationsPage() {
               Planning a birthday, anniversary, graduation, baby shower, wedding
               or catering order?{" "}
               <Link
-                href="/private-dining"
+                href="/events-catering"
                 className="text-charcoal underline decoration-gold/50 underline-offset-4"
               >
                 Use Events & Catering

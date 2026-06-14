@@ -8,8 +8,7 @@ const navLinks = [
   { href: "/menu", label: "Menu" },
   { href: "/story", label: "Our Story" },
   { href: "/blog", label: "Journal" },
-  { href: "/explore-nigerian-cuisine", label: "Explore" },
-  { href: "/private-dining", label: "Events & Catering" },
+  { href: "/events-catering", label: "Events & Catering" },
   { href: "/reservations", label: "Reservations" },
   { href: "/contact", label: "Contact" },
 ];
@@ -32,10 +31,10 @@ export function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 translate-y-0 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ${
+      className={`fixed inset-x-0 top-0 z-50 bg-charcoal transition-[border-color,box-shadow] duration-500 ${
         scrolled
-          ? "border-b border-gold/20 bg-charcoal/98 shadow-[0_8px_32px_rgba(26,24,20,0.22)] backdrop-blur-md"
-          : "border-b border-ivory/10 bg-charcoal/86 shadow-[0_8px_32px_rgba(26,24,20,0.12)] backdrop-blur-sm"
+          ? "border-b border-gold/20 shadow-[0_8px_32px_rgba(26,24,20,0.22)]"
+          : "border-b border-ivory/10 shadow-[0_8px_32px_rgba(26,24,20,0.12)]"
       }`}
     >
       <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4 md:px-12 lg:px-16">

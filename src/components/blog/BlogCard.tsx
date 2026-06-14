@@ -11,68 +11,60 @@ export function BlogCard({
   post: BlogPostPreview;
   variant?: "standard" | "featured";
 }) {
-  const imageSrc = resolveImageSrc(post.featuredImage, 800);
+  const imageSrc = resolveImageSrc(post.featuredImage, variant === "featured" ? 1400 : 800);
   const isFeatured = variant === "featured";
 
   return (
     <article className="group">
       <Link
         href={`/blog/${post.slug}`}
-        className={`block ${isFeatured ? "grid gap-10 lg:grid-cols-2 lg:items-end" : ""}`}
+        className="relative block overflow-hidden rounded-[1.5rem] bg-charcoal"
       >
-        {imageSrc && (
-          <div
-            className={`relative overflow-hidden rounded-[1.75rem] bg-charcoal ${
-              isFeatured ? "aspect-[5/4]" : "mb-8 aspect-[4/3]"
-            }`}
-          >
+        <div
+          className={`relative ${
+            isFeatured ? "aspect-[16/10] sm:aspect-[2/1]" : "aspect-[4/5]"
+          }`}
+        >
+          {imageSrc && (
             <Image
               src={imageSrc}
               alt={post.title}
               fill
-              className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-              sizes="(max-width: 768px) 100vw, 33vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/32 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
-              <p className="editorial-caption mb-3 text-gold">
-                {post.category?.title ?? "Journal"} &middot;{" "}
-                {formatDate(post.publishedAt)}
-              </p>
-              <h2
-                className={`editorial-display font-light leading-[1] text-ivory drop-shadow-[0_6px_24px_rgba(0,0,0,0.52)] transition-colors group-hover:text-gold ${
-                  isFeatured ? "text-4xl md:text-5xl" : "text-3xl md:text-4xl"
-                }`}
-              >
-                {post.title}
-              </h2>
-            </div>
-          </div>
-        )}
-        <div>
-          <p className="editorial-caption mb-3">
-            {post.category?.title ?? "Journal"} &middot;{" "}
-            {formatDate(post.publishedAt)}
-          </p>
-          {!imageSrc && (
-            <h2
-              className={`editorial-display font-light text-charcoal transition-colors group-hover:text-gold ${
+              priority={isFeatured}
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+              sizes={
                 isFeatured
-                  ? "text-5xl leading-tight md:text-6xl"
-                  : "text-3xl md:text-4xl"
+                  ? "(max-width: 1024px) 100vw, 64vw"
+                  : "(max-width: 768px) 100vw, 33vw"
+              }
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/60 to-charcoal/15" />
+          <div className="absolute inset-x-0 bottom-0 p-6 md:p-7">
+            <p className="editorial-caption mb-3 text-gold drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+              {post.category?.title ?? "Journal"} &middot;{" "}
+              {formatDate(post.publishedAt)}
+            </p>
+            <h2
+              className={`editorial-display font-light leading-[1.02] text-ivory drop-shadow-[0_6px_24px_rgba(0,0,0,0.65)] transition-colors group-hover:text-gold ${
+                isFeatured ? "text-4xl md:text-5xl" : "text-2xl md:text-3xl"
               }`}
             >
               {post.title}
             </h2>
-          )}
-          <p
-            className={`mt-4 leading-relaxed text-stone ${
-              isFeatured ? "max-w-xl text-lg" : "text-base"
-            }`}
-          >
-            {post.excerpt}
-          </p>
-          <span className="editorial-link mt-8 inline-block">Read article</span>
+            <p
+              className={`mt-3 leading-[1.55] text-ivory/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] ${
+                isFeatured
+                  ? "line-clamp-3 max-w-2xl text-base md:text-lg"
+                  : "line-clamp-2 text-sm"
+              }`}
+            >
+              {post.excerpt}
+            </p>
+            <span className="mt-5 inline-block text-[0.68rem] font-black uppercase tracking-[0.2em] text-gold drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+              Read article
+            </span>
+          </div>
         </div>
       </Link>
     </article>

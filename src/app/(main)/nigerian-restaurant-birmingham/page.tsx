@@ -166,16 +166,9 @@ export default async function NigerianRestaurantBirminghamPage() {
             >
               Nigerian food menu
             </Link>
-            , learn more about{" "}
-            <Link
-              href="/explore-nigerian-cuisine"
-              className="text-charcoal underline decoration-gold/50 underline-offset-4"
-            >
-              Nigerian cuisine
-            </Link>
             , or ask about{" "}
             <Link
-              href="/private-dining"
+              href="/events-catering"
               className="text-charcoal underline decoration-gold/50 underline-offset-4"
             >
               events and catering

@@ -1,14 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { formatDate } from "@/lib/blog/utils";
 import { BUSINESS } from "@/lib/business";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import { getBlogCategories, getBlogPosts } from "@/sanity/fetch";
-import { resolveImageSrc } from "@/sanity/resolve-image";
 
 export async function generateMetadata() {
   return buildMetadata({
@@ -26,7 +23,6 @@ export default async function BlogPage() {
   ]);
   const featuredPost = posts[0];
   const remainingPosts = posts.slice(1);
-  const featuredImage = resolveImageSrc(featuredPost?.featuredImage, 1400);
   const featuredUrl = featuredPost
     ? `${BUSINESS.website}/blog/${featuredPost.slug}`
     : BUSINESS.website;
@@ -58,48 +54,7 @@ export default async function BlogPage() {
 
         {featuredPost && (
           <div className="grid gap-12 lg:grid-cols-[1fr_0.34fr] lg:items-start">
-            <article>
-              {featuredImage && (
-                <Link
-                  href={`/blog/${featuredPost.slug}`}
-                  className="group block"
-                >
-                  <div className="image-vignette-side relative aspect-[16/9] overflow-hidden rounded-[2rem] bg-charcoal">
-                    <Image
-                      src={featuredImage}
-                      alt={featuredPost.title}
-                      fill
-                      priority
-                      sizes="(max-width: 1024px) 100vw, 64vw"
-                      className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.035]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/35 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-6 md:p-9">
-                      <p className="editorial-caption mb-4 text-gold">
-                        Featured story &middot; {formatDate(featuredPost.publishedAt)}
-                      </p>
-                      <h2 className="editorial-display max-w-4xl text-4xl font-light leading-[1] text-ivory drop-shadow-[0_8px_28px_rgba(0,0,0,0.55)] transition-colors group-hover:text-gold md:text-6xl">
-                        {featuredPost.title}
-                      </h2>
-                    </div>
-                  </div>
-                </Link>
-              )}
-              <div className="mt-10 max-w-3xl">
-                <p className="editorial-caption mb-4 text-gold">
-                  Featured story &middot; {formatDate(featuredPost.publishedAt)}
-                </p>
-                <p className="mt-6 text-base leading-[1.62] text-stone md:text-lg">
-                  {featuredPost.excerpt}
-                </p>
-                <Link
-                  href={`/blog/${featuredPost.slug}`}
-                  className="luxury-link mt-8"
-                >
-                  Read article
-                </Link>
-              </div>
-            </article>
+            <BlogCard post={featuredPost} variant="featured" />
 
             <aside className="space-y-10 lg:sticky lg:top-28">
               <div className="rounded-[1.5rem] border border-charcoal/10 bg-cream/70 p-6">

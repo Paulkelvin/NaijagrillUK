@@ -73,13 +73,13 @@ export default async function StoryPage() {
       </PageHero>
 
       <main className="bg-ivory">
-        <section className="mx-auto grid max-w-[1500px] gap-12 px-6 py-16 md:px-12 md:py-20 lg:grid-cols-[0.86fr_1.14fr] lg:px-16">
+        <section className="mx-auto grid max-w-[1500px] gap-10 px-6 py-12 md:px-12 md:py-14 lg:grid-cols-[0.86fr_1.14fr] lg:px-16">
           <div className="self-center">
-            <p className="editorial-caption mb-5 text-gold">The welcome</p>
-            <h2 className="editorial-display text-balance text-[clamp(2.55rem,5vw,5.4rem)] font-light leading-[0.96] text-charcoal">
+            <p className="editorial-caption mb-4 text-gold">The welcome</p>
+            <h2 className="editorial-display text-balance text-[clamp(2.1rem,3.6vw,3.6rem)] font-light leading-[0.98] text-charcoal">
               A Nigerian dining room with Birmingham in its rhythm.
             </h2>
-            <div className="mt-7 max-w-xl space-y-5 text-base leading-[1.65] text-stone md:text-lg">
+            <div className="mt-5 max-w-xl space-y-4 text-base leading-[1.6] text-stone">
               <p>
                 NaijaGrill began with the kind of cooking that fills a home
                 before anyone reaches the table: stock warming slowly, pepper
@@ -92,7 +92,7 @@ export default async function StoryPage() {
                 and every detail is shaped to let Nigerian flavour stand tall.
               </p>
             </div>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/menu" className="editorial-button">
                 Explore menu
               </Link>
@@ -103,7 +103,7 @@ export default async function StoryPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-[1.1fr_0.78fr]">
-            <div className="image-vignette-side relative min-h-[430px] overflow-hidden rounded-[2.3rem] bg-charcoal shadow-[0_28px_80px_rgba(22,15,11,0.14)]">
+            <div className="image-vignette-side relative min-h-[320px] overflow-hidden rounded-[2.3rem] bg-charcoal shadow-[0_28px_80px_rgba(22,15,11,0.14)]">
               <EditorialImage
                 src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1500&q=85"
                 alt="Grilled food served with warm restaurant lighting"
@@ -118,7 +118,7 @@ export default async function StoryPage() {
               </div>
             </div>
             <div className="grid gap-4">
-              <div className="image-vignette-side relative min-h-[205px] overflow-hidden rounded-[1.8rem] bg-charcoal">
+              <div className="image-vignette-side relative min-h-[150px] overflow-hidden rounded-[1.8rem] bg-charcoal">
                 <EditorialImage
                   src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1100&q=85"
                   alt="Guests dining in a warm restaurant room"

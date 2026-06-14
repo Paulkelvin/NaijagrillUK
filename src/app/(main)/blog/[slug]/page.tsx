@@ -106,13 +106,6 @@ export default async function BlogPostPage({ params }: PageProps) {
               <p className="mb-4 text-sm text-stone">
                 Explore more:{" "}
                 <Link
-                  href="/explore-nigerian-cuisine"
-                  className="text-charcoal underline decoration-gold/50 underline-offset-4"
-                >
-                  Nigerian cuisine guide
-                </Link>
-                {" · "}
-                <Link
                   href="/menu"
                   className="text-charcoal underline decoration-gold/50 underline-offset-4"
                 >

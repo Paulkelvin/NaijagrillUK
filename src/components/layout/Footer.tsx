@@ -34,10 +34,10 @@ export function Footer({ contact }: { contact: ContactInfoData }) {
                 Story
               </Link>
               <Link
-                href="/explore-nigerian-cuisine"
+                href="/events-catering"
                 className="transition-colors hover:text-gold"
               >
-                Explore
+                Events & Catering
               </Link>
               <Link
                 href="/reservations"

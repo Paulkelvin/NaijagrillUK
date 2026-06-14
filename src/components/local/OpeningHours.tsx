@@ -6,6 +6,17 @@ type OpeningHoursProps = {
   variant?: "inline" | "detailed";
 };
 
+function formatTime(value?: string) {
+  if (!value) return "";
+  const [hours, minutes] = value.split(":").map(Number);
+  if (Number.isNaN(hours)) return value;
+  const period = hours >= 12 ? "pm" : "am";
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  return minutes
+    ? `${hour12}:${String(minutes).padStart(2, "0")}${period}`
+    : `${hour12}${period}`;
+}
+
 export function OpeningHours({
   hours,
   className = "",
@@ -15,9 +26,7 @@ export function OpeningHours({
     return (
       <div className={className}>
         <p>{hours.summary}</p>
-        <p>
-          Lunch {hours.lunchHours} &middot; Dinner {hours.dinnerHours}
-        </p>
+        <p>{hours.lunchHours}</p>
       </div>
     );
   }
@@ -33,7 +42,7 @@ export function OpeningHours({
           <dd className="text-stone">
             {day.closed
               ? "Closed"
-              : `${day.open} — ${day.close}${day.service ? ` (${day.service})` : ""}`}
+              : `${formatTime(day.open)} — ${formatTime(day.close)}${day.service ? ` (${day.service})` : ""}`}
           </dd>
         </div>
       ))}

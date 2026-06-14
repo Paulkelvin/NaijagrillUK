@@ -36,7 +36,9 @@ export function NewsletterSignup({
           isDark ? "text-ivory" : "text-charcoal"
         }`}
       >
-        Get &pound;10 Off Your First Visit
+        {/* £10 welcome offer — temporarily disabled, bring back later */}
+        {/* Get &pound;10 Off Your First Visit */}
+        Join Our Newsletter
       </p>
       <p
         className={`${compact ? "mt-3" : "mt-4"} max-w-md text-sm leading-relaxed ${

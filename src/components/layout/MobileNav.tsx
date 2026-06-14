@@ -7,8 +7,7 @@ const navLinks = [
   { href: "/menu", label: "Menu" },
   { href: "/story", label: "Our Story" },
   { href: "/blog", label: "Journal" },
-  { href: "/explore-nigerian-cuisine", label: "Explore" },
-  { href: "/private-dining", label: "Events & Catering" },
+  { href: "/events-catering", label: "Events & Catering" },
   { href: "/reservations", label: "Reservations" },
   { href: "/contact", label: "Contact" },
 ];
@@ -52,8 +51,8 @@ export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
 
       <div
         id="mobile-menu"
-        className={`fixed inset-0 z-[55] bg-charcoal transition-opacity duration-500 ${
-          open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        className={`fixed inset-0 z-[55] bg-charcoal ${
+          open ? "pointer-events-auto visible" : "pointer-events-none invisible"
         }`}
         aria-hidden={!open}
       >

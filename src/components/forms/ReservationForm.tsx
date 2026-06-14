@@ -26,7 +26,7 @@ export function ReservationForm() {
 
   const inputClass =
     "mt-2 w-full border-b border-charcoal/20 bg-transparent py-2.5 text-charcoal outline-none transition-colors focus:border-gold";
-  const guestOptions = [2, 4, 6, 8, 10, 12, 15, 20, 30, 40, 50];
+  const guestOptions = [2, 4, 6, 8, 10, 12, 15, 20, 25];
   const visibleStep =
     state.fieldErrors?.date || state.fieldErrors?.guests
       ? 1

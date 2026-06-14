@@ -55,6 +55,6 @@ export async function submitNewsletter(
 
   return {
     success: true,
-    message: "Welcome. Your £10 off your first visit offer is on its way.",
+    message: "Welcome. You're on the list — thank you for subscribing.",
   };
 }

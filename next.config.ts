@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
         destination: "/studio/:path*",
         permanent: false,
       },
+      {
+        source: "/private-dining",
+        destination: "/events-catering",
+        permanent: true,
+      },
+      {
+        source: "/explore-nigerian-cuisine",
+        destination: "/menu",
+        permanent: true,
+      },
     ];
   },
   images: {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import { OpeningHours } from "@/components/local/OpeningHours";
+import { ReviewProof } from "@/components/reviews/ReviewProof";
 import type { HomepageData, OpeningHoursData } from "@/sanity/types";
 
 export function VisitSection({
@@ -10,8 +11,7 @@ export function VisitSection({
   data: HomepageData;
   hours: OpeningHoursData;
 }) {
-  const visitImage =
-    "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1600&q=85";
+  const visitImage = "/images/naija-grill-and-spice-table.jpg";
 
   return (
     <section className="bg-charcoal px-6 py-14 text-ivory md:px-12 md:py-20 lg:px-16">
@@ -47,6 +47,11 @@ export function VisitSection({
           >
             Make a reservation
           </Link>
+          <ReviewProof
+            variant="dark"
+            compact
+            className="mt-10 max-w-md border-t border-ivory/10 pt-8"
+          />
         </div>
       </div>
     </section>

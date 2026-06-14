@@ -38,7 +38,7 @@ export function PrivateDiningTeaser() {
             ))}
           </div>
           <div className="mt-7 flex flex-wrap items-center gap-5">
-            <Link href="/private-dining" className="editorial-button-dark">
+            <Link href="/events-catering" className="editorial-button-dark">
               Events & Catering
             </Link>
             <Link

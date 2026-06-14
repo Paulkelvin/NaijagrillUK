@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { EditorialFrame } from "@/components/ui/EditorialFrame";
 import { EditorialImage } from "@/components/ui/EditorialImage";
-import { SectionDivider } from "@/components/ui/SectionDivider";
 import type { HomepageData } from "@/sanity/types";
 
 export function StorySection({ data }: { data: HomepageData }) {
   return (
     <section className="bg-ivory">
       <div className="mx-auto max-w-[1500px] px-6 py-16 md:px-12 md:py-20 lg:px-16 lg:py-24">
-        <SectionDivider className="mb-10" />
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5 lg:pr-8">
             <p className="editorial-eyebrow-rule editorial-caption">

@@ -18,8 +18,7 @@ export const fallbackHomepage: HomepageData = {
   heroHeadline: "Fire, flavour,\nand the long table.",
   heroSubtext:
     "A premium dining room celebrating the depth of Nigerian cooking — slow smoke, bold spice, and the generosity of shared plates.",
-  heroImage:
-    "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?auto=format&fit=crop&w=2400&q=85",
+  heroImage: "/images/naija-grill-and-spice-hero.jpg",
   storyEyebrow: "Our Story",
   storyHeadline: "Not a trend.\nA tradition carried forward.",
   storyParagraphs: [
@@ -54,8 +53,7 @@ export const fallbackHomepage: HomepageData = {
   experienceHeadline: "An evening measured in conversation, not courses.",
   experienceBody:
     "Low light. Unhurried service. Music that sits beneath the room rather than above it. We design each service for guests who want to arrive, settle, and stay.",
-  experienceImage:
-    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=2400&q=85",
+  experienceImage: "/images/naija-grill-and-spice.jpg",
   visitHeadline: "Your table awaits.",
   visitImage:
     "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=85",
@@ -348,17 +346,17 @@ export const fallbackTestimonials: TestimonialData[] = [
 ];
 
 export const fallbackOpeningHours: OpeningHoursData = {
-  summary: "Tuesday — Saturday",
-  lunchHours: "12:00 — 15:00",
-  dinnerHours: "18:00 — 23:00",
+  summary: "Open every day · Sunday — Saturday",
+  lunchHours: "2pm — 11pm",
+  dinnerHours: "2pm — 11pm",
   schedule: [
-    { day: "Monday", closed: true },
-    { day: "Tuesday", open: "12:00", close: "23:00", service: "All Day" },
-    { day: "Wednesday", open: "12:00", close: "23:00", service: "All Day" },
-    { day: "Thursday", open: "12:00", close: "23:00", service: "All Day" },
-    { day: "Friday", open: "12:00", close: "23:00", service: "All Day" },
-    { day: "Saturday", open: "12:00", close: "23:00", service: "All Day" },
-    { day: "Sunday", closed: true },
+    { day: "Monday", open: "14:00", close: "23:00" },
+    { day: "Tuesday", open: "14:00", close: "23:00" },
+    { day: "Wednesday", open: "14:00", close: "23:00" },
+    { day: "Thursday", open: "14:00", close: "23:00" },
+    { day: "Friday", open: "14:00", close: "23:00" },
+    { day: "Saturday", open: "14:00", close: "23:00" },
+    { day: "Sunday", open: "14:00", close: "23:00" },
   ],
 };
 

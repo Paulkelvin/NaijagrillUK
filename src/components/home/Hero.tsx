@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
-import { ReviewProof } from "@/components/reviews/ReviewProof";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import type { HomepageData } from "@/sanity/types";
 
@@ -15,11 +14,12 @@ export function Hero({ data }: { data: HomepageData }) {
           sizes="100vw"
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-charcoal/25 via-transparent to-charcoal/55" />
+      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/92 via-charcoal/45 to-charcoal/40" />
+      <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/25 to-transparent" />
 
       <div className="relative flex min-h-screen flex-col justify-end px-6 pb-20 pt-36 md:px-12 md:pb-24 md:pt-40 lg:px-16">
         <div className="mx-auto w-full max-w-[1600px]">
-          <p className="editorial-eyebrow-rule editorial-caption image-text-contrast text-ivory/82">
+          <p className="editorial-eyebrow-rule editorial-caption image-text-contrast text-ivory">
             {data.heroEyebrow}
           </p>
           <h1 className="editorial-display image-text-contrast mt-8 max-w-4xl whitespace-pre-line text-[clamp(2.65rem,6.5vw,6.25rem)] font-light leading-[0.96] tracking-tight text-ivory">
@@ -42,11 +42,6 @@ export function Hero({ data }: { data: HomepageData }) {
               Order on Uber Eats
             </UberEatsLink>
           </div>
-          <ReviewProof
-            variant="dark"
-            compact
-            className="mt-8 max-w-xl border-l border-gold/45 pl-5"
-          />
         </div>
       </div>
     </section>

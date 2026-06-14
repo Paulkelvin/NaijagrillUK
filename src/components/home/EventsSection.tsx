@@ -26,7 +26,7 @@ export function EventsSection({ events }: { events: EventData[] }) {
               Supper clubs, celebrations, and room-filling nights.
             </h2>
           </div>
-          <Link href="/private-dining" className="luxury-link shrink-0 text-gold">
+          <Link href="/events-catering" className="luxury-link shrink-0 text-gold">
             Events & catering enquiries
           </Link>
         </div>

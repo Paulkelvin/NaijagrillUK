@@ -19,7 +19,7 @@ const contactCards = [
   {
     title: "Events & catering",
     body: "Planning a birthday, baby shower, wedding, naming ceremony, or catered celebration?",
-    href: "/private-dining",
+    href: "/events-catering",
     label: "Plan an event",
     icon: "M12 3 2 8l10 5 10-5-10-5Zm-7 8v5l7 4 7-4v-5l-7 3.5L5 11Z",
   },

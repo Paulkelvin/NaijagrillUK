@@ -45,18 +45,18 @@ export async function generateMetadata() {
     title: "Events & Catering",
     description:
       "Event booking and Nigerian catering services from NaijaGrill, Handsworth, Birmingham.",
-    path: "/private-dining",
+    path: "/events-catering",
   });
 }
 
-export default function PrivateDiningPage() {
+export default function EventsCateringPage() {
   return (
     <div className="bg-charcoal text-ivory">
       <JsonLd
         data={[
           breadcrumbSchema([
             { name: "Home", path: "/" },
-            { name: "Events & Catering", path: "/private-dining" },
+            { name: "Events & Catering", path: "/events-catering" },
           ]),
           cateringServiceSchema(),
         ]}

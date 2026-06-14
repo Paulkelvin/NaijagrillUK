@@ -2,7 +2,7 @@ import { CuisineEditorial } from "@/components/home/CuisineEditorial";
 import { ExperienceSection } from "@/components/home/ExperienceSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
-import { NewsletterSection } from "@/components/home/NewsletterSection";
+// import { NewsletterSection } from "@/components/home/NewsletterSection"; // £10 welcome offer — temporarily disabled
 import { PrivateDiningTeaser } from "@/components/home/PrivateDiningTeaser";
 import { StorySection } from "@/components/home/StorySection";
 import { Testimonials } from "@/components/home/Testimonials";
@@ -47,7 +47,8 @@ export default async function Home() {
       <ExperienceSection data={homepage} />
       <Testimonials items={testimonials} />
       <FaqSection />
-      <NewsletterSection />
+      {/* £10 welcome offer — temporarily disabled, bring back later */}
+      {/* <NewsletterSection /> */}
       <VisitSection data={homepage} hours={hours} />
     </>
   );
