@@ -402,6 +402,626 @@ export const fallbackBlogCategories: BlogCategoryData[] = [
 
 export const fallbackBlogPosts: BlogPostData[] = [
   {
+    _id: "post-best-nigerian-food-birmingham",
+    title: "Best Nigerian Food To Try In Birmingham",
+    slug: "best-nigerian-food-to-try-in-birmingham",
+    author: "NaijaGrill Kitchen",
+    excerpt:
+      "From smoky party jollof to charcoal suya, pepper soup, and small chops, here are the Nigerian dishes worth crossing Birmingham for — and where to eat them in Handsworth.",
+    featuredImage: "/images/menu/naijagrill-small-chops-platter.jpg",
+    category: fallbackBlogCategories[3],
+    publishedAt: "2026-06-10T09:00:00Z",
+    body: [
+      {
+        _type: "block",
+        _key: "bnf-intro",
+        style: "normal",
+        markDefs: [
+          {
+            _key: "bnf-l-restaurant",
+            _type: "link",
+            href: "/nigerian-restaurant-birmingham",
+          },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "bnf-i1",
+            text: "Birmingham is one of the best cities in the UK for Nigerian food, and Handsworth sits right at the heart of it. If you are new to the cuisine, this guide walks you through the dishes to order first at a ",
+          },
+          {
+            _type: "span",
+            _key: "bnf-i2",
+            marks: ["bnf-l-restaurant"],
+            text: "Nigerian restaurant in Birmingham",
+          },
+          {
+            _type: "span",
+            _key: "bnf-i3",
+            text: " — what they taste like, how spicy they are, and why locals keep coming back.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-h1",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnf-h1s", text: "Why Birmingham loves Nigerian food" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-b1",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "bnf-b1s",
+            text: "Birmingham has a large, proud West African community, and Nigerian cooking has become part of the city's everyday food culture. Expect bold spice, slow-cooked stews, charcoal-grilled meat, and generous plates designed to be shared. It is comfort food and celebration food at the same time.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-h2",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "bnf-h2s", text: "Party jollof rice" }],
+      },
+      {
+        _type: "block",
+        _key: "bnf-b2",
+        style: "normal",
+        markDefs: [
+          {
+            _key: "bnf-l-jollof",
+            _type: "link",
+            href: "/blog/what-is-jollof-rice-a-beginners-guide",
+          },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "bnf-b2a",
+            text: "If you only try one dish, make it jollof. Smoky, tomato-rich rice cooked party-style and served with plantain and your choice of protein, it is the centrepiece of every Nigerian table. New to it? Read our ",
+          },
+          {
+            _type: "span",
+            _key: "bnf-b2b",
+            marks: ["bnf-l-jollof"],
+            text: "beginner's guide to jollof rice",
+          },
+          { _type: "span", _key: "bnf-b2c", text: "." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-h3",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnf-h3s", text: "Suya from the charcoal grill" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-b3",
+        style: "normal",
+        markDefs: [
+          {
+            _key: "bnf-l-suya",
+            _type: "link",
+            href: "/blog/what-is-suya-everything-you-need-to-know",
+          },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "bnf-b3a",
+            text: "Suya is thinly sliced beef or chicken coated in spicy yaji peanut spice and grilled over charcoal. Aromatic, smoky, and a little fiery, it is perfect with cold drinks. Learn more in our ",
+          },
+          {
+            _type: "span",
+            _key: "bnf-b3b",
+            marks: ["bnf-l-suya"],
+            text: "complete guide to suya",
+          },
+          { _type: "span", _key: "bnf-b3c", text: "." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-h4",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnf-h4s", text: "Pepper soup and soups with swallow" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-b4",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "bnf-b4s",
+            text: "For something warming, order assorted meat pepper soup, or a classic soup-and-swallow such as poundo with egusi or efo riro. These dishes are deeply savoury and pair soft swallow with rich, spiced stews — the heart of home-style Nigerian cooking.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-h5",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnf-h5s", text: "Small chops for sharing" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-b5",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "bnf-b5s",
+            text: "Small chops — puff puff, peppered chicken, samosas, and spring rolls — are the Nigerian answer to sharing plates. They are ideal for a table of friends, a celebration, or an easy introduction to the flavours before your mains arrive.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-h6",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnf-h6s", text: "Where to eat in Handsworth, Birmingham" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnf-b6",
+        style: "normal",
+        markDefs: [
+          { _key: "bnf-l-menu", _type: "link", href: "/menu" },
+          { _key: "bnf-l-res", _type: "link", href: "/reservations" },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "bnf-b6a",
+            text: "NaijaGrill on Rookery Road brings these dishes together in one premium dining room. Browse the full ",
+          },
+          {
+            _type: "span",
+            _key: "bnf-b6b",
+            marks: ["bnf-l-menu"],
+            text: "Nigerian food menu",
+          },
+          { _type: "span", _key: "bnf-b6c", text: ", then " },
+          {
+            _type: "span",
+            _key: "bnf-b6d",
+            marks: ["bnf-l-res"],
+            text: "reserve a table",
+          },
+          {
+            _type: "span",
+            _key: "bnf-b6e",
+            text: " to try them for yourself.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "What Nigerian food should I try first in Birmingham?",
+        answer:
+          "Start with party jollof rice and suya. Jollof is the iconic smoky tomato rice, and suya is spiced charcoal-grilled meat — both are approachable, flavour-packed introductions to Nigerian cuisine.",
+      },
+      {
+        question: "Where can I eat Nigerian food in Birmingham?",
+        answer:
+          "NaijaGrill is a premium Nigerian restaurant at 77B Rookery Road, Handsworth, Birmingham B21 9QU, serving jollof, suya, pepper soup, soups with swallow, and small chops.",
+      },
+      {
+        question: "Is Nigerian food very spicy?",
+        answer:
+          "Many dishes carry warming heat from peppers and spice blends, but the level varies by dish. Milder options like jollof rice and small chops are great for first-timers, and the team can guide you.",
+      },
+      {
+        question: "Can I get Nigerian food delivered in Birmingham?",
+        answer:
+          "Yes. You can order NaijaGrill favourites for delivery on Uber Eats, or reserve a table to dine in at the restaurant in Handsworth.",
+      },
+    ],
+    seo: {
+      title: "Best Nigerian Food To Try In Birmingham | NaijaGrill",
+      description:
+        "A local guide to the best Nigerian food in Birmingham — jollof rice, suya, pepper soup, and small chops, plus where to eat in Handsworth.",
+    },
+  },
+  {
+    _id: "post-what-is-jollof-rice",
+    title: "What Is Jollof Rice? A Beginner's Guide",
+    slug: "what-is-jollof-rice-a-beginners-guide",
+    author: "NaijaGrill Kitchen",
+    excerpt:
+      "Jollof rice is West Africa's most famous dish — smoky, tomato-rich, and built for celebration. Here is what it is, where it comes from, and why everyone loves it.",
+    featuredImage:
+      "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+    category: fallbackBlogCategories[0],
+    publishedAt: "2026-06-05T09:00:00Z",
+    body: [
+      {
+        _type: "block",
+        _key: "jlf-intro",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "jlf-i1",
+            text: "Jollof rice is the most famous dish in West African cooking — and for good reason. It is smoky, savoury, gently spiced, and made to be shared. If you have never tried it, this beginner's guide explains exactly what jollof is and why it sits at the centre of every celebration.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "jlf-h1",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "jlf-h1s", text: "What is jollof rice?" }],
+      },
+      {
+        _type: "block",
+        _key: "jlf-b1",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "jlf-b1s",
+            text: "Jollof is long-grain rice cooked in a rich base of blended tomatoes, peppers, onions, and spices until every grain takes on colour and flavour. The best versions are finished over fire so the rice picks up a signature smoky depth. It is usually served with plantain and a protein such as chicken, beef, or fish.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "jlf-h2",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "jlf-h2s", text: "A short history of jollof" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "jlf-b2",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "jlf-b2s",
+            text: "Jollof traces back to the Senegambia region of West Africa and has since become a beloved staple across Nigeria, Ghana, and beyond. The friendly rivalry over whose jollof is best — the famous 'jollof wars' — is part of the fun, but every version shares the same soul: a deeply flavoured tomato-pepper rice.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "jlf-h3",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "jlf-h3s", text: "Key jollof ingredients" }],
+      },
+      {
+        _type: "block",
+        _key: "jlf-b3",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "jlf-b3s",
+            text: "The base is built from ripe tomatoes, red bell peppers, scotch bonnet, onions, and a blend of spices. Stock, bay leaves, and a little patience do the rest. The result is aromatic, slightly spicy rice with a colour that comes entirely from the slow-reduced sauce.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "jlf-h4",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "jlf-h4s", text: "Why people love jollof" }],
+      },
+      {
+        _type: "block",
+        _key: "jlf-b4",
+        style: "normal",
+        markDefs: [
+          {
+            _key: "jlf-l-best",
+            _type: "link",
+            href: "/blog/best-nigerian-food-to-try-in-birmingham",
+          },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "jlf-b4a",
+            text: "Jollof is comforting yet exciting, familiar yet endlessly variable. It works for a quiet dinner or a room full of guests, which is why it tops our list of the ",
+          },
+          {
+            _type: "span",
+            _key: "jlf-b4b",
+            marks: ["jlf-l-best"],
+            text: "best Nigerian food to try in Birmingham",
+          },
+          { _type: "span", _key: "jlf-b4c", text: "." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "jlf-h5",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "jlf-h5s", text: "How we cook jollof at NaijaGrill" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "jlf-b5",
+        style: "normal",
+        markDefs: [
+          { _key: "jlf-l-menu", _type: "link", href: "/menu" },
+          { _key: "jlf-l-res", _type: "link", href: "/reservations" },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "jlf-b5a",
+            text: "We build our base slowly and finish over wood fire for that unmistakable smoke. See it on our ",
+          },
+          {
+            _type: "span",
+            _key: "jlf-b5b",
+            marks: ["jlf-l-menu"],
+            text: "menu",
+          },
+          { _type: "span", _key: "jlf-b5c", text: ", or " },
+          {
+            _type: "span",
+            _key: "jlf-b5d",
+            marks: ["jlf-l-res"],
+            text: "reserve a table",
+          },
+          {
+            _type: "span",
+            _key: "jlf-b5e",
+            text: " in Handsworth to taste party jollof done properly.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is jollof rice spicy?",
+        answer:
+          "Jollof has a gentle, warming heat rather than a fierce one. The scotch bonnet adds depth and aroma more than fire, making it a great first Nigerian dish for most palates.",
+      },
+      {
+        question: "What is the difference between jollof rice and fried rice?",
+        answer:
+          "Jollof is cooked in a tomato-and-pepper base that flavours and colours the rice, while Nigerian fried rice is stir-fried with vegetables and spices and has a lighter, savoury profile.",
+      },
+      {
+        question: "Is jollof rice vegetarian?",
+        answer:
+          "The rice base itself can be vegetarian, though it is often cooked with meat stock and served with a protein. Ask the team about vegetarian options when you order.",
+      },
+      {
+        question: "Where can I order jollof rice in Birmingham?",
+        answer:
+          "You can order jollof from NaijaGrill in Handsworth for dine-in by reserving a table, or for delivery on Uber Eats.",
+      },
+    ],
+    seo: {
+      title: "What Is Jollof Rice? A Beginner's Guide | NaijaGrill",
+      description:
+        "What is jollof rice? Learn the history, ingredients, and why this smoky West African tomato rice is loved worldwide — and where to try it in Birmingham.",
+    },
+  },
+  {
+    _id: "post-what-is-suya",
+    title: "What Is Suya? Everything You Need To Know",
+    slug: "what-is-suya-everything-you-need-to-know",
+    author: "NaijaGrill Kitchen",
+    excerpt:
+      "Suya is Nigeria's iconic spiced, charcoal-grilled meat. Here is where it comes from, how it is made, what yaji spice is, and why it is so addictive.",
+    featuredImage:
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1400&q=85",
+    category: fallbackBlogCategories[0],
+    publishedAt: "2026-05-28T09:00:00Z",
+    body: [
+      {
+        _type: "block",
+        _key: "suy-intro",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "suy-i1",
+            text: "Suya is one of Nigeria's most loved street foods: thin slices of meat coated in a spicy peanut blend and grilled over charcoal. Smoky, nutty, and gently fiery, it is the kind of dish people crave again the moment they finish it. Here is everything you need to know.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "suy-h1",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "suy-h1s", text: "What is suya?" }],
+      },
+      {
+        _type: "block",
+        _key: "suy-b1",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "suy-b1s",
+            text: "Suya is spiced, skewered meat — usually beef, but also chicken — grilled over open charcoal. What makes it special is the yaji: a dry rub of ground peanuts, chilli, ginger, and spices that crusts the meat as it cooks. It is typically served with sliced onions, tomatoes, and extra spice on the side.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "suy-h2",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "suy-h2s", text: "The origins of suya" }],
+      },
+      {
+        _type: "block",
+        _key: "suy-b2",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "suy-b2s",
+            text: "Suya originates with the Hausa people of northern Nigeria and has spread across the country and West Africa as a beloved evening street food. Today you will find suya grills firing up after dark, the air thick with charcoal smoke and the scent of yaji.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "suy-h3",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "suy-h3s", text: "How suya is made" }],
+      },
+      {
+        _type: "block",
+        _key: "suy-b3",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "suy-b3s",
+            text: "The meat is sliced thin, threaded onto skewers, and coated generously in yaji. It is then grilled close to glowing charcoal so the spice toasts and the edges char. A final dusting of spice just before serving keeps the flavour sharp and aromatic.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "suy-h4",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "suy-h4s", text: "Yaji — the suya spice blend" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "suy-b4",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "suy-b4s",
+            text: "Yaji (also called suya spice) is the soul of the dish. It blends roasted, ground peanuts with cayenne, ginger, garlic, and other spices. The peanuts add savoury richness, while the chilli brings the heat that suya is famous for.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "suy-h5",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "suy-h5s", text: "Why suya is so popular" }],
+      },
+      {
+        _type: "block",
+        _key: "suy-b5",
+        style: "normal",
+        markDefs: [
+          {
+            _key: "suy-l-jollof",
+            _type: "link",
+            href: "/blog/what-is-jollof-rice-a-beginners-guide",
+          },
+          { _key: "suy-l-menu", _type: "link", href: "/menu" },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "suy-b5a",
+            text: "Suya hits every note: smoke, spice, crunch, and protein. It is perfect for sharing and pairs beautifully with jollof rice — see our ",
+          },
+          {
+            _type: "span",
+            _key: "suy-b5b",
+            marks: ["suy-l-jollof"],
+            text: "guide to jollof rice",
+          },
+          { _type: "span", _key: "suy-b5c", text: ". Find suya and more on our " },
+          {
+            _type: "span",
+            _key: "suy-b5d",
+            marks: ["suy-l-menu"],
+            text: "menu",
+          },
+          {
+            _type: "span",
+            _key: "suy-b5e",
+            text: ", available to dine in or order on Uber Eats.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "What meat is suya made from?",
+        answer:
+          "Suya is most often made with beef, but chicken suya is also popular. The meat is sliced thin, coated in yaji spice, and grilled over charcoal.",
+      },
+      {
+        question: "Is suya spicy?",
+        answer:
+          "Yes, suya has a noticeable kick from the chilli in the yaji spice, balanced by the savoury, nutty peanut base. You can usually ask for more or less spice.",
+      },
+      {
+        question: "What is the difference between suya and a kebab?",
+        answer:
+          "While both are skewered grilled meats, suya is defined by yaji — a peanut-and-chilli spice blend — and its charcoal smoke, giving it a distinctly nutty, spicy West African character.",
+      },
+      {
+        question: "Can I order suya for delivery in Birmingham?",
+        answer:
+          "Yes. You can order suya and other NaijaGrill favourites on Uber Eats, or reserve a table to enjoy it fresh off the grill in Handsworth.",
+      },
+    ],
+    seo: {
+      title: "What Is Suya? Everything You Need To Know | NaijaGrill",
+      description:
+        "What is suya? Discover the origins, preparation, and yaji spice behind Nigeria's iconic charcoal-grilled meat — and where to order it in Birmingham.",
+    },
+  },
+  {
     _id: "post-1",
     title: "Why Party Jollof Belongs on a Premium Table",
     slug: "why-party-jollof-belongs-on-a-premium-table",

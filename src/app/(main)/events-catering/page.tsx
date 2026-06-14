@@ -2,6 +2,7 @@ import { EventInquiryForm } from "@/components/forms/EventInquiryForm";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import { PageHero } from "@/components/ui/PageHero";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { SmoothScrollToHash } from "@/components/util/SmoothScrollToHash";
 import { buildMetadata } from "@/lib/seo/metadata";
 import {
   breadcrumbSchema,
@@ -52,6 +53,7 @@ export async function generateMetadata() {
 export default function EventsCateringPage() {
   return (
     <div className="bg-charcoal text-ivory">
+      <SmoothScrollToHash targetId="enquiry" />
       <JsonLd
         data={[
           breadcrumbSchema([
@@ -162,7 +164,7 @@ export default function EventsCateringPage() {
         </div>
       </section>
 
-      <section className="border-t border-ivory/10">
+      <section id="enquiry" className="scroll-mt-24 border-t border-ivory/10">
         <div className="mx-auto grid max-w-[1400px] gap-10 px-6 py-16 md:px-12 md:py-20 lg:grid-cols-[0.55fr_1fr] lg:px-16">
           <div>
             <p className="editorial-caption mb-4 text-gold">

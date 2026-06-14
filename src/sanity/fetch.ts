@@ -33,7 +33,6 @@ import {
   galleryImagesQuery,
   homepageQuery,
   menuItemsQuery,
-  openingHoursQuery,
   testimonialsQuery,
 } from "./queries";
 import type {
@@ -79,8 +78,10 @@ export async function getTestimonials(): Promise<TestimonialData[]> {
 }
 
 export async function getOpeningHours(): Promise<OpeningHoursData> {
-  const data = await fetchFromSanity<OpeningHoursData>(openingHoursQuery);
-  return data ?? fallbackOpeningHours;
+  // Opening hours are maintained in code (fallbackOpeningHours). The CMS
+  // openingHours document holds stale seed values, so the code source wins.
+  // To manage hours in Studio again, fetch and return CMS data here.
+  return fallbackOpeningHours;
 }
 
 export async function getContactInfo(): Promise<ContactInfoData> {
@@ -88,25 +89,34 @@ export async function getContactInfo(): Promise<ContactInfoData> {
   return data ?? fallbackContact;
 }
 
+function toPreview(post: BlogPostData): BlogPostPreview {
+  return {
+    _id: post._id,
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt,
+    featuredImage: post.featuredImage,
+    author: post.author,
+    publishedAt: post.publishedAt,
+    category: post.category,
+  };
+}
+
+function byNewest(a: BlogPostPreview, b: BlogPostPreview) {
+  return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+}
+
 export async function getBlogPosts(): Promise<BlogPostPreview[]> {
   const data = await fetchFromSanity<BlogPostPreview[]>(blogPostsQuery);
-  if (!data?.length) {
-    return fallbackBlogPosts.map((post) => ({
-      _id: post._id,
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.excerpt,
-      featuredImage: post.featuredImage,
-      author: post.author,
-      publishedAt: post.publishedAt,
-      category: post.category,
-    }));
-  }
-
-  return data.map((post) => {
+  const cmsPosts = (data ?? []).map((post) => {
     const fallback = fallbackBlogPosts.find((p) => p.slug === post.slug);
     return mergeBlogPreview(post, fallback);
   });
+  const cmsSlugs = new Set(cmsPosts.map((p) => p.slug));
+  const extraPosts = fallbackBlogPosts
+    .filter((post) => !cmsSlugs.has(post.slug))
+    .map(toPreview);
+  return [...cmsPosts, ...extraPosts].sort(byNewest);
 }
 
 export async function getBlogPost(slug: string): Promise<BlogPostData | null> {
@@ -141,25 +151,15 @@ export async function getBlogPostsByCategory(
     blogPostsByCategoryQuery,
     { category },
   );
-  if (data?.length) {
-    return data.map((post) => {
-      const fallback = fallbackBlogPosts.find((p) => p.slug === post.slug);
-      return mergeBlogPreview(post, fallback);
-    });
-  }
-
-  return fallbackBlogPosts
-    .filter((post) => post.category?.slug === category)
-    .map((post) => ({
-      _id: post._id,
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.excerpt,
-      featuredImage: post.featuredImage,
-      author: post.author,
-      publishedAt: post.publishedAt,
-      category: post.category,
-    }));
+  const cmsPosts = (data ?? []).map((post) => {
+    const fallback = fallbackBlogPosts.find((p) => p.slug === post.slug);
+    return mergeBlogPreview(post, fallback);
+  });
+  const cmsSlugs = new Set(cmsPosts.map((p) => p.slug));
+  const extraPosts = fallbackBlogPosts
+    .filter((post) => post.category?.slug === category && !cmsSlugs.has(post.slug))
+    .map(toPreview);
+  return [...cmsPosts, ...extraPosts].sort(byNewest);
 }
 
 export async function getBlogCategories(): Promise<BlogCategoryData[]> {
@@ -204,10 +204,14 @@ export async function getAllSlugs(): Promise<{
     events: { slug: string }[];
   }>(allSlugsQuery);
 
-  if (data) return data;
+  const sanityBlog = data?.blog ?? [];
+  const blogSlugs = new Set(sanityBlog.map((b) => b.slug));
+  const blog = [
+    ...sanityBlog,
+    ...fallbackBlogPosts
+      .filter((p) => !blogSlugs.has(p.slug))
+      .map((p) => ({ slug: p.slug })),
+  ];
 
-  return {
-    blog: fallbackBlogPosts.map((p) => ({ slug: p.slug })),
-    events: [],
-  };
+  return { blog, events: data?.events ?? [] };
 }

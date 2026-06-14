@@ -11,7 +11,7 @@ export function ExperienceSection({ data }: { data: HomepageData }) {
           sizes="100vw"
         />
       </div>
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(22,15,11,0.9),rgba(22,15,11,0.62),rgba(22,15,11,0.74))]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(22,15,11,0.72),rgba(22,15,11,0.26),rgba(22,15,11,0.48))]" />
 
       <div className="relative mx-auto flex min-h-[68vh] max-w-[1600px] items-end px-6 pb-16 md:px-12 lg:px-16 lg:pb-20">
         <div className="max-w-2xl border-l-2 border-gold/50 pl-10">

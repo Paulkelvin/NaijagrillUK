@@ -7,6 +7,7 @@ import { PrivateDiningTeaser } from "@/components/home/PrivateDiningTeaser";
 import { StorySection } from "@/components/home/StorySection";
 import { Testimonials } from "@/components/home/Testimonials";
 import { VisitSection } from "@/components/home/VisitSection";
+import { Reveal } from "@/components/ui/Reveal";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
@@ -41,15 +42,15 @@ export default async function Home() {
         data={breadcrumbSchema([{ name: "Home", path: "/" }])}
       />
       <Hero data={homepage} />
-      <StorySection data={homepage} />
-      <CuisineEditorial data={homepage} />
-      <PrivateDiningTeaser />
-      <ExperienceSection data={homepage} />
-      <Testimonials items={testimonials} />
-      <FaqSection />
+      <Reveal><StorySection data={homepage} /></Reveal>
+      <Reveal><CuisineEditorial data={homepage} /></Reveal>
+      <Reveal><PrivateDiningTeaser /></Reveal>
+      <Reveal><ExperienceSection data={homepage} /></Reveal>
+      <Reveal><Testimonials items={testimonials} /></Reveal>
+      <Reveal><FaqSection /></Reveal>
       {/* £10 welcome offer — temporarily disabled, bring back later */}
       {/* <NewsletterSection /> */}
-      <VisitSection data={homepage} hours={hours} />
+      <Reveal><VisitSection data={homepage} hours={hours} /></Reveal>
     </>
   );
 }

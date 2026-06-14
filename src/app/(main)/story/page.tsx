@@ -167,15 +167,15 @@ export default async function StoryPage() {
             <div className="relative order-2 grid gap-4 sm:grid-cols-2 lg:order-1">
               <div className="image-vignette relative min-h-[360px] overflow-hidden rounded-[2rem] bg-burgundy sm:translate-y-8">
                 <EditorialImage
-                  src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1300&q=85"
-                  alt="Restaurant service during dinner"
+                  src="/images/naija-grill-and-spice-room1.jpg"
+                  alt="The NaijaGrill dining room set for service"
                   sizes="(max-width: 1024px) 100vw, 28vw"
                 />
               </div>
               <div className="image-vignette-side relative min-h-[360px] overflow-hidden rounded-[2rem] bg-burgundy">
                 <EditorialImage
-                  src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1300&q=85"
-                  alt="A warmly lit restaurant table"
+                  src="/images/naija-grill-and-spice-room2.jpg"
+                  alt="Warm interior of the NaijaGrill restaurant"
                   sizes="(max-width: 1024px) 100vw, 28vw"
                 />
               </div>

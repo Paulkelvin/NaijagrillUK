@@ -7,12 +7,12 @@ const faqs = [
   {
     question: "Can you handle groups, events, or catering?",
     answer:
-      "Yes. For larger tables, birthdays, baby showers, graduations, weddings, naming ceremonies, and catering, send an event enquiry so the team can shape the food and pace around your occasion.",
+      "The restaurant seats up to around 25 guests, so smaller groups can dine in with a reservation. For anything larger, NaijaGrill offers full catering for any number of people — and can even arrange and plan the venue for you, like a complete event planner. Send an event and catering enquiry and the team will shape it around your occasion.",
   },
   {
-    question: "How spicy is the food?",
+    question: "Can I order NaijaGrill for delivery?",
     answer:
-      "Our cooking honours Nigerian heat, but the team can guide you through spice levels and recommend dishes that match your preference.",
+      "Yes. Order your favourites on Uber Eats for delivery across Birmingham, or reserve a table to dine in with us on Rookery Road.",
   },
   {
     question: "Where is NaijaGrill located?",
@@ -30,8 +30,8 @@ export function FaqSection() {
           Before you take your seat.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-base leading-[1.58] text-stone">
-          A few notes on reservations, spice, groups, and finding the dining
-          room in Handsworth.
+          A few notes on reservations, groups and catering, delivery, and
+          finding the dining room in Handsworth.
         </p>
       </div>
 

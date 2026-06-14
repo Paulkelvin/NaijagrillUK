@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArticleCta } from "@/components/blog/ArticleCta";
 import { FaqSection } from "@/components/blog/FaqSection";
 import { PortableTextContent } from "@/components/blog/PortableTextContent";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
@@ -99,6 +100,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           <div>
             <PortableTextContent value={post.body} />
             {post.faqs && <FaqSection faqs={post.faqs} />}
+            <ArticleCta />
             {post.relatedPosts && (
               <RelatedPosts posts={post.relatedPosts} />
             )}

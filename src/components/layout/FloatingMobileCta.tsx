@@ -6,7 +6,7 @@ import { BUSINESS, googleMapsDirectionsUrl } from "@/lib/business";
 
 export function FloatingMobileCta() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-charcoal/10 bg-ivory/95 backdrop-blur-sm lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 transform-gpu border-t border-charcoal/10 bg-ivory shadow-[0_-8px_28px_rgba(22,15,11,0.12)] [backface-visibility:hidden] lg:hidden">
       <div className="grid grid-cols-4 divide-x divide-charcoal/10">
         <a
           href={`tel:${BUSINESS.phone.replace(/\s/g, "")}`}

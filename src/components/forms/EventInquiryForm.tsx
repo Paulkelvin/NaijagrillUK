@@ -1,12 +1,27 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitEventInquiry } from "@/lib/actions/event-inquiries";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
 import { FormMessage } from "./FormMessage";
 
 const initialState: ActionResult = { success: false, message: "" };
+
+const EVENT_TYPES = [
+  "Wedding",
+  "Engagement",
+  "Naming ceremony",
+  "Birthday party",
+  "Baby shower",
+  "Graduation",
+  "Anniversary",
+  "Corporate event / trays",
+  "Family celebration",
+  "Church or community event",
+  "Catering only",
+  "Other",
+];
 
 export function EventInquiryForm({
   variant = "light",
@@ -18,6 +33,7 @@ export function EventInquiryForm({
       submitEventInquiry(formData),
     initialState,
   );
+  const [eventType, setEventType] = useState("");
 
   if (state.success) {
     return <FormMessage success message={state.message} />;
@@ -51,8 +67,37 @@ export function EventInquiryForm({
           label="Event or catering type"
           name="eventType"
           error={state.fieldErrors?.eventType}
-        />
+        >
+          <select
+            name="eventType"
+            value={eventType}
+            onChange={(event) => setEventType(event.target.value)}
+            className={inputClass}
+          >
+            <option value="">Select an option</option>
+            {EVENT_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </FormField>
       </div>
+
+      {eventType === "Other" && (
+        <FormField
+          variant={variant}
+          label="Please specify"
+          name="eventTypeOther"
+          error={state.fieldErrors?.eventTypeOther}
+        >
+          <input
+            name="eventTypeOther"
+            className={inputClass}
+            placeholder="Tell us the occasion"
+          />
+        </FormField>
+      )}
 
       <div className="grid gap-12 md:grid-cols-2">
         <FormField variant={variant} label="Preferred Date" name="eventDate" type="date" />

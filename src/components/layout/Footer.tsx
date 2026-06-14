@@ -85,12 +85,6 @@ export function Footer({ contact }: { contact: ContactInfoData }) {
           <p>&copy; {new Date().getFullYear()} {BUSINESS.legalName}</p>
           <div className="flex flex-wrap items-center gap-6">
             <p>Handsworth, Birmingham</p>
-            <Link
-              href="/studio"
-              className="transition-colors hover:text-gold"
-            >
-              Edit content
-            </Link>
           </div>
         </div>
       </div>

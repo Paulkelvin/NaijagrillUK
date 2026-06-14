@@ -21,7 +21,7 @@ export function calculateReadingTime(blocks: PortableTextBlock[]): number {
 export function extractHeadings(blocks: PortableTextBlock[]) {
   return blocks
     .filter((block) => block._type === "block" && "style" in block)
-    .map((block, index) => {
+    .map((block) => {
       if (!("style" in block) || !("children" in block)) return null;
       if (block.style !== "h2" && block.style !== "h3") return null;
 
@@ -37,7 +37,7 @@ export function extractHeadings(blocks: PortableTextBlock[]) {
         .replace(/\s+/g, "-");
 
       return {
-        id: `${id}-${index}`,
+        id,
         text,
         level: block.style === "h2" ? 2 : 3,
       };
