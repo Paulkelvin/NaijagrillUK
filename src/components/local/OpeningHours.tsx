@@ -32,11 +32,11 @@ export function OpeningHours({
   }
 
   return (
-    <dl className={`space-y-4 ${className}`}>
+    <dl className={`space-y-3 ${className}`}>
       {hours.schedule.map((day) => (
         <div
           key={day.day}
-          className="flex justify-between gap-8 border-b border-charcoal/10 pb-4 text-sm"
+          className="flex justify-between gap-8 border-b border-charcoal/10 pb-3 text-sm"
         >
           <dt className="editorial-caption text-charcoal">{day.day}</dt>
           <dd className="text-stone">

@@ -12,6 +12,7 @@ export const explorePage = defineType({
       title: "Hero Image",
       type: "image",
       options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
     }),
     defineField({
       name: "introduction",
@@ -39,6 +40,9 @@ export const explorePage = defineType({
               type: "image",
               title: "Image",
               options: { hotspot: true },
+              fields: [
+                defineField({ name: "alt", title: "Alt text", type: "string" }),
+              ],
             }),
             defineField({
               name: "imagePosition",

@@ -24,10 +24,15 @@ export function EditorialImage({
   const resolved = resolveImageSrc(src, 2400);
   if (!resolved) return null;
 
+  // Prefer alt text managed in Sanity (on the image object); fall back to the
+  // alt passed by the component.
+  const resolvedAlt =
+    src && typeof src === "object" && src.alt ? src.alt : alt;
+
   const image = (
     <Image
       src={resolved}
-      alt={alt}
+      alt={resolvedAlt}
       fill={fill}
       priority={priority}
       className={className}

@@ -54,6 +54,14 @@ export const fallbackHomepage: HomepageData = {
   experienceBody:
     "Low light. Unhurried service. Music that sits beneath the room rather than above it. We design each service for guests who want to arrive, settle, and stay.",
   experienceImage: "/images/naija-grill-and-spice-room2.jpg",
+  videoEyebrow: "On screen",
+  videoHeadline: "Naija Grill, in motion.",
+  videoBody:
+    "Watch the flavour, the fire, and the welcome that keeps Birmingham coming back to Rookery Road.",
+  videos: [
+    { url: "https://youtube.com/shorts/8jXilc8_Mps" },
+    { url: "https://youtu.be/sf_Vw5Qzm1A" },
+  ],
   visitHeadline: "Your table awaits.",
   visitImage:
     "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=85",

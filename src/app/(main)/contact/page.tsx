@@ -92,31 +92,31 @@ export default async function ContactPage() {
       </section>
 
       <section className="mx-auto grid max-w-[1500px] gap-10 px-6 pb-16 md:px-12 md:pb-20 lg:grid-cols-[1.18fr_0.82fr] lg:px-16">
-        <div className="rounded-[2rem] bg-cream/75 p-6 shadow-[0_24px_70px_rgba(22,15,11,0.08)] md:p-10 lg:p-12">
-          <p className="editorial-caption mb-4 text-gold">Message us</p>
-          <h2 className="editorial-display text-4xl font-light leading-[1] text-charcoal md:text-5xl">
+        <div className="rounded-[2rem] bg-cream/75 p-6 shadow-[0_24px_70px_rgba(22,15,11,0.08)] md:p-8 lg:p-10">
+          <p className="editorial-caption mb-3 text-gold">Message us</p>
+          <h2 className="editorial-display text-3xl font-light leading-[1] text-charcoal md:text-4xl">
             Tell us what you need.
           </h2>
-          <p className="mt-4 max-w-xl text-sm leading-[1.58] text-stone">
+          <p className="mt-3 max-w-xl text-sm leading-[1.58] text-stone">
             Send a note for questions, collaborations, press, or anything that
             needs a proper reply from the team.
           </p>
           <ContactForm />
         </div>
 
-        <aside className="rounded-[2rem] bg-charcoal p-8 text-ivory shadow-[0_24px_80px_rgba(22,15,11,0.18)] md:p-10">
-          <p className="editorial-caption mb-4 text-gold">Visit us</p>
-          <h2 className="editorial-display text-4xl font-light leading-[1] md:text-5xl">
+        <aside className="rounded-[2rem] bg-charcoal p-6 text-ivory shadow-[0_24px_80px_rgba(22,15,11,0.18)] md:p-8">
+          <p className="editorial-caption mb-3 text-gold">Visit us</p>
+          <h2 className="editorial-display text-3xl font-light leading-[1] md:text-4xl">
             77B Rookery Road, Handsworth.
           </h2>
-          <p className="mt-6 max-w-lg text-sm leading-[1.65] text-ivory/72">
+          <p className="mt-4 max-w-lg text-sm leading-[1.65] text-ivory/72">
             {contact.locationNote ??
               "Premium Nigerian dining in one of Birmingham's most vibrant neighbourhoods."}
           </p>
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2">
-            <div className="rounded-[1.25rem] bg-ivory/10 p-5">
-              <p className="editorial-caption mb-3 text-ivory/55">Email</p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-[1.25rem] bg-ivory/10 p-4">
+              <p className="editorial-caption mb-2 text-ivory/55">Email</p>
               <a
                 href={`mailto:${contact.email}`}
                 className="text-sm text-ivory transition-colors hover:text-gold"
@@ -125,8 +125,8 @@ export default async function ContactPage() {
               </a>
             </div>
             {contact.phone && (
-              <div className="rounded-[1.25rem] bg-ivory/10 p-5">
-                <p className="editorial-caption mb-3 text-ivory/55">Mobile</p>
+              <div className="rounded-[1.25rem] bg-ivory/10 p-4">
+                <p className="editorial-caption mb-2 text-ivory/55">Mobile</p>
                 <a
                   href={`tel:${contact.phone.replace(/\s/g, "")}`}
                   className="text-sm text-ivory transition-colors hover:text-gold"
@@ -136,8 +136,8 @@ export default async function ContactPage() {
               </div>
             )}
             {contact.landline && (
-              <div className="rounded-[1.25rem] bg-ivory/10 p-5">
-                <p className="editorial-caption mb-3 text-ivory/55">Landline</p>
+              <div className="rounded-[1.25rem] bg-ivory/10 p-4">
+                <p className="editorial-caption mb-2 text-ivory/55">Landline</p>
                 <a
                   href={`tel:${contact.landline.replace(/\s/g, "")}`}
                   className="text-sm text-ivory transition-colors hover:text-gold"
@@ -148,8 +148,8 @@ export default async function ContactPage() {
             )}
           </div>
 
-          <div className="mt-8 rounded-[1.5rem] bg-ivory p-6 text-charcoal">
-            <p className="editorial-caption mb-5 text-gold">Opening hours</p>
+          <div className="mt-6 rounded-[1.5rem] bg-ivory p-5 text-charcoal">
+            <p className="editorial-caption mb-4 text-gold">Opening hours</p>
             <OpeningHours hours={hours} variant="detailed" />
           </div>
         </aside>

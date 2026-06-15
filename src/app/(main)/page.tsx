@@ -5,6 +5,7 @@ import { Hero } from "@/components/home/Hero";
 import { JournalSection } from "@/components/home/JournalSection";
 // import { NewsletterSection } from "@/components/home/NewsletterSection"; // £10 welcome offer — temporarily disabled
 import { PrivateDiningTeaser } from "@/components/home/PrivateDiningTeaser";
+import { PromoVideoSection } from "@/components/home/PromoVideoSection";
 import { StorySection } from "@/components/home/StorySection";
 import { Testimonials } from "@/components/home/Testimonials";
 import { VisitSection } from "@/components/home/VisitSection";
@@ -49,6 +50,7 @@ export default async function Home() {
       <Reveal><CuisineEditorial data={homepage} /></Reveal>
       <Reveal><PrivateDiningTeaser /></Reveal>
       <Reveal><ExperienceSection data={homepage} /></Reveal>
+      <Reveal><PromoVideoSection data={homepage} /></Reveal>
       <Reveal><Testimonials items={testimonials} /></Reveal>
       <Reveal><JournalSection posts={posts} /></Reveal>
       <Reveal><FaqSection /></Reveal>

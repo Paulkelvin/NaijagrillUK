@@ -38,8 +38,11 @@ export function PrivateDiningTeaser() {
             ))}
           </div>
           <div className="mt-7 flex flex-wrap items-center gap-5">
-            <Link href="/events-catering#enquiry" className="editorial-button-dark">
-              Events & Catering
+            <Link
+              href="/events-catering#enquiry"
+              className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-4 text-[0.6875rem] font-black uppercase tracking-[0.22em] text-charcoal shadow-[0_18px_44px_rgba(0,0,0,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-ivory"
+            >
+              Plan your event
             </Link>
             <Link
               href="/contact"

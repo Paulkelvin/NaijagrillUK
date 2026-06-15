@@ -27,6 +27,7 @@ export const homepage = defineType({
       title: "Hero Image",
       type: "image",
       options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
     }),
     defineField({
       name: "storyEyebrow",
@@ -50,6 +51,7 @@ export const homepage = defineType({
       title: "Story Image",
       type: "image",
       options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
     }),
     defineField({
       name: "cuisineEyebrow",
@@ -77,6 +79,9 @@ export const homepage = defineType({
               type: "image",
               title: "Image",
               options: { hotspot: true },
+              fields: [
+                defineField({ name: "alt", title: "Alt text", type: "string" }),
+              ],
             }),
             defineField({
               name: "align",
@@ -115,6 +120,44 @@ export const homepage = defineType({
       title: "Experience Image",
       type: "image",
       options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
+    }),
+    defineField({
+      name: "videoEyebrow",
+      title: "Video Eyebrow",
+      type: "string",
+    }),
+    defineField({
+      name: "videoHeadline",
+      title: "Video Headline",
+      type: "string",
+    }),
+    defineField({
+      name: "videoBody",
+      title: "Video Body",
+      type: "text",
+      rows: 3,
+    }),
+    defineField({
+      name: "videos",
+      title: "Homepage Videos",
+      description:
+        "Paste one or more YouTube links (Short, watch, or youtu.be). Leave empty to hide the homepage video section.",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({ name: "url", title: "YouTube URL", type: "url" }),
+            defineField({
+              name: "title",
+              title: "Caption (optional)",
+              type: "string",
+            }),
+          ],
+          preview: { select: { title: "title", subtitle: "url" } },
+        },
+      ],
     }),
     defineField({
       name: "visitHeadline",
@@ -126,6 +169,7 @@ export const homepage = defineType({
       title: "Visit Image",
       type: "image",
       options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
     }),
     defineField({
       name: "seo",

@@ -33,6 +33,7 @@ export const menuItem = defineType({
       title: "Image",
       type: "image",
       options: { hotspot: true },
+      fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
     }),
     defineField({
       name: "localImage",

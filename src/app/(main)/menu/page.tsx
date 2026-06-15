@@ -399,12 +399,6 @@ function menuPageSchema(items: MenuDish[]) {
           name: item.title,
           description: item.description,
           image: absoluteImageUrl(item.image),
-          offers: {
-            "@type": "Offer",
-            priceCurrency: "GBP",
-            price: item.price.replace("from £", ""),
-            url: BUSINESS.order.uberEatsUrl,
-          },
         })),
     })),
   };
@@ -616,7 +610,7 @@ export default async function MenuPage() {
           </div>
 
           <div className="delivery-marquee overflow-hidden pb-2">
-            <div className="delivery-marquee-track flex w-max gap-5">
+            <div className="delivery-marquee-track flex w-max gap-5 pr-5">
               {[...deliveryItems, ...deliveryItems].map((item, index) => (
                 <article
                   key={`${item.title}-${index}`}
@@ -777,7 +771,7 @@ export default async function MenuPage() {
           </h2>
         </div>
         <div className="menu-gallery overflow-hidden">
-          <div className="menu-gallery-track flex w-max gap-4 md:gap-5">
+          <div className="menu-gallery-track flex w-max gap-4 pr-4 md:gap-5 md:pr-5">
             {[...menuGalleryImages, ...menuGalleryImages].map((item, index) => (
               <figure
                 key={`${item.src}-${index}`}

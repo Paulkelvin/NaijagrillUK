@@ -34,6 +34,10 @@ export type HomepageData = {
   experienceHeadline: string;
   experienceBody: string;
   experienceImage?: SanityImage | string;
+  videoEyebrow?: string;
+  videoHeadline?: string;
+  videoBody?: string;
+  videos?: { url: string; title?: string }[];
   visitHeadline: string;
   visitImage?: SanityImage | string;
   seo?: SeoMetadata;
