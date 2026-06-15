@@ -2,6 +2,7 @@ import { ReservationForm } from "@/components/forms/ReservationForm";
 import { ReviewProof } from "@/components/reviews/ReviewProof";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PageHero } from "@/components/ui/PageHero";
+import { SmoothScrollToHash } from "@/components/util/SmoothScrollToHash";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import Link from "next/link";
@@ -21,6 +22,7 @@ export default async function ReservationsPage() {
 
   return (
     <div className="bg-ivory">
+      <SmoothScrollToHash targetId="reserve" />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", path: "/" },
@@ -36,7 +38,10 @@ export default async function ReservationsPage() {
         heightClassName="min-h-[62vh]"
       />
 
-      <section className="mx-auto max-w-[1300px] px-6 py-14 md:px-12 md:py-18 lg:px-16">
+      <section
+        id="reserve"
+        className="mx-auto max-w-[1300px] scroll-mt-24 px-6 py-14 md:px-12 md:py-18 lg:px-16"
+      >
         <div className="grid gap-8 rounded-[2rem] bg-cream/75 p-5 shadow-[0_24px_70px_rgba(22,15,11,0.08)] md:p-8 lg:grid-cols-[0.75fr_1fr] lg:p-10">
           <aside className="order-2 lg:order-1">
             <p className="editorial-caption mb-3 text-gold">

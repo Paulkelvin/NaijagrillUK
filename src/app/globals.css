@@ -63,6 +63,11 @@ body::before {
     @apply text-[0.6875rem] uppercase tracking-[0.24em] text-stone;
   }
 
+  /* High-contrast caption for use over dark images/hero backgrounds */
+  .editorial-caption-light {
+    @apply text-[0.6875rem] font-semibold uppercase tracking-[0.24em] text-gold;
+  }
+
   .editorial-display {
     font-family: var(--font-display), Georgia, serif;
     letter-spacing: -0.015em;
@@ -278,6 +283,20 @@ body::before {
   }
   to {
     transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/*
+ * Prevent mobile browsers (notably iOS Safari) from auto-zooming when a form
+ * or search field is focused. Form controls default to a font-size below 16px,
+ * which triggers the zoom; forcing 16px on touch devices stops it without
+ * disabling pinch-to-zoom. Unlayered so it wins over Tailwind text utilities.
+ */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
   }
 }
 

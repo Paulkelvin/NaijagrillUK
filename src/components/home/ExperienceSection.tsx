@@ -15,7 +15,7 @@ export function ExperienceSection({ data }: { data: HomepageData }) {
 
       <div className="relative mx-auto flex min-h-[68vh] max-w-[1600px] items-end px-6 pb-16 md:px-12 lg:px-16 lg:pb-20">
         <div className="max-w-2xl border-l-2 border-gold/50 pl-10">
-          <p className="editorial-caption image-text-contrast mb-5 text-ivory">
+          <p className="editorial-caption-light image-text-contrast mb-5">
             {data.experienceEyebrow}
           </p>
           <h2 className="editorial-display image-text-contrast text-[clamp(2rem,5vw,4.5rem)] font-light leading-[0.98] text-ivory">

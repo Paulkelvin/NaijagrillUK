@@ -22,7 +22,7 @@ export function BlogCard({
       >
         <div
           className={`relative ${
-            isFeatured ? "aspect-[16/10] sm:aspect-[2/1]" : "aspect-[4/5]"
+            isFeatured ? "aspect-[16/10] sm:aspect-[2/1]" : "aspect-[6/7]"
           }`}
         >
           {imageSrc && (
@@ -41,7 +41,7 @@ export function BlogCard({
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/60 to-charcoal/15" />
           <div className="absolute inset-x-0 bottom-0 p-6 md:p-7">
-            <p className="editorial-caption mb-3 text-gold drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]">
+            <p className="editorial-caption-light mb-3 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
               {post.category?.title ?? "Journal"} &middot;{" "}
               {formatDate(post.publishedAt)}
             </p>

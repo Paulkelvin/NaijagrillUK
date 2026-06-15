@@ -74,7 +74,7 @@ export function EventsSection({ events }: { events: EventData[] }) {
                   {event.excerpt}
                 </p>
                 <Link
-                  href="/reservations"
+                  href="/reservations#reserve"
                   className="mt-8 inline-flex rounded-full border border-gold/45 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-gold transition-colors hover:bg-gold hover:text-charcoal"
                 >
                   Reserve for this evening

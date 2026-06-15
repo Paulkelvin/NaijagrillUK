@@ -127,7 +127,7 @@ export default async function NigerianRestaurantBirminghamPage() {
       >
         <div className="flex flex-wrap gap-4">
           <Link
-            href="/reservations"
+            href="/reservations#reserve"
             className="inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal transition-transform hover:-translate-y-0.5"
           >
             Reserve a table
@@ -302,7 +302,7 @@ export default async function NigerianRestaurantBirminghamPage() {
         </h2>
         <div className="mt-9 flex flex-wrap justify-center gap-4">
           <Link
-            href="/reservations"
+            href="/reservations#reserve"
             className="inline-flex rounded-full bg-gold px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-charcoal"
           >
             Reserve a table

@@ -42,7 +42,7 @@ export function VisitSection({
             77B Rookery Road, Handsworth, Birmingham
           </p>
           <Link
-            href="/reservations"
+            href="/reservations#reserve"
             className="mt-9 inline-block text-[0.6875rem] uppercase tracking-[0.28em] text-gold transition-opacity duration-300 hover:opacity-70"
           >
             Make a reservation

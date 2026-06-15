@@ -14,7 +14,7 @@ export function ArticleCta() {
       </p>
       <div className="mt-7 flex flex-wrap gap-4">
         <Link
-          href="/reservations"
+          href="/reservations#reserve"
           className="inline-flex rounded-full bg-gold px-7 py-4 text-[0.6875rem] font-black uppercase tracking-[0.22em] text-charcoal transition-all duration-300 hover:-translate-y-0.5 hover:bg-ivory"
         >
           Reserve a table

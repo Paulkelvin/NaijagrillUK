@@ -53,7 +53,7 @@ export const fallbackHomepage: HomepageData = {
   experienceHeadline: "An evening measured in conversation, not courses.",
   experienceBody:
     "Low light. Unhurried service. Music that sits beneath the room rather than above it. We design each service for guests who want to arrive, settle, and stay.",
-  experienceImage: "/images/naija-grill-and-spice.jpg",
+  experienceImage: "/images/naija-grill-and-spice-room2.jpg",
   visitHeadline: "Your table awaits.",
   visitImage:
     "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=85",
@@ -1161,8 +1161,7 @@ export const fallbackGalleryImages: GalleryImageData[] = [
   {
     _id: "gal-1",
     title: "Jollof service",
-    image:
-      "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1400&q=85",
+    image: "/images/menu/jollof-rice.jpeg",
     alt: "Party jollof served at the table",
     caption: "Party jollof — the centrepiece of every service",
     order: 1,
@@ -1179,8 +1178,7 @@ export const fallbackGalleryImages: GalleryImageData[] = [
   {
     _id: "gal-3",
     title: "The dining room",
-    image:
-      "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=85",
+    image: "/images/naija-grill-and-spice-room2.jpg",
     alt: "Warm dining room interior",
     caption: "An evening measured in conversation",
     order: 3,

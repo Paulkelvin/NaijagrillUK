@@ -25,7 +25,7 @@ export function FloatingMobileCta() {
           Directions
         </a>
         <Link
-          href="/reservations"
+          href="/reservations#reserve"
           className="flex flex-col items-center gap-1 py-4 text-[0.625rem] uppercase tracking-[0.22em] text-gold transition-opacity hover:opacity-70"
         >
           <span aria-hidden>◆</span>

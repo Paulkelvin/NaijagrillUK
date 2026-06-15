@@ -96,7 +96,7 @@ export default async function StoryPage() {
               <Link href="/menu" className="editorial-button">
                 Explore menu
               </Link>
-              <Link href="/reservations" className="editorial-button-dark bg-charcoal">
+              <Link href="/reservations#reserve" className="editorial-button-dark bg-charcoal">
                 Reserve a table
               </Link>
             </div>
@@ -172,10 +172,10 @@ export default async function StoryPage() {
                   sizes="(max-width: 1024px) 100vw, 28vw"
                 />
               </div>
-              <div className="image-vignette-side relative min-h-[360px] overflow-hidden rounded-[2rem] bg-burgundy">
+              <div className="image-vignette-side relative min-h-[360px] overflow-hidden rounded-[2rem] bg-charcoal">
                 <EditorialImage
-                  src="/images/naija-grill-and-spice-room2.jpg"
-                  alt="Warm interior of the NaijaGrill restaurant"
+                  src="/images/naija-grill-and-spice-logo.jpg"
+                  alt="Naija Grill & Spice Kitchen neon logo"
                   sizes="(max-width: 1024px) 100vw, 28vw"
                 />
               </div>

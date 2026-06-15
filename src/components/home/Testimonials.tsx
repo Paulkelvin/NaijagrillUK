@@ -33,7 +33,7 @@ function QuoteCard({
 }) {
   return (
     <figure
-      className="smooth-card-motion flex min-h-[360px] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-[1.9rem] border border-charcoal/10 bg-ivory p-6 shadow-[0_28px_90px_rgba(22,15,11,0.12)] hover:-translate-y-1 md:w-[410px] lg:w-[455px]"
+      className="smooth-card-motion flex min-h-[360px] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-[1.9rem] border border-charcoal/10 bg-ivory p-6 hover:-translate-y-1 md:w-[410px] lg:w-[455px]"
     >
       <div>
         <div className="mb-6 flex items-center justify-between gap-4">

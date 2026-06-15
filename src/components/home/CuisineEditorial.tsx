@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 import { EditorialFrame } from "@/components/ui/EditorialFrame";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import type { HomepageData } from "@/sanity/types";
@@ -25,94 +22,12 @@ function imageForCuisineFeature(feature: HomepageData["cuisineFeatures"][number]
 }
 
 export function CuisineEditorial({ data }: { data: HomepageData }) {
-  const movingFeatures = [...data.cuisineFeatures, ...data.cuisineFeatures];
-  const scrollerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let raf = 0;
-    let paused = false;
-    let dragging = false;
-    let startX = 0;
-    let startScroll = 0;
-    let resumeTimer: number | undefined;
-    const speed = 0.5;
-
-    const half = () => el.scrollWidth / 2;
-    const wrap = () => {
-      const h = half();
-      if (h <= 0) return;
-      if (el.scrollLeft >= h) el.scrollLeft -= h;
-      else if (el.scrollLeft <= 0) el.scrollLeft += h;
-    };
-
-    const tick = () => {
-      if (!paused && !dragging) {
-        el.scrollLeft += speed;
-        wrap();
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    const pause = () => {
-      paused = true;
-      if (resumeTimer) window.clearTimeout(resumeTimer);
-    };
-    const resumeSoon = () => {
-      if (resumeTimer) window.clearTimeout(resumeTimer);
-      resumeTimer = window.setTimeout(() => {
-        paused = false;
-      }, 1400);
-    };
-
-    const onPointerDown = (e: PointerEvent) => {
-      dragging = true;
-      startX = e.clientX;
-      startScroll = el.scrollLeft;
-      pause();
-    };
-    const onPointerMove = (e: PointerEvent) => {
-      if (!dragging) return;
-      el.scrollLeft = startScroll - (e.clientX - startX);
-    };
-    const onPointerUp = () => {
-      dragging = false;
-      wrap();
-      resumeSoon();
-    };
-
-    el.addEventListener("pointerdown", onPointerDown);
-    el.addEventListener("pointermove", onPointerMove);
-    el.addEventListener("pointerup", onPointerUp);
-    el.addEventListener("pointercancel", onPointerUp);
-    el.addEventListener("pointerleave", onPointerUp);
-    el.addEventListener("mouseenter", pause);
-    el.addEventListener("mouseleave", resumeSoon);
-    el.addEventListener("touchstart", pause, { passive: true });
-    el.addEventListener("touchend", resumeSoon, { passive: true });
-    el.addEventListener("wheel", () => {
-      pause();
-      resumeSoon();
-    }, { passive: true });
-
-    return () => {
-      cancelAnimationFrame(raf);
-      if (resumeTimer) window.clearTimeout(resumeTimer);
-      el.removeEventListener("pointerdown", onPointerDown);
-      el.removeEventListener("pointermove", onPointerMove);
-      el.removeEventListener("pointerup", onPointerUp);
-      el.removeEventListener("pointercancel", onPointerUp);
-      el.removeEventListener("pointerleave", onPointerUp);
-      el.removeEventListener("mouseenter", pause);
-      el.removeEventListener("mouseleave", resumeSoon);
-      el.removeEventListener("touchstart", pause);
-      el.removeEventListener("touchend", resumeSoon);
-    };
-  }, []);
+  // Repeat the features so each half of the marquee track is wide enough to
+  // overflow the viewport, then duplicate for a seamless -50% loop.
+  const base = data.cuisineFeatures;
+  const repeat = Math.max(1, Math.ceil(4 / Math.max(1, base.length)));
+  const half = Array.from({ length: repeat }).flatMap(() => base);
+  const movingFeatures = [...half, ...half];
 
   return (
     <section className="bg-cream">
@@ -131,11 +46,8 @@ export function CuisineEditorial({ data }: { data: HomepageData }) {
           </div>
         </div>
 
-        <div
-          ref={scrollerRef}
-          className="no-scrollbar cursor-grab overflow-x-auto overscroll-x-contain active:cursor-grabbing"
-        >
-          <div className="flex w-max gap-6 pr-6">
+        <div className="kitchen-marquee overflow-hidden">
+          <div className="kitchen-marquee-track flex w-max gap-6 pr-6">
             {movingFeatures.map((feature, index) => (
               <article
                 key={`${feature.title}-${index}`}

@@ -452,7 +452,7 @@ export default async function MenuPage() {
                 Order on Uber Eats
               </UberEatsLink>
               <Link
-                href="/reservations"
+                href="/reservations#reserve"
                 className="inline-flex rounded-full border border-ivory/25 bg-ivory/10 px-7 py-4 text-sm font-bold uppercase tracking-[0.16em] text-ivory backdrop-blur transition-colors hover:bg-ivory hover:text-charcoal"
               >
                 Reserve a table
@@ -481,9 +481,6 @@ export default async function MenuPage() {
                   <h2 className="mt-1 text-lg font-black leading-tight">
                     {item.title}
                   </h2>
-                  <p className="mt-1 text-sm font-semibold text-ivory/75">
-                    {item.price}
-                  </p>
                 </div>
               </article>
             ))}
@@ -542,14 +539,9 @@ export default async function MenuPage() {
                 </span>
               </div>
               <div className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <h3 className="text-2xl font-black leading-tight text-charcoal">
-                    {item.title}
-                  </h3>
-                  <p className="shrink-0 rounded-full bg-gold/20 px-3 py-1 text-sm font-black text-burgundy">
-                    {item.price}
-                  </p>
-                </div>
+                <h3 className="text-2xl font-black leading-tight text-charcoal">
+                  {item.title}
+                </h3>
                 <p className="mt-4 text-sm leading-[1.7] text-stone">
                   {item.description}
                 </p>
@@ -608,9 +600,6 @@ export default async function MenuPage() {
                   <h3 className="text-xl font-black leading-tight">
                     {item.title}
                   </h3>
-                  <p className="mt-2 text-sm font-bold text-gold">
-                    {item.price}
-                  </p>
                 </div>
               </article>
             ))}
@@ -674,14 +663,9 @@ export default async function MenuPage() {
                           />
                         </div>
                         <div>
-                          <div className="flex items-start justify-between gap-3">
-                            <h4 className="font-black leading-tight text-charcoal">
-                              {item.title}
-                            </h4>
-                            <p className="shrink-0 text-sm font-black text-burgundy">
-                              {item.price}
-                            </p>
-                          </div>
+                          <h4 className="font-black leading-tight text-charcoal">
+                            {item.title}
+                          </h4>
                           <p className="mt-2 line-clamp-2 text-sm leading-[1.45] text-stone">
                             {item.description}
                           </p>
@@ -689,6 +673,16 @@ export default async function MenuPage() {
                       </article>
                     ))}
                   </div>
+
+                  <UberEatsLink
+                    label={`Menu category ${section.label}`}
+                    className="mt-6 inline-flex items-center gap-2.5 rounded-full bg-charcoal px-6 py-3.5 text-xs font-black uppercase tracking-[0.16em] text-ivory transition-transform hover:-translate-y-0.5"
+                  >
+                    <span className="rounded-full bg-gold px-2 py-0.5 text-[0.6rem] tracking-[0.12em] text-charcoal">
+                      Uber Eats
+                    </span>
+                    Order {section.label}
+                  </UberEatsLink>
                 </section>
               );
             })}
@@ -756,7 +750,7 @@ export default async function MenuPage() {
             Order on Uber Eats
           </UberEatsLink>
           <Link
-            href="/reservations"
+            href="/reservations#reserve"
             className="inline-flex rounded-full border border-ivory/20 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-ivory transition-colors hover:bg-ivory hover:text-charcoal"
           >
             Reserve your table
