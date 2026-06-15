@@ -120,8 +120,8 @@ export default async function StoryPage() {
             <div className="grid gap-4">
               <div className="image-vignette-side relative min-h-[150px] overflow-hidden rounded-[1.8rem] bg-charcoal">
                 <EditorialImage
-                  src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1100&q=85"
-                  alt="Guests dining in a warm restaurant room"
+                  src="/images/Naija-grill-and-spice-front.webp"
+                  alt="The NaijaGrill storefront on Rookery Road, Handsworth"
                   sizes="(max-width: 768px) 100vw, 24vw"
                 />
               </div>
@@ -174,8 +174,8 @@ export default async function StoryPage() {
               </div>
               <div className="image-vignette-side relative min-h-[360px] overflow-hidden rounded-[2rem] bg-charcoal">
                 <EditorialImage
-                  src="/images/naija-grill-and-spice-logo.jpg"
-                  alt="Naija Grill & Spice Kitchen neon logo"
+                  src="/images/naija-grill-and-spice-table.jpg"
+                  alt="A NaijaGrill dining table set for service"
                   sizes="(max-width: 1024px) 100vw, 28vw"
                 />
               </div>
