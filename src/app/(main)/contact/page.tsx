@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { OpeningHours } from "@/components/local/OpeningHours";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PageHero } from "@/components/ui/PageHero";
-import { googleMapsEmbedQuery } from "@/lib/business";
+import { BUSINESS, googleMapsEmbedQuery } from "@/lib/business";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import { getContactInfo, getOpeningHours } from "@/sanity/fetch";
@@ -12,7 +12,7 @@ const contactCards = [
   {
     title: "Reserve a table",
     body: "Best for lunch, dinner, family meals, and group tables in the restaurant.",
-    href: "/reservations",
+    href: "/reservations#reserve",
     label: "Book online",
     icon: "M7 2v2H5a2 2 0 0 0-2 2v13h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm12 8H5v7h14v-7Z",
   },
@@ -26,7 +26,7 @@ const contactCards = [
   {
     title: "Speak to us",
     body: "For press, partnerships, and direct questions before you visit.",
-    href: "mailto:hello@naijagrill.co.uk",
+    href: `mailto:${BUSINESS.email}`,
     label: "Email the team",
     icon: "M3 5h18v14H3V5Zm2 3.2V17h14V8.2l-7 4.4-7-4.4Zm14-1.1H5l7 4.4 7-4.4Z",
   },

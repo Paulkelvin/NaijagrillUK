@@ -91,6 +91,41 @@ const menuSections: MenuSection[] = [
   },
 ];
 
+const menuGalleryImages = [
+  {
+    src: "/images/menu/naijagrill-jollof-rice-assorted-meat-egg.jpg",
+    alt: "Party jollof rice with assorted meat and a boiled egg",
+  },
+  {
+    src: "/images/menu/naijagrill-beef-suya.jpg",
+    alt: "Beef suya with onions and tomato on a board",
+  },
+  {
+    src: "/images/menu/naijagrill-okro-seafood-soup.jpg",
+    alt: "Okro soup with seafood",
+  },
+  {
+    src: "/images/menu/naijagrill-pounded-yam-efo-riro.jpg",
+    alt: "Pounded yam with efo riro vegetable soup",
+  },
+  {
+    src: "/images/menu/naijagrill-jollof-rice-chicken-wings.jpg",
+    alt: "Jollof rice with chicken wings",
+  },
+  {
+    src: "/images/menu/naijagrill-peppered-beef.jpg",
+    alt: "Peppered beef with green peppers and onions",
+  },
+  {
+    src: "/images/menu/naijagrill-puff-puff.jpg",
+    alt: "Golden Nigerian puff puff",
+  },
+  {
+    src: "/images/menu/naijagrill-assorted-spread.jpg",
+    alt: "An assorted spread of Nigerian dishes",
+  },
+];
+
 const curatedMenu: MenuDish[] = [
   {
     title: "White Rice with Ofada Stew",
@@ -582,27 +617,29 @@ export default async function MenuPage() {
             </UberEatsLink>
           </div>
 
-          <div className="no-scrollbar flex gap-5 overflow-x-auto pb-2">
-            {deliveryItems.map((item) => (
-              <article
-                key={item.title}
-                className="w-[260px] shrink-0 overflow-hidden rounded-[1.7rem] border border-ivory/10 bg-ivory/10"
-              >
-                <div className="relative aspect-[4/3]">
-                  <EditorialImage
-                    src={item.image}
-                    alt={item.title}
-                    sizes="260px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-5">
-                  <h3 className="text-xl font-black leading-tight">
-                    {item.title}
-                  </h3>
-                </div>
-              </article>
-            ))}
+          <div className="delivery-marquee overflow-hidden pb-2">
+            <div className="delivery-marquee-track flex w-max gap-5">
+              {[...deliveryItems, ...deliveryItems].map((item, index) => (
+                <article
+                  key={`${item.title}-${index}`}
+                  className="group w-[260px] shrink-0 overflow-hidden rounded-[1.7rem] border border-ivory/10 bg-ivory/10"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <EditorialImage
+                      src={item.image}
+                      alt={item.title}
+                      sizes="260px"
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="text-xl font-black leading-tight">
+                      {item.title}
+                    </h3>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -727,6 +764,35 @@ export default async function MenuPage() {
                   {body}
                 </p>
               </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="overflow-hidden bg-cream py-16 md:py-24">
+        <div className="mx-auto mb-10 max-w-[1600px] px-6 md:px-12 lg:px-16">
+          <p className="text-sm font-black uppercase tracking-[0.22em] text-burgundy">
+            Straight from the kitchen
+          </p>
+          <h2 className="mt-3 max-w-3xl font-display text-5xl font-black leading-[0.95] tracking-[-0.04em] text-charcoal md:text-6xl">
+            A look at what lands on the plate.
+          </h2>
+        </div>
+        <div className="menu-gallery overflow-hidden">
+          <div className="menu-gallery-track flex w-max gap-4 md:gap-5">
+            {[...menuGalleryImages, ...menuGalleryImages].map((item, index) => (
+              <figure
+                key={`${item.src}-${index}`}
+                className="group relative aspect-[4/5] w-[68vw] shrink-0 overflow-hidden rounded-[1.6rem] bg-charcoal shadow-[0_18px_50px_rgba(22,15,11,0.12)] sm:w-[300px] lg:w-[340px]"
+              >
+                <EditorialImage
+                  src={item.src}
+                  alt={item.alt}
+                  sizes="(max-width: 640px) 68vw, 340px"
+                  className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-charcoal/45 via-transparent to-transparent" />
+              </figure>
             ))}
           </div>
         </div>

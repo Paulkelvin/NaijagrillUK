@@ -172,6 +172,26 @@ body::before {
     animation-play-state: paused;
   }
 
+  /* Delivery favourites: brisk right-to-left marquee */
+  .delivery-marquee-track {
+    animation: kitchen-marquee 24s linear infinite;
+    will-change: transform;
+  }
+
+  .delivery-marquee:hover .delivery-marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* Menu photo gallery: right-to-left marquee (kept lively, not slow) */
+  .menu-gallery-track {
+    animation: kitchen-marquee 30s linear infinite;
+    will-change: transform;
+  }
+
+  .menu-gallery:hover .menu-gallery-track {
+    animation-play-state: paused;
+  }
+
   .smooth-card-motion {
     transition:
       transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -324,12 +344,30 @@ body::before {
   transform: translateY(-4px);
 }
 
+/* Site-wide tactile feedback so the UI responds to taps/clicks */
+button:not(:disabled),
+[role="button"] {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:not(:disabled):active,
+[role="button"]:active {
+  transform: scale(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ambient-blob,
   .ambient-mark,
   .kitchen-marquee-track,
-  .testimonial-marquee-track {
+  .testimonial-marquee-track,
+  .delivery-marquee-track,
+  .menu-gallery-track {
     animation: none;
+  }
+
+  button:not(:disabled):active,
+  [role="button"]:active {
+    transform: none;
   }
 
   .reveal {

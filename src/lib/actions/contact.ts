@@ -40,7 +40,7 @@ export async function submitContactMessage(
     return {
       success: false,
       message:
-        "Messaging is temporarily unavailable. Please email hello@naijagrill.co.uk",
+        "Messaging is temporarily unavailable. Please email quayumm2008@yahoo.co.uk",
     };
   }
 

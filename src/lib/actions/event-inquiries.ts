@@ -48,7 +48,7 @@ export async function submitEventInquiry(
     return {
       success: false,
       message:
-        "Event enquiries are temporarily unavailable. Please email hello@naijagrill.co.uk",
+        "Event enquiries are temporarily unavailable. Please email quayumm2008@yahoo.co.uk",
     };
   }
 

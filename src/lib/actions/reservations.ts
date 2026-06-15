@@ -44,7 +44,7 @@ export async function submitReservation(
     return {
       success: false,
       message:
-        "Reservations are temporarily unavailable. Please email hello@naijagrill.co.uk",
+        "Reservations are temporarily unavailable. Please email quayumm2008@yahoo.co.uk",
     };
   }
 
