@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
+import { PromoVideoPlayer } from "@/components/home/PromoVideoPlayer";
 import type { HomepageData } from "@/sanity/types";
 
 /** Pull the video id out of any common YouTube URL shape (Short, watch, youtu.be, embed). */
@@ -20,9 +21,14 @@ function youtubeId(url?: string): string | null {
 
 export function PromoVideoSection({ data }: { data: HomepageData }) {
   const videos = (data.videos ?? [])
-    .map((video) => ({ id: youtubeId(video.url), title: video.title }))
-    .filter((video): video is { id: string; title: string | undefined } =>
-      Boolean(video.id),
+    .map((video) => ({
+      id: youtubeId(video.url),
+      title: video.title,
+      vertical: /\/shorts\//.test(video.url),
+    }))
+    .filter(
+      (video): video is { id: string; title: string | undefined; vertical: boolean } =>
+        Boolean(video.id),
     );
 
   if (!videos.length) return null;
@@ -58,35 +64,14 @@ export function PromoVideoSection({ data }: { data: HomepageData }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-6 sm:gap-8 lg:justify-start">
-          {videos.map((video, index) => (
-            <figure
+        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-10">
+          {videos.map((video) => (
+            <PromoVideoPlayer
               key={video.id}
-              className="relative w-full max-w-[300px] sm:w-[300px]"
-            >
-              <div
-                className="absolute -inset-3 -z-10 rounded-[2.75rem] border border-gold/25"
-                aria-hidden
-              />
-              <div className="relative aspect-[9/16] overflow-hidden rounded-[2.25rem] border border-ivory/12 bg-black shadow-[0_30px_90px_rgba(0,0,0,0.45)]">
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0&playsinline=1`}
-                  title={
-                    video.title ??
-                    `${data.videoHeadline ?? "NaijaGrill"} video ${index + 1}`
-                  }
-                  loading="lazy"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  className="absolute inset-0 h-full w-full border-0"
-                />
-              </div>
-              {video.title && (
-                <figcaption className="mt-4 text-center text-sm text-ivory/70">
-                  {video.title}
-                </figcaption>
-              )}
-            </figure>
+              id={video.id}
+              title={video.title}
+              vertical={video.vertical}
+            />
           ))}
         </div>
       </div>
