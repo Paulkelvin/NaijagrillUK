@@ -192,6 +192,10 @@ body::before {
     animation-play-state: paused;
   }
 
+  .animate-rise {
+    animation: rise-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   .smooth-card-motion {
     transition:
       transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -288,6 +292,17 @@ body::before {
   }
 }
 
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes kitchen-marquee {
   from {
     transform: translate3d(0, 0, 0);
@@ -361,7 +376,8 @@ button:not(:disabled):active,
   .kitchen-marquee-track,
   .testimonial-marquee-track,
   .delivery-marquee-track,
-  .menu-gallery-track {
+  .menu-gallery-track,
+  .animate-rise {
     animation: none;
   }
 

@@ -32,7 +32,7 @@ export function PageHero({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(209,154,58,0.22),transparent_34%),linear-gradient(90deg,rgba(22,15,11,0.78),rgba(22,15,11,0.36),rgba(22,15,11,0.68))]" />
       <div className="relative mx-auto flex min-h-[inherit] max-w-[1600px] items-end px-6 pb-16 pt-44 md:px-12 md:pb-20 lg:px-16">
         <div
-          className={`w-full ${
+          className={`animate-rise w-full ${
             centered ? "mx-auto max-w-4xl text-center" : "max-w-4xl"
           }`}
         >

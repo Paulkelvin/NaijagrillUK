@@ -39,12 +39,12 @@ const localMenuImages: Record<string, string> = {
   "Poundo with Egusi": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
   "Egusi Soup": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
   "Efo Riro": "/images/menu/naijagrill-efo-riro-soup.jpg",
-  "Assorted Meat Pepper Soup":
-    "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+  "Amala, Ewedu & Gbegiri":
+    "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
   "Peppered Hake Fish":
     "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
-  "Grilled Tilapia":
-    "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+  "Grilled Fish":
+    "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg",
   "Puff Puff": "/images/menu/naijagrill-small-chops-platter.jpg",
   "Vegetable Samosa": "/images/menu/naijagrill-small-chops-platter.jpg",
   "Spring Rolls": "/images/menu/naijagrill-small-chops-platter.jpg",
@@ -231,23 +231,21 @@ const curatedMenu: MenuDish[] = [
       "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=1400&q=85",
   },
   {
-    title: "Grilled Tilapia",
+    title: "Grilled Fish",
     description:
-      "Whole tilapia grilled with peppers, onions, herbs, and plantain on the side.",
+      "Whole grilled fish in pepper sauce with fried yam and sweet plantain.",
     price: "from \u00a318.99",
-    category: "grill-suya",
-    image:
-      "https://images.unsplash.com/photo-1611599537845-1c7aca0091c0?auto=format&fit=crop&w=1400&q=85",
+    category: "seafood-pepper",
+    image: "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg",
   },
   {
-    title: "Assorted Meat Pepper Soup",
+    title: "Amala, Ewedu & Gbegiri",
     description:
-      "Aromatic pepper soup with mixed meats, herbs, chilli, and warming spice.",
+      "Smooth amala with ewedu and gbegiri, finished with rich pepper stew and assorted meat.",
     price: "from \u00a313.99",
-    category: "seafood-pepper",
+    category: "soups-swallows",
     badge: "Featured",
-    image:
-      "https://images.unsplash.com/photo-1594756202469-9ff9799b2e4e?auto=format&fit=crop&w=1400&q=85",
+    image: "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
   },
   {
     title: "Peppered Hake Fish",
@@ -419,7 +417,7 @@ export default async function MenuPage() {
     "White Rice with Ofada Stew",
     "Poundo with Egusi",
     "White Rice with Ayamase",
-    "Assorted Meat Pepper Soup",
+    "Amala, Ewedu & Gbegiri",
     "Beef Suya",
     "Peppered Hake Fish",
   ]
@@ -436,7 +434,7 @@ export default async function MenuPage() {
     ].includes(item.title),
   );
   const heroImage =
-    "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg";
+    "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg";
 
   return (
     <div className="overflow-hidden bg-ivory">
@@ -689,7 +687,7 @@ export default async function MenuPage() {
                     {sectionItems.map((item) => (
                       <article
                         key={`${section.id}-${item.title}`}
-                        className="smooth-card-motion grid grid-cols-[76px_1fr] gap-4 rounded-[1.35rem] bg-ivory/72 p-3 hover:bg-ivory"
+                        className="smooth-card-motion grid grid-cols-[76px_1fr] gap-4 rounded-[1.35rem] bg-ivory/72 p-3 hover:-translate-y-0.5 hover:bg-ivory hover:shadow-[0_16px_40px_rgba(22,15,11,0.08)]"
                       >
                         <div className="relative aspect-square overflow-hidden rounded-[1rem] bg-charcoal/5">
                           <EditorialImage

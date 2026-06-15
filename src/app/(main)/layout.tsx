@@ -8,6 +8,7 @@ import {
   type OpeningHoursSpecification,
   localBusinessSchema,
   restaurantSchema,
+  websiteSchema,
 } from "@/lib/seo/structured-data";
 import { getContactInfo, getOpeningHours } from "@/sanity/fetch";
 
@@ -33,7 +34,11 @@ export default async function MainLayout({
   return (
     <>
       <JsonLd
-        data={[restaurantSchema(), localBusinessSchema(openingHoursSpec)]}
+        data={[
+          websiteSchema(),
+          restaurantSchema(),
+          localBusinessSchema(openingHoursSpec),
+        ]}
       />
       <AmbientGraphics />
       <Header />

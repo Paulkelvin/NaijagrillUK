@@ -84,6 +84,29 @@ export function Footer({ contact }: { contact: ContactInfoData }) {
         <div className="mt-10 flex flex-col gap-4 border-t border-ivory/10 pt-6 text-[0.625rem] uppercase tracking-[0.22em] text-ivory/40 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {BUSINESS.legalName}</p>
           <div className="flex flex-wrap items-center gap-6">
+            <a
+              href={BUSINESS.social.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="NaijaGrill on Instagram"
+              className="group inline-flex items-center gap-2 transition-colors hover:text-gold"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5"
+                aria-hidden
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
+              Instagram
+            </a>
             <p>Handsworth, Birmingham</p>
           </div>
         </div>

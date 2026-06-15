@@ -22,7 +22,7 @@ export const BUSINESS = {
   cuisine: "Nigerian",
   priceRange: "£££",
   social: {
-    instagram: "https://instagram.com/naijagrill",
+    instagram: "https://www.instagram.com/naijagrill_2025/",
   },
   order: {
     uberEatsUrl:

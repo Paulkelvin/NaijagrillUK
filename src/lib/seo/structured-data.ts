@@ -63,6 +63,19 @@ function commonRestaurantFields(openingHours?: OpeningHoursSpecification[]) {
   };
 }
 
+export function websiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${BUSINESS.website}/#website`,
+    name: BUSINESS.legalName,
+    alternateName: BUSINESS.name,
+    url: BUSINESS.website,
+    inLanguage: "en-GB",
+    publisher: { "@id": `${BUSINESS.website}/#localbusiness` },
+  };
+}
+
 export function restaurantSchema() {
   return {
     "@context": "https://schema.org",

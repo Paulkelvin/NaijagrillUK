@@ -36,10 +36,24 @@ export function buildMetadata({
     metadataBase: new URL(siteUrl),
     title: resolvedTitle,
     description: resolvedDescription,
+    applicationName: BUSINESS.legalName,
+    authors: [{ name: BUSINESS.legalName, url: siteUrl }],
+    creator: BUSINESS.legalName,
+    publisher: BUSINESS.legalName,
     alternates: { canonical },
     robots: shouldNoIndex
       ? { index: false, follow: false }
-      : { index: true, follow: true },
+      : {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+            "max-video-preview": -1,
+          },
+        },
     openGraph: {
       title: resolvedTitle,
       description: resolvedDescription,

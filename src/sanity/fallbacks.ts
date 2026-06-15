@@ -161,22 +161,22 @@ export const fallbackMenuItems: MenuItemData[] = [
     order: 6,
   },
   {
-    _id: "menu-assorted-meat-pepper-soup",
-    title: "Assorted Meat Pepper Soup",
+    _id: "menu-amala-ewedu-gbegiri",
+    title: "Amala, Ewedu & Gbegiri",
     description:
-      "Aromatic pepper soup with mixed meats, herbs, chilli, and warming spice.",
+      "Smooth amala with ewedu and gbegiri, finished with rich pepper stew and assorted meat.",
     price: 13.99,
-    section: "seafood-pepper",
-    image: "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
-    localImage: "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+    section: "soups-swallows",
+    image: "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
+    localImage: "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
     badge: "Featured",
     orderable: true,
     uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 7,
     seo: {
-      title: "Assorted Meat Pepper Soup | NaijaGrill Birmingham",
+      title: "Amala, Ewedu & Gbegiri | NaijaGrill Birmingham",
       description:
-        "Order assorted meat pepper soup from NaijaGrill in Handsworth, Birmingham.",
+        "Order amala with ewedu and gbegiri (abula) from NaijaGrill in Handsworth, Birmingham.",
     },
   },
   {
@@ -199,17 +199,22 @@ export const fallbackMenuItems: MenuItemData[] = [
     },
   },
   {
-    _id: "menu-grilled-tilapia",
-    title: "Grilled Tilapia",
+    _id: "menu-grilled-fish",
+    title: "Grilled Fish",
     description:
-      "Whole tilapia grilled with peppers, onions, herbs, chips, and plantain on the side.",
+      "Whole grilled fish in pepper sauce with fried yam and sweet plantain.",
     price: 18.99,
     section: "seafood-pepper",
-    image: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
-    localImage: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+    image: "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg",
+    localImage: "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg",
     orderable: true,
     uberEatsUrl: BUSINESS.order.uberEatsUrl,
     order: 9,
+    seo: {
+      title: "Grilled Fish | NaijaGrill Birmingham",
+      description:
+        "Order whole grilled fish with fried yam and plantain from NaijaGrill in Handsworth, Birmingham.",
+    },
   },
   {
     _id: "menu-beef-suya",

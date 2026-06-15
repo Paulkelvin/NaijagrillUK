@@ -33,8 +33,8 @@ export function StorySection({ data }: { data: HomepageData }) {
                 <iframe
                   src="https://drive.google.com/file/d/1GMcUNummV2Em2eWJ_eXfQLGDSjXWi2OR/preview"
                   title="A glimpse inside NaijaGrill"
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
+                  loading="lazy"
+                  allow="autoplay; encrypted-media; fullscreen"
                   className="block aspect-[4/5] w-full border-0"
                 />
                 {/* Mask Google Drive's top bar so the pop-out / open-in-new

@@ -32,19 +32,19 @@ const KITCHEN_DISHES: HomepageData["cuisineFeatures"] = [
     align: "left",
   },
   {
-    title: "Pepper Soup",
-    subtitle: "Pepper heat",
+    title: "Amala, Ewedu & Gbegiri",
+    subtitle: "Abula, done right",
     description:
-      "Aromatic assorted-meat pepper soup with herbs and warming spice.",
-    image: "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+      "Smooth amala with ewedu and gbegiri, finished with rich pepper stew and assorted meat.",
+    image: "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
     align: "right",
   },
   {
-    title: "Grilled Tilapia",
+    title: "Grilled Fish",
     subtitle: "From the grill",
     description:
-      "Whole tilapia grilled with peppers, plantain, and crisp chips.",
-    image: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+      "Whole grilled fish in pepper sauce with fried yam and sweet plantain.",
+    image: "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg",
     align: "left",
   },
   {
@@ -82,9 +82,9 @@ const localCuisineImages: Record<string, string> = {
   "poundo with egusi": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
   "egusi soup": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
   "efo riro": "/images/menu/naijagrill-efo-riro-soup.jpg",
-  "assorted meat pepper soup":
-    "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
-  "grilled tilapia": "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+  "amala, ewedu & gbegiri":
+    "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
+  "grilled fish": "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg",
 };
 
 function imageForCuisineFeature(feature: HomepageData["cuisineFeatures"][number]) {
@@ -113,8 +113,23 @@ export function CuisineEditorial({ data }: { data: HomepageData }) {
             {data.cuisineHeadline}
           </h2>
           <div className="mt-10 flex flex-col items-start gap-6">
-            <Link href="/menu" className="editorial-link">
+            <Link
+              href="/menu"
+              className="group inline-flex items-center gap-2.5 rounded-full border border-charcoal/25 px-6 py-3.5 text-[0.6875rem] font-bold uppercase tracking-[0.2em] text-charcoal transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-charcoal"
+            >
               Explore the full menu
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                aria-hidden
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </Link>
             <UberEatsLink
               label="Homepage kitchen"

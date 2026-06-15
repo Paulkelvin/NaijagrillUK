@@ -54,7 +54,7 @@ export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
         className={`fixed inset-0 z-[55] bg-charcoal ${
           open ? "pointer-events-auto visible" : "pointer-events-none invisible"
         }`}
-        aria-hidden={!open}
+        inert={!open}
       >
         <nav
           aria-label="Mobile"
