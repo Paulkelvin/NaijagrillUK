@@ -51,13 +51,13 @@ export function NewsletterSignup({
 
       <form
         action={formAction}
+        noValidate
         className={`${compact ? "mt-5" : "mt-8"} flex flex-col gap-4 sm:flex-row`}
       >
         <input type="hidden" name="source" value={source} />
         <input
           type="email"
           name="email"
-          required
           placeholder="Your email"
           aria-label="Email address"
           className={`flex-1 border-b bg-transparent py-3 outline-none transition-colors ${

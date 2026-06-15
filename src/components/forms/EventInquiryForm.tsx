@@ -5,6 +5,7 @@ import { submitEventInquiry } from "@/lib/actions/event-inquiries";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
 import { FormMessage } from "./FormMessage";
+import { PhoneInput } from "./PhoneInput";
 
 const initialState: ActionResult = { success: false, message: "" };
 
@@ -48,7 +49,7 @@ export function EventInquiryForm({
   const buttonClass = isDark ? "editorial-button-dark" : "editorial-button";
 
   return (
-    <form action={formAction} className="mt-16 space-y-12">
+    <form action={formAction} noValidate className="mt-16 space-y-12">
       <div className="grid gap-12 md:grid-cols-2">
         <FormField variant={variant} label="Name" name="name" error={state.fieldErrors?.name} />
         <FormField
@@ -61,7 +62,9 @@ export function EventInquiryForm({
       </div>
 
       <div className="grid gap-12 md:grid-cols-2">
-        <FormField variant={variant} label="Phone (optional)" name="phone" type="tel" />
+        <FormField variant={variant} label="Phone (optional)" name="phone">
+          <PhoneInput name="phone" className={inputClass} />
+        </FormField>
         <FormField
           variant={variant}
           label="Event or catering type"

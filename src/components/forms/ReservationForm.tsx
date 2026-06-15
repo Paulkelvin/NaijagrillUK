@@ -5,6 +5,7 @@ import { submitReservation } from "@/lib/actions/reservations";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
 import { FormMessage } from "./FormMessage";
+import { PhoneInput } from "./PhoneInput";
 
 const initialState: ActionResult = { success: false, message: "" };
 
@@ -35,7 +36,7 @@ export function ReservationForm() {
         : step;
 
   return (
-    <form action={formAction} className="mt-8">
+    <form action={formAction} noValidate className="mt-8">
       <div className="mb-8 grid grid-cols-2 gap-3">
         {[
           ["1", "Request"],
@@ -130,7 +131,9 @@ export function ReservationForm() {
               />
             </div>
 
-            <FormField label="Phone (optional)" name="phone" type="tel" />
+            <FormField label="Phone (optional)" name="phone">
+              <PhoneInput name="phone" className={inputClass} />
+            </FormField>
 
             {state.message && !state.success && (
               <FormMessage message={state.message} />

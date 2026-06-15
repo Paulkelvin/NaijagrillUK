@@ -5,6 +5,7 @@ import { submitContactMessage } from "@/lib/actions/contact";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
 import { FormMessage } from "./FormMessage";
+import { PhoneInput } from "./PhoneInput";
 
 const initialState: ActionResult = { success: false, message: "" };
 
@@ -23,7 +24,7 @@ export function ContactForm() {
     "mt-3 w-full border-b border-charcoal/20 bg-transparent py-3 text-charcoal outline-none transition-colors focus:border-gold";
 
   return (
-    <form action={formAction} className="mt-16 space-y-12">
+    <form action={formAction} noValidate className="mt-16 space-y-12">
       <div className="grid gap-12 md:grid-cols-2">
         <FormField label="Name" name="name" error={state.fieldErrors?.name} />
         <FormField
@@ -34,10 +35,12 @@ export function ContactForm() {
         />
       </div>
 
-      <FormField label="Phone (optional)" name="phone" type="tel" />
+      <FormField label="Phone (optional)" name="phone">
+        <PhoneInput name="phone" className={inputClass} />
+      </FormField>
 
       <FormField label="Message" name="message" error={state.fieldErrors?.message}>
-        <textarea name="message" rows={5} required className={inputClass} />
+        <textarea name="message" rows={5} className={inputClass} />
       </FormField>
 
       {state.message && !state.success && (

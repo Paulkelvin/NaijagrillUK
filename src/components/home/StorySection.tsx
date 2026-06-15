@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { EditorialFrame } from "@/components/ui/EditorialFrame";
-import { EditorialImage } from "@/components/ui/EditorialImage";
 import type { HomepageData } from "@/sanity/types";
 
 export function StorySection({ data }: { data: HomepageData }) {
@@ -27,11 +26,19 @@ export function StorySection({ data }: { data: HomepageData }) {
 
           <div className="relative max-w-[420px] justify-self-center lg:col-span-4 lg:col-start-8 lg:w-full">
             <EditorialFrame>
-              <div className="image-vignette-side relative aspect-[4/5] overflow-hidden [border-radius:2.5rem_5.5rem_2.5rem_4rem]">
-                <EditorialImage
-                  src={data.storyImage}
-                  alt="Chef preparing Nigerian cuisine"
-                  sizes="(max-width: 1024px) 80vw, 30vw"
+              <div className="relative aspect-[4/5] overflow-hidden bg-charcoal [border-radius:2.5rem_5.5rem_2.5rem_4rem]">
+                <iframe
+                  src="https://drive.google.com/file/d/1GMcUNummV2Em2eWJ_eXfQLGDSjXWi2OR/preview"
+                  title="A glimpse inside NaijaGrill"
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full border-0"
+                />
+                {/* Mask Google Drive's top bar so the pop-out / open-in-new
+                    link cannot be clicked through to the video source. */}
+                <div
+                  className="absolute inset-x-0 top-0 z-20 h-14 cursor-default"
+                  aria-hidden
                 />
               </div>
             </EditorialFrame>
