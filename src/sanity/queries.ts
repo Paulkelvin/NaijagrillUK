@@ -3,7 +3,8 @@ export const homepageQuery = `*[_type == "homepage"][0]{
   storyEyebrow, storyHeadline, storyParagraphs, storyImage,
   cuisineEyebrow, cuisineHeadline, cuisineFeatures,
   experienceEyebrow, experienceHeadline, experienceBody, experienceImage,
-  videoEyebrow, videoHeadline, videoBody, videos,
+  videoEyebrow, videoHeadline, videoBody,
+  videos[]{ title, url, orientation, poster, "fileUrl": videoFile.asset->url },
   visitHeadline, visitImage, seo
 }`;
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { PromoVideoPlayer } from "@/components/home/PromoVideoPlayer";
+import { resolveImageSrc } from "@/sanity/resolve-image";
 import type { HomepageData } from "@/sanity/types";
 
 /** Pull the video id out of any common YouTube URL shape (Short, watch, youtu.be, embed). */
@@ -22,14 +23,15 @@ function youtubeId(url?: string): string | null {
 export function PromoVideoSection({ data }: { data: HomepageData }) {
   const videos = (data.videos ?? [])
     .map((video) => ({
-      id: youtubeId(video.url),
+      src: video.fileUrl,
+      id: youtubeId(video.url) ?? undefined,
       title: video.title,
-      vertical: /\/shorts\//.test(video.url),
+      posterUrl: resolveImageSrc(video.poster, 800) ?? undefined,
+      vertical: video.orientation
+        ? video.orientation === "portrait"
+        : /\/shorts\//.test(video.url ?? ""),
     }))
-    .filter(
-      (video): video is { id: string; title: string | undefined; vertical: boolean } =>
-        Boolean(video.id),
-    );
+    .filter((video) => video.src || video.id);
 
   if (!videos.length) return null;
 
@@ -65,11 +67,13 @@ export function PromoVideoSection({ data }: { data: HomepageData }) {
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-10">
-          {videos.map((video) => (
+          {videos.map((video, index) => (
             <PromoVideoPlayer
-              key={video.id}
+              key={video.src ?? video.id ?? index}
+              src={video.src}
               id={video.id}
               title={video.title}
+              posterUrl={video.posterUrl}
               vertical={video.vertical}
             />
           ))}

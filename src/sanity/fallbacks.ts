@@ -59,8 +59,8 @@ export const fallbackHomepage: HomepageData = {
   videoBody:
     "Watch the flavour, the fire, and the welcome that keeps Birmingham coming back to Rookery Road.",
   videos: [
-    { url: "https://youtube.com/shorts/8jXilc8_Mps" },
-    { url: "https://youtu.be/sf_Vw5Qzm1A" },
+    { url: "https://youtube.com/shorts/8jXilc8_Mps", orientation: "portrait" },
+    { url: "https://youtu.be/sf_Vw5Qzm1A", orientation: "landscape" },
   ],
   visitHeadline: "Your table awaits.",
   visitImage:

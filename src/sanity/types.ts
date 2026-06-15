@@ -37,7 +37,13 @@ export type HomepageData = {
   videoEyebrow?: string;
   videoHeadline?: string;
   videoBody?: string;
-  videos?: { url: string; title?: string }[];
+  videos?: {
+    url?: string;
+    title?: string;
+    orientation?: "portrait" | "landscape";
+    fileUrl?: string;
+    poster?: SanityImage | string;
+  }[];
   visitHeadline: string;
   visitImage?: SanityImage | string;
   seo?: SeoMetadata;

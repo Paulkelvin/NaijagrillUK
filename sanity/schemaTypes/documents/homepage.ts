@@ -148,14 +148,50 @@ export const homepage = defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "url", title: "YouTube URL", type: "url" }),
+            defineField({
+              name: "videoFile",
+              title: "Video file (recommended)",
+              description:
+                "Upload an MP4 to host the video here with no YouTube branding. Takes priority over the YouTube URL below.",
+              type: "file",
+              options: { accept: "video/mp4,video/webm,video/quicktime" },
+            }),
+            defineField({
+              name: "poster",
+              title: "Poster image",
+              description: "Thumbnail shown before the video plays.",
+              type: "image",
+              options: { hotspot: true },
+              fields: [
+                defineField({ name: "alt", title: "Alt text", type: "string" }),
+              ],
+            }),
+            defineField({
+              name: "orientation",
+              title: "Orientation",
+              type: "string",
+              initialValue: "portrait",
+              options: {
+                list: [
+                  { title: "Portrait (9:16)", value: "portrait" },
+                  { title: "Landscape (16:9)", value: "landscape" },
+                ],
+                layout: "radio",
+              },
+            }),
+            defineField({
+              name: "url",
+              title: "YouTube URL (fallback)",
+              description: "Used only when no video file is uploaded.",
+              type: "url",
+            }),
             defineField({
               name: "title",
               title: "Caption (optional)",
               type: "string",
             }),
           ],
-          preview: { select: { title: "title", subtitle: "url" } },
+          preview: { select: { title: "title", subtitle: "url", media: "poster" } },
         },
       ],
     }),

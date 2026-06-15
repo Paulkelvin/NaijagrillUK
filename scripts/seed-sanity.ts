@@ -131,6 +131,20 @@ async function seedHomepage() {
     "A table set for guests at NaijaGrill",
   );
 
+  // Preserve videos already managed in Studio (e.g. uploaded video files) so a
+  // re-seed never wipes them; only seed the YouTube fallbacks on first creation.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const existing: any = await client.getDocument("homepage").catch(() => null);
+  const videos = existing?.videos?.length
+    ? existing.videos
+    : (hp.videos ?? []).map((video, index) => ({
+        _type: "object",
+        _key: `video-${index}`,
+        ...(video.url ? { url: video.url } : {}),
+        ...(video.orientation ? { orientation: video.orientation } : {}),
+        ...(video.title ? { title: video.title } : {}),
+      }));
+
   await client.createOrReplace({
     _id: "homepage",
     _type: "homepage",
@@ -152,12 +166,7 @@ async function seedHomepage() {
     videoEyebrow: hp.videoEyebrow,
     videoHeadline: hp.videoHeadline,
     videoBody: hp.videoBody,
-    videos: (hp.videos ?? []).map((video, index) => ({
-      _type: "object",
-      _key: `video-${index}`,
-      url: video.url,
-      ...(video.title ? { title: video.title } : {}),
-    })),
+    videos,
     visitHeadline: hp.visitHeadline,
     ...(visitImage ? { visitImage } : {}),
     seo: seoField(hp.seo),
