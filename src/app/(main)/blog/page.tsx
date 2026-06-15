@@ -2,7 +2,6 @@ import Link from "next/link";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BUSINESS } from "@/lib/business";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import { getBlogCategories, getBlogPosts } from "@/sanity/fetch";
@@ -23,11 +22,6 @@ export default async function BlogPage() {
   ]);
   const featuredPost = posts[0];
   const remainingPosts = posts.slice(1);
-  const featuredUrl = featuredPost
-    ? `${BUSINESS.website}/blog/${featuredPost.slug}`
-    : BUSINESS.website;
-  const encodedUrl = encodeURIComponent(featuredUrl);
-  const encodedTitle = encodeURIComponent(featuredPost?.title ?? "NaijaGrill Journal");
 
   return (
     <div className="bg-ivory">
@@ -57,28 +51,6 @@ export default async function BlogPage() {
             <BlogCard post={featuredPost} variant="featured" />
 
             <aside className="space-y-10 lg:sticky lg:top-28">
-              <div className="rounded-[1.5rem] border border-charcoal/10 bg-cream/70 p-6">
-                <p className="editorial-caption mb-5 text-gold">Share</p>
-                <div className="flex flex-wrap gap-3">
-                  <a
-                    href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border border-charcoal/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-charcoal transition-colors hover:border-gold hover:text-gold"
-                  >
-                    X
-                  </a>
-                  <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border border-charcoal/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-charcoal transition-colors hover:border-gold hover:text-gold"
-                  >
-                    Facebook
-                  </a>
-                </div>
-              </div>
-
               <div className="rounded-[1.5rem] border border-charcoal/10 bg-cream/70 p-6">
                 <p className="editorial-caption mb-5 text-gold">Tags</p>
                 <nav className="flex flex-wrap gap-3" aria-label="Blog tags">
@@ -112,10 +84,6 @@ export default async function BlogPage() {
                     </Link>
                   ))}
                 </div>
-              </div>
-
-              <div className="rounded-[1.5rem] border border-charcoal/10 bg-cream/70 p-6">
-                <NewsletterSignup source="blog-index" compact />
               </div>
             </aside>
           </div>
@@ -153,6 +121,10 @@ export default async function BlogPage() {
               <BlogCard key={post._id} post={post} />
             ))}
           </div>
+        </div>
+
+        <div className="mt-20 rounded-[1.75rem] border border-charcoal/10 bg-cream/70 p-7 md:mt-24 md:p-12">
+          <NewsletterSignup source="blog-index" />
         </div>
       </section>
     </div>

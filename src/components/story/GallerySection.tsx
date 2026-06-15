@@ -59,7 +59,7 @@ export function GallerySection({ images }: { images: GalleryImageData[] }) {
           {images.map((item) => (
             <figure
               key={item._id}
-              className="group relative aspect-[4/5] w-[78%] shrink-0 snap-start overflow-hidden rounded-[1.8rem] bg-charcoal shadow-[0_20px_70px_rgba(22,15,11,0.1)] sm:w-[46%] lg:w-[31%]"
+              className="group relative aspect-square w-[78%] shrink-0 snap-start overflow-hidden rounded-[1.8rem] bg-charcoal shadow-[0_20px_70px_rgba(22,15,11,0.1)] sm:w-[46%] lg:w-[31%]"
             >
               <EditorialImage
                 src={item.image}

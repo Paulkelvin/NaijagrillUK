@@ -33,7 +33,7 @@ export default async function ReservationsPage() {
         eyebrow="Reservations"
         title="Book the table. Bring the people."
         description="Reserve for dinner, birthdays, family meals, and the kind of gathering that deserves fire, flavour, and a warm room."
-        image="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=2400&q=85"
+        image="/images/Naija-grill-reservation-hero.JPG"
         imageAlt="Elegant restaurant table set for dinner"
         heightClassName="min-h-[62vh]"
       />

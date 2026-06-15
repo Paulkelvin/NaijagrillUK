@@ -59,7 +59,7 @@ export default async function ContactPage() {
         eyebrow="Contact"
         title="Come for the food. Stay for the room."
         description="Find us on Rookery Road, reserve your table, or send a message to the NaijaGrill team."
-        image="https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=2400&q=85"
+        image="/images/naija-grill-contact-hero.png"
         imageAlt="Warm restaurant entrance and bar details"
         heightClassName="min-h-[62vh]"
       />

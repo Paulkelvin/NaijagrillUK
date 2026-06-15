@@ -5,7 +5,42 @@ import { PageHero } from "@/components/ui/PageHero";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
-import { getGalleryImages } from "@/sanity/fetch";
+import type { GalleryImageData } from "@/sanity/types";
+
+const galleryImages: GalleryImageData[] = [
+  ["/images/Naija-grill-and-spice-front.webp", "The NaijaGrill storefront on Rookery Road"],
+  ["/images/naija-grill-and-spice-room2.jpg", "The NaijaGrill dining room"],
+  ["/images/menu/naijagrill-jollof-rice-assorted-meat-egg.jpg", "Party jollof rice with assorted meat and egg"],
+  ["/images/menu/naijagrill-beef-suya.jpg", "Beef suya"],
+  ["/images/menu/naijagrill-okro-seafood-soup.jpg", "Okro soup with seafood"],
+  ["/images/naija-grill-and-spice-table.jpg", "A table set for service"],
+  ["/images/menu/jollof-rice.jpeg", "Smoky party jollof rice"],
+  ["/images/menu/naijagrill-pounded-yam-efo-riro.jpg", "Pounded yam with efo riro"],
+  ["/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg", "Grilled tilapia with plantain and chips"],
+  ["/images/menu/naijagrill-jollof-rice-chicken-wings.jpg", "Jollof rice with chicken wings"],
+  ["/images/menu/naijagrill-peppered-beef.jpg", "Peppered beef with green peppers"],
+  ["/images/naija-grill-and-spice-room1.jpg", "Booth seating in the dining room"],
+  ["/images/menu/naijagrill-assorted-spread.jpg", "An assorted spread of Nigerian dishes"],
+  ["/images/menu/naijagrill-poundo-egusi-soup.jpg", "Poundo with egusi soup"],
+  ["/images/menu/naijagrill-assorted-meat-pepper-soup.jpg", "Assorted meat pepper soup"],
+  ["/images/menu/naijagrill-white-rice-ayamase-stew.jpg", "White rice with ayamase stew"],
+  ["/images/menu/naijagrill-white-rice-ofada-stew.jpg", "White rice with ofada stew"],
+  ["/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg", "Fried rice with peppered hake and plantain"],
+  ["/images/menu/naijagrill-efo-riro-soup.jpg", "Efo riro"],
+  ["/images/menu/naijagrill-puff-puff.jpg", "Golden puff puff"],
+  ["/images/menu/naijagrill-small-chops-platter.jpg", "Small chops platter"],
+  ["/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg", "Beans and plantain with pepper sauce"],
+  ["/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg", "Jollof rice with plantain and assorted meat"],
+  ["/images/naija-grill-and-spice-hero.jpg", "A spread of NaijaGrill dishes"],
+  ["/images/Naija-grill-reservation-hero.JPG", "The NaijaGrill dining room ready for guests"],
+  ["/images/naija-grill-and-spice-logo.jpg", "Naija Grill & Spice Kitchen sign"],
+].map(([image, alt], index) => ({
+  _id: `story-gallery-${index}`,
+  title: alt,
+  image,
+  alt,
+  order: index + 1,
+}));
 
 const originNotes = [
   {
@@ -41,7 +76,6 @@ export async function generateMetadata() {
 }
 
 export default async function StoryPage() {
-  const gallery = await getGalleryImages();
   const heroImage =
     "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=2400&q=85";
 
@@ -209,7 +243,7 @@ export default async function StoryPage() {
           </div>
         </section>
 
-        <GallerySection images={gallery} />
+        <GallerySection images={galleryImages} />
       </main>
     </div>
   );

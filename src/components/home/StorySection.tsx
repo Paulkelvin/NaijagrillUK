@@ -26,13 +26,16 @@ export function StorySection({ data }: { data: HomepageData }) {
 
           <div className="relative max-w-[420px] justify-self-center lg:col-span-4 lg:col-start-8 lg:w-full">
             <EditorialFrame>
-              <div className="relative aspect-[4/5] overflow-hidden bg-charcoal [border-radius:2.5rem_5.5rem_2.5rem_4rem]">
+              <div className="relative overflow-hidden bg-charcoal [border-radius:2.5rem_5.5rem_2.5rem_4rem]">
+                {/* aspect-ratio is set on the iframe itself (not a percentage
+                    height on an absolute child) so mobile Safari sizes it
+                    correctly instead of collapsing it to zero height. */}
                 <iframe
                   src="https://drive.google.com/file/d/1GMcUNummV2Em2eWJ_eXfQLGDSjXWi2OR/preview"
                   title="A glimpse inside NaijaGrill"
                   allow="autoplay; fullscreen"
                   allowFullScreen
-                  className="absolute inset-0 h-full w-full border-0"
+                  className="block aspect-[4/5] w-full border-0"
                 />
                 {/* Mask Google Drive's top bar so the pop-out / open-in-new
                     link cannot be clicked through to the video source. */}

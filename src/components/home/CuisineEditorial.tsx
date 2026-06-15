@@ -1,7 +1,77 @@
 import Link from "next/link";
+import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { EditorialFrame } from "@/components/ui/EditorialFrame";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import type { HomepageData } from "@/sanity/types";
+
+// Fallback line-up so the section always shows a generous range of dishes
+// even when the CMS only supplies a couple of features.
+const KITCHEN_DISHES: HomepageData["cuisineFeatures"] = [
+  {
+    title: "Jollof Rice",
+    subtitle: "The ceremony of the pot",
+    description:
+      "Smoky party-style tomato rice with assorted meat and sweet plantain.",
+    image: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+    align: "left",
+  },
+  {
+    title: "Beef Suya",
+    subtitle: "Street fire, refined",
+    description:
+      "Yaji-spiced beef grilled over charcoal with onions and real heat.",
+    image: "/images/menu/naijagrill-beef-suya.jpg",
+    align: "right",
+  },
+  {
+    title: "Poundo & Egusi",
+    subtitle: "Soup and swallow",
+    description:
+      "Soft poundo with rich melon-seed egusi, greens, and tender meat.",
+    image: "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+    align: "left",
+  },
+  {
+    title: "Pepper Soup",
+    subtitle: "Pepper heat",
+    description:
+      "Aromatic assorted-meat pepper soup with herbs and warming spice.",
+    image: "/images/menu/naijagrill-assorted-meat-pepper-soup.jpg",
+    align: "right",
+  },
+  {
+    title: "Grilled Tilapia",
+    subtitle: "From the grill",
+    description:
+      "Whole tilapia grilled with peppers, plantain, and crisp chips.",
+    image: "/images/menu/naijagrill-grilled-tilapia-plantain-chips.jpg",
+    align: "left",
+  },
+  {
+    title: "Efo Riro",
+    subtitle: "Greens, slow-cooked",
+    description:
+      "Spinach stew with peppers, iru, and your choice of protein.",
+    image: "/images/menu/naijagrill-efo-riro-soup.jpg",
+    align: "right",
+  },
+  {
+    title: "Small Chops",
+    subtitle: "For the table",
+    description:
+      "Puff puff, samosas, and snackable bites made for sharing.",
+    image: "/images/menu/naijagrill-small-chops-platter.jpg",
+    align: "left",
+  },
+  {
+    title: "Okro Seafood Soup",
+    subtitle: "Coastal comfort",
+    description:
+      "Silky okro soup with seafood, fish, and a proper swallow.",
+    image: "/images/menu/naijagrill-okro-seafood-soup.jpg",
+    align: "right",
+  },
+];
 
 const localCuisineImages: Record<string, string> = {
   jollof: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
@@ -22,11 +92,14 @@ function imageForCuisineFeature(feature: HomepageData["cuisineFeatures"][number]
 }
 
 export function CuisineEditorial({ data }: { data: HomepageData }) {
-  // Repeat the features so each half of the marquee track is wide enough to
-  // overflow the viewport, then duplicate for a seamless -50% loop.
-  const base = data.cuisineFeatures;
-  const repeat = Math.max(1, Math.ceil(4 / Math.max(1, base.length)));
-  const half = Array.from({ length: repeat }).flatMap(() => base);
+  // Use the CMS features when there are enough, otherwise show the fuller
+  // in-house line-up so the section never looks sparse.
+  const features =
+    data.cuisineFeatures.length >= 6 ? data.cuisineFeatures : KITCHEN_DISHES;
+  // Repeat so each half of the marquee track overflows the viewport, then
+  // duplicate for a seamless -50% loop.
+  const repeat = Math.max(1, Math.ceil(4 / Math.max(1, features.length)));
+  const half = Array.from({ length: repeat }).flatMap(() => features);
   const movingFeatures = [...half, ...half];
 
   return (
@@ -39,10 +112,19 @@ export function CuisineEditorial({ data }: { data: HomepageData }) {
           <h2 className="editorial-display text-[clamp(2.25rem,4vw,3.75rem)] font-light leading-[0.96] text-charcoal">
             {data.cuisineHeadline}
           </h2>
-          <div className="mt-10">
+          <div className="mt-10 flex flex-col items-start gap-6">
             <Link href="/menu" className="editorial-link">
               Explore the full menu
             </Link>
+            <UberEatsLink
+              label="Homepage kitchen"
+              className="inline-flex items-center gap-3 rounded-full bg-gold px-7 py-4 text-[0.6875rem] font-black uppercase tracking-[0.22em] text-charcoal transition-transform hover:-translate-y-0.5"
+            >
+              <span className="rounded-full bg-charcoal px-2.5 py-1 text-[0.6rem] tracking-[0.12em] text-ivory">
+                Uber Eats
+              </span>
+              Order on Uber Eats
+            </UberEatsLink>
           </div>
         </div>
 
@@ -65,7 +147,7 @@ export function CuisineEditorial({ data }: { data: HomepageData }) {
                     </div>
                   </EditorialFrame>
                   <span className="editorial-caption absolute left-5 top-5 rounded-full bg-charcoal/75 px-3 py-2 text-ivory/75 backdrop-blur">
-                    0{(index % data.cuisineFeatures.length) + 1}
+                    0{(index % features.length) + 1}
                   </span>
                 </div>
 

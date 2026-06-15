@@ -32,7 +32,7 @@ const components: PortableTextComponents = {
       );
     },
     normal: ({ children }) => (
-      <p className="mt-6 text-base leading-[1.9] text-stone md:text-lg">
+      <p className="mt-6 text-base leading-[1.9] text-charcoal/85 md:text-lg">
         {children}
       </p>
     ),

@@ -5,6 +5,7 @@ import { ArticleCta } from "@/components/blog/ArticleCta";
 import { FaqSection } from "@/components/blog/FaqSection";
 import { PortableTextContent } from "@/components/blog/PortableTextContent";
 import { RelatedPosts } from "@/components/blog/RelatedPosts";
+import { ShareLinks } from "@/components/blog/ShareLinks";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -53,7 +54,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const faqJsonLd = faqSchema(post.faqs ?? []);
 
   return (
-    <article className="bg-ivory pt-32">
+    <article className="bg-ivory">
       <JsonLd
         data={[
           breadcrumbSchema([
@@ -95,6 +96,10 @@ export default async function BlogPostPage({ params }: PageProps) {
         </h1>
 
         <p className="mt-6 text-sm text-stone">By {post.author}</p>
+
+        <div className="mt-8">
+          <ShareLinks slug={post.slug} title={post.title} />
+        </div>
 
         <div className="mt-16 grid gap-16 lg:grid-cols-[1fr_220px]">
           <div>
