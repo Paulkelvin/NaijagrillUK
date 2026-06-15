@@ -27,12 +27,17 @@ export function PromoVideoPlayer({ id, title, vertical }: PromoVideoPlayerProps)
         }`}
       >
         {playing ? (
+          // The iframe is taller than the frame and shifted up so the YouTube
+          // title/uploader bar (top) and controls (bottom) are clipped by the
+          // frame's overflow:hidden. Width stays 100%, so no side black bars and
+          // — since the frame matches the video aspect — no new letterboxing.
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+            src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1&controls=0`}
             title={label}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
-            className="absolute inset-0 h-full w-full border-0"
+            className="absolute left-0 w-full border-0"
+            style={{ top: "-48px", height: "calc(100% + 96px)" }}
           />
         ) : (
           <button
