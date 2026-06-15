@@ -17,7 +17,10 @@ export const BUSINESS = {
     longitude: -1.9342,
   },
   email: "quayumm2008@yahoo.co.uk",
-  phone: "+441212345678",
+  // E.164 for tel: links and structured data
+  phone: "+447438757560",
+  // Human-friendly UK national format for display
+  phoneDisplay: "07438 757560",
   website: process.env.NEXT_PUBLIC_SITE_URL ?? "https://naijagrill.co.uk",
   cuisine: "Nigerian",
   priceRange: "£££",

@@ -367,7 +367,7 @@ export const fallbackOpeningHours: OpeningHoursData = {
 
 export const fallbackContact: ContactInfoData = {
   email: BUSINESS.email,
-  phone: BUSINESS.phone,
+  phone: BUSINESS.phoneDisplay,
   street: BUSINESS.address.street,
   area: BUSINESS.address.area,
   city: BUSINESS.address.city,

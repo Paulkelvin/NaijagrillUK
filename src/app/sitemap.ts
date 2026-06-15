@@ -14,6 +14,8 @@ const staticRoutes = [
   "/events-catering",
   "/reservations",
   "/contact",
+  "/privacy",
+  "/terms",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

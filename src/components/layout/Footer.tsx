@@ -84,6 +84,12 @@ export function Footer({ contact }: { contact: ContactInfoData }) {
         <div className="mt-10 flex flex-col gap-4 border-t border-ivory/10 pt-6 text-[0.625rem] uppercase tracking-[0.22em] text-ivory/40 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {BUSINESS.legalName}</p>
           <div className="flex flex-wrap items-center gap-6">
+            <Link href="/privacy" className="transition-colors hover:text-gold">
+              Privacy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-gold">
+              Terms
+            </Link>
             <a
               href={BUSINESS.social.instagram}
               target="_blank"
