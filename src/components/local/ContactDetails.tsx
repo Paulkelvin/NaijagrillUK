@@ -25,12 +25,23 @@ export function ContactDetails({
       </div>
       {contact.phone && (
         <div>
-          <p className="editorial-caption mb-3">Telephone</p>
+          <p className="editorial-caption mb-3">Mobile</p>
           <a
             href={`tel:${contact.phone.replace(/\s/g, "")}`}
             className="text-charcoal transition-colors hover:text-gold"
           >
             {contact.phone}
+          </a>
+        </div>
+      )}
+      {contact.landline && (
+        <div>
+          <p className="editorial-caption mb-3">Landline</p>
+          <a
+            href={`tel:${contact.landline.replace(/\s/g, "")}`}
+            className="text-charcoal transition-colors hover:text-gold"
+          >
+            {contact.landline}
           </a>
         </div>
       )}

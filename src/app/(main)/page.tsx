@@ -2,6 +2,7 @@ import { CuisineEditorial } from "@/components/home/CuisineEditorial";
 import { ExperienceSection } from "@/components/home/ExperienceSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
+import { JournalSection } from "@/components/home/JournalSection";
 // import { NewsletterSection } from "@/components/home/NewsletterSection"; // £10 welcome offer — temporarily disabled
 import { PrivateDiningTeaser } from "@/components/home/PrivateDiningTeaser";
 import { StorySection } from "@/components/home/StorySection";
@@ -13,6 +14,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 import { resolveImageSrc } from "@/sanity/resolve-image";
 import {
+  getBlogPosts,
   getHomepage,
   getOpeningHours,
   getTestimonials,
@@ -30,10 +32,11 @@ export async function generateMetadata() {
 }
 
 export default async function Home() {
-  const [homepage, testimonials, hours] = await Promise.all([
+  const [homepage, testimonials, hours, posts] = await Promise.all([
     getHomepage(),
     getTestimonials(),
     getOpeningHours(),
+    getBlogPosts(),
   ]);
 
   return (
@@ -47,6 +50,7 @@ export default async function Home() {
       <Reveal><PrivateDiningTeaser /></Reveal>
       <Reveal><ExperienceSection data={homepage} /></Reveal>
       <Reveal><Testimonials items={testimonials} /></Reveal>
+      <Reveal><JournalSection posts={posts} /></Reveal>
       <Reveal><FaqSection /></Reveal>
       {/* £10 welcome offer — temporarily disabled, bring back later */}
       {/* <NewsletterSection /> */}

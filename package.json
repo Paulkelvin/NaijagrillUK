@@ -9,7 +9,8 @@
     "lint": "eslint",
     "sanity:deploy": "sanity deploy",
     "sanity:schema": "sanity schema deploy",
-    "sanity:seed": "sanity dataset import sanity/seed.ndjson production --replace"
+    "sanity:seed": "sanity dataset import sanity/seed.ndjson production --replace",
+    "seed:sanity": "tsx scripts/seed-sanity.ts"
   },
   "dependencies": {
     "@portabletext/react": "^6.2.0",

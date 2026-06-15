@@ -126,12 +126,23 @@ export default async function ContactPage() {
             </div>
             {contact.phone && (
               <div className="rounded-[1.25rem] bg-ivory/10 p-5">
-                <p className="editorial-caption mb-3 text-ivory/55">Phone</p>
+                <p className="editorial-caption mb-3 text-ivory/55">Mobile</p>
                 <a
                   href={`tel:${contact.phone.replace(/\s/g, "")}`}
                   className="text-sm text-ivory transition-colors hover:text-gold"
                 >
                   {contact.phone}
+                </a>
+              </div>
+            )}
+            {contact.landline && (
+              <div className="rounded-[1.25rem] bg-ivory/10 p-5">
+                <p className="editorial-caption mb-3 text-ivory/55">Landline</p>
+                <a
+                  href={`tel:${contact.landline.replace(/\s/g, "")}`}
+                  className="text-sm text-ivory transition-colors hover:text-gold"
+                >
+                  {contact.landline}
                 </a>
               </div>
             )}

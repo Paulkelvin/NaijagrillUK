@@ -77,6 +77,7 @@ export type OpeningHoursData = {
 export type ContactInfoData = {
   email: string;
   phone: string;
+  landline?: string;
   street: string;
   area: string;
   city: string;

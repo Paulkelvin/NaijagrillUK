@@ -368,6 +368,7 @@ export const fallbackOpeningHours: OpeningHoursData = {
 export const fallbackContact: ContactInfoData = {
   email: BUSINESS.email,
   phone: BUSINESS.phoneDisplay,
+  landline: BUSINESS.landlineDisplay,
   street: BUSINESS.address.street,
   area: BUSINESS.address.area,
   city: BUSINESS.address.city,
@@ -406,6 +407,557 @@ export const fallbackBlogCategories: BlogCategoryData[] = [
 ];
 
 export const fallbackBlogPosts: BlogPostData[] = [
+  {
+    _id: "post-best-nigerian-restaurant-handsworth",
+    title: "Best Nigerian Restaurant in Handsworth, Birmingham",
+    slug: "best-nigerian-restaurant-in-handsworth-birmingham",
+    author: "NaijaGrill Kitchen",
+    excerpt:
+      "Looking for the best Nigerian restaurant in Handsworth? Here is why NaijaGrill on Rookery Road is Birmingham's home of authentic Nigerian food — jollof, suya, pepper soup, and more.",
+    featuredImage: "/images/Naija-grill-and-spice-front.webp",
+    category: fallbackBlogCategories[3],
+    publishedAt: "2026-06-14T09:00:00Z",
+    body: [
+      {
+        _type: "block",
+        _key: "bnr-i",
+        style: "normal",
+        markDefs: [
+          { _key: "bnr-l1", _type: "link", href: "/nigerian-restaurant-birmingham" },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "bnr-i1",
+            text: "If you are searching for the best Nigerian restaurant in Handsworth, Birmingham, you are in the right place. NaijaGrill brings authentic Nigerian food to Rookery Road — bold, smoky, generous cooking served in a warm dining room. Here is what makes us a favourite ",
+          },
+          {
+            _type: "span",
+            _key: "bnr-i2",
+            marks: ["bnr-l1"],
+            text: "Nigerian restaurant in Birmingham",
+          },
+          { _type: "span", _key: "bnr-i3", text: "." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnr-h1",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnr-h1s", text: "Authentic Nigerian food in the heart of Handsworth" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnr-b1",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "bnr-b1s",
+            text: "Handsworth is one of Birmingham's most diverse and food-loving neighbourhoods, and Nigerian cooking is part of its everyday culture. We cook the way it is done at home: stews simmered slowly, rice finished over fire, and meat grilled with real yaji spice. Nothing is watered down — just proper, authentic Nigerian food.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnr-h2",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnr-h2s", text: "What makes NaijaGrill stand out" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnr-b2",
+        style: "normal",
+        markDefs: [{ _key: "bnr-l2", _type: "link", href: "/menu" }],
+        children: [
+          {
+            _type: "span",
+            _key: "bnr-b2a",
+            text: "Party jollof rice, charcoal suya, egusi and efo riro, pepper soup, grilled fish, and small chops for the table — our ",
+          },
+          { _type: "span", _key: "bnr-b2b", marks: ["bnr-l2"], text: "full Nigerian menu" },
+          {
+            _type: "span",
+            _key: "bnr-b2c",
+            text: " is built for sharing, with generous portions and a premium dining room that knows when to step back.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnr-h3",
+        style: "h2",
+        markDefs: [],
+        children: [
+          { _type: "span", _key: "bnr-h3s", text: "Dine in, takeaway, or delivery" },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "bnr-b3",
+        style: "normal",
+        markDefs: [
+          { _key: "bnr-l3", _type: "link", href: "/reservations" },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "bnr-b3a",
+            text: "Come in for an unhurried evening, grab a takeaway, or order on Uber Eats across Handsworth and nearby Birmingham. To dine with us, ",
+          },
+          { _type: "span", _key: "bnr-b3b", marks: ["bnr-l3"], text: "reserve a table" },
+          { _type: "span", _key: "bnr-b3c", text: " on Rookery Road, B21 9QU." },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Where is the best Nigerian restaurant in Handsworth?",
+        answer:
+          "NaijaGrill at 77B Rookery Road, Handsworth, Birmingham B21 9QU serves authentic Nigerian food — jollof, suya, egusi, pepper soup, grilled fish, and small chops — for dine-in, takeaway, and Uber Eats delivery.",
+      },
+      {
+        question: "Is NaijaGrill authentic Nigerian food?",
+        answer:
+          "Yes. We cook regional Nigerian recipes the traditional way — slow-simmered stews, party-style jollof finished over fire, and charcoal-grilled suya with real yaji spice.",
+      },
+      {
+        question: "Can I book a table at NaijaGrill?",
+        answer:
+          "Yes, you can request a reservation through our website and we will confirm your table by email.",
+      },
+      {
+        question: "Does NaijaGrill do delivery in Birmingham?",
+        answer:
+          "Yes, you can order NaijaGrill favourites for delivery on Uber Eats, or collect a takeaway from Handsworth.",
+      },
+    ],
+    seo: {
+      title: "Best Nigerian Restaurant in Handsworth, Birmingham | NaijaGrill",
+      description:
+        "NaijaGrill is the best Nigerian restaurant in Handsworth, Birmingham — authentic jollof, suya, egusi, and pepper soup for dine-in, takeaway, and Uber Eats.",
+    },
+  },
+  {
+    _id: "post-nigerian-takeaway-birmingham",
+    title: "Nigerian Takeaway in Birmingham: Top Dishes to Try",
+    slug: "nigerian-takeaway-in-birmingham-top-dishes-to-try",
+    author: "NaijaGrill Kitchen",
+    excerpt:
+      "Craving a Nigerian takeaway in Birmingham? These are the top dishes to order for delivery or collection from NaijaGrill in Handsworth — and how to get them.",
+    featuredImage:
+      "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+    category: fallbackBlogCategories[3],
+    publishedAt: "2026-06-13T09:00:00Z",
+    body: [
+      {
+        _type: "block",
+        _key: "ntw-i",
+        style: "normal",
+        markDefs: [{ _key: "ntw-l1", _type: "link", href: "/menu" }],
+        children: [
+          {
+            _type: "span",
+            _key: "ntw-i1",
+            text: "Looking for a Nigerian takeaway in Birmingham? Whether you want delivery to your door or a quick collection in Handsworth, these are the dishes worth ordering first from our ",
+          },
+          { _type: "span", _key: "ntw-i2", marks: ["ntw-l1"], text: "Nigerian food menu" },
+          { _type: "span", _key: "ntw-i3", text: "." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "ntw-h1",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "ntw-h1s", text: "Party jollof rice" }],
+      },
+      {
+        _type: "block",
+        _key: "ntw-b1",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "ntw-b1s",
+            text: "Smoky, tomato-rich jollof with plantain and your choice of protein. It travels beautifully, which makes it the number one Nigerian takeaway order in Birmingham.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "ntw-h2",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "ntw-h2s", text: "Beef and chicken suya" }],
+      },
+      {
+        _type: "block",
+        _key: "ntw-b2",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "ntw-b2s",
+            text: "Charcoal-grilled, yaji-spiced suya is made for sharing. Add a portion for the table and it stays smoky and tender on the way home.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "ntw-h3",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "ntw-h3s", text: "Soups with swallow" }],
+      },
+      {
+        _type: "block",
+        _key: "ntw-b3",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "ntw-b3s",
+            text: "Egusi, efo riro, and okro with poundo or amala are hearty, comforting, and pack well for delivery — a proper Nigerian meal without leaving home.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "ntw-h4",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "ntw-h4s", text: "Small chops for the table" }],
+      },
+      {
+        _type: "block",
+        _key: "ntw-b4",
+        style: "normal",
+        markDefs: [
+          {
+            _key: "ntw-l2",
+            _type: "link",
+            href: "https://www.ubereats.com/store-browse-uuid/ed5cf926-4f43-460d-960b-135912d864fb?diningMode=DELIVERY",
+          },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "ntw-b4a",
+            text: "Puff puff, samosas, and spring rolls are perfect add-ons. Ready to eat? ",
+          },
+          { _type: "span", _key: "ntw-b4b", marks: ["ntw-l2"], text: "Order NaijaGrill on Uber Eats" },
+          { _type: "span", _key: "ntw-b4c", text: " for African takeaway across Birmingham." },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Is there a good Nigerian takeaway in Birmingham?",
+        answer:
+          "Yes. NaijaGrill in Handsworth offers Nigerian takeaway and delivery across Birmingham via Uber Eats, including jollof rice, suya, soups with swallow, and small chops.",
+      },
+      {
+        question: "Can I get Nigerian food delivered in Birmingham?",
+        answer:
+          "Yes, you can order NaijaGrill for delivery on Uber Eats, or collect a takeaway from 77B Rookery Road, Handsworth.",
+      },
+      {
+        question: "What is the best Nigerian dish for takeaway?",
+        answer:
+          "Party jollof rice with plantain and protein is the most popular takeaway dish because it keeps its flavour well; suya and small chops are great for sharing.",
+      },
+    ],
+    seo: {
+      title: "Nigerian Takeaway in Birmingham: Top Dishes to Try | NaijaGrill",
+      description:
+        "The best Nigerian takeaway in Birmingham — order jollof, suya, egusi, and small chops from NaijaGrill in Handsworth for delivery or collection on Uber Eats.",
+    },
+  },
+  {
+    _id: "post-nigerian-catering-birmingham",
+    title: "Catering for Nigerian Parties, Weddings and Events in Birmingham",
+    slug: "catering-for-nigerian-parties-weddings-and-events-in-birmingham",
+    author: "NaijaGrill Kitchen",
+    excerpt:
+      "Planning a celebration? NaijaGrill offers Nigerian catering in Birmingham for parties, weddings, naming ceremonies, and corporate events — generous party food done properly.",
+    featuredImage: "/images/menu/naijagrill-assorted-spread.jpg",
+    category: fallbackBlogCategories[2],
+    publishedAt: "2026-06-12T09:00:00Z",
+    body: [
+      {
+        _type: "block",
+        _key: "nct-i",
+        style: "normal",
+        markDefs: [{ _key: "nct-l1", _type: "link", href: "/events-catering" }],
+        children: [
+          {
+            _type: "span",
+            _key: "nct-i1",
+            text: "From intimate gatherings to big celebrations, NaijaGrill provides Nigerian catering in Birmingham that brings real flavour to your event. Explore our ",
+          },
+          { _type: "span", _key: "nct-i2", marks: ["nct-l1"], text: "events and catering services" },
+          { _type: "span", _key: "nct-i3", text: " and tell us what you are planning." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "nct-h1",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "nct-h1s", text: "Weddings and engagements" }],
+      },
+      {
+        _type: "block",
+        _key: "nct-b1",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "nct-b1s",
+            text: "African wedding catering in Birmingham is one of our specialities — large trays of party jollof, fried rice, assorted meats, grilled fish, and sides, served the way guests expect at a Nigerian celebration.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "nct-h2",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "nct-h2s", text: "Naming ceremonies and parties" }],
+      },
+      {
+        _type: "block",
+        _key: "nct-b2",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "nct-b2s",
+            text: "Naming ceremonies, birthdays, and family get-togethers call for generous Nigerian party food. We scale the menu to your guest count and keep the spice and portions authentic.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "nct-h3",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "nct-h3s", text: "Corporate and community events" }],
+      },
+      {
+        _type: "block",
+        _key: "nct-b3",
+        style: "normal",
+        markDefs: [{ _key: "nct-l2", _type: "link", href: "/menu" }],
+        children: [
+          {
+            _type: "span",
+            _key: "nct-b3a",
+            text: "Corporate trays and church or community events are welcome too. Browse the ",
+          },
+          { _type: "span", _key: "nct-b3b", marks: ["nct-l2"], text: "menu" },
+          {
+            _type: "span",
+            _key: "nct-b3c",
+            text: " for ideas, then send us your date, guest numbers, and service style for a quote.",
+          },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "Do you offer Nigerian catering in Birmingham?",
+        answer:
+          "Yes. NaijaGrill caters Nigerian food for parties, weddings, naming ceremonies, corporate events, and community gatherings across Birmingham and the West Midlands.",
+      },
+      {
+        question: "Can you cater a Nigerian wedding in Birmingham?",
+        answer:
+          "Yes, African wedding catering is one of our specialities — party jollof, fried rice, assorted meats, grilled fish, and sides, scaled to your guest count.",
+      },
+      {
+        question: "How do I get a catering quote?",
+        answer:
+          "Use the events and catering enquiry form on our website with your date, guest estimate, occasion, and whether you want restaurant hosting or catering at your venue.",
+      },
+    ],
+    seo: {
+      title: "Nigerian Catering Birmingham — Parties, Weddings & Events | NaijaGrill",
+      description:
+        "Nigerian catering in Birmingham for parties, weddings, naming ceremonies, and corporate events. Authentic party jollof, suya, and sides from NaijaGrill, Handsworth.",
+    },
+  },
+  {
+    _id: "post-what-to-order-first-time",
+    title: "What to Order at a Nigerian Restaurant for the First Time",
+    slug: "what-to-order-at-a-nigerian-restaurant-for-the-first-time",
+    author: "NaijaGrill Kitchen",
+    excerpt:
+      "New to Nigerian food? Here are five dishes to order on your first visit — jollof rice, egusi soup, pounded yam, suya, and pepper soup — and what each one tastes like.",
+    featuredImage: "/images/menu/naijagrill-jollof-rice-assorted-meat-egg.jpg",
+    category: fallbackBlogCategories[0],
+    publishedAt: "2026-06-11T09:00:00Z",
+    body: [
+      {
+        _type: "block",
+        _key: "wto-i",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "wto-i1",
+            text: "Trying Nigerian food for the first time? It is bold, warming, and generous, and a little guidance goes a long way. Here are five dishes that make the perfect introduction.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "wto-h1",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "wto-h1s", text: "1. Jollof rice" }],
+      },
+      {
+        _type: "block",
+        _key: "wto-b1",
+        style: "normal",
+        markDefs: [
+          { _key: "wto-l1", _type: "link", href: "/blog/what-is-jollof-rice-a-beginners-guide" },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "wto-b1a",
+            text: "Smoky, tomato-rich party rice — the most loved dish in West Africa and the easiest place to start. New to it? Read our ",
+          },
+          { _type: "span", _key: "wto-b1b", marks: ["wto-l1"], text: "beginner's guide to jollof rice" },
+          { _type: "span", _key: "wto-b1c", text: "." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "wto-h2",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "wto-h2s", text: "2. Egusi soup" }],
+      },
+      {
+        _type: "block",
+        _key: "wto-b2",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "wto-b2s",
+            text: "A thick, savoury melon-seed soup with greens, fish, and meat. Rich and comforting, and a great gateway to Nigerian soups.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "wto-h3",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "wto-h3s", text: "3. Pounded yam (and swallow)" }],
+      },
+      {
+        _type: "block",
+        _key: "wto-b3",
+        style: "normal",
+        markDefs: [],
+        children: [
+          {
+            _type: "span",
+            _key: "wto-b3s",
+            text: "Soft, stretchy pounded yam is the classic partner for egusi or efo riro. You tear a small piece, scoop the soup, and enjoy — no cutlery needed.",
+          },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "wto-h4",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "wto-h4s", text: "4. Suya" }],
+      },
+      {
+        _type: "block",
+        _key: "wto-b4",
+        style: "normal",
+        markDefs: [
+          { _key: "wto-l2", _type: "link", href: "/blog/what-is-suya-everything-you-need-to-know" },
+        ],
+        children: [
+          {
+            _type: "span",
+            _key: "wto-b4a",
+            text: "Spicy, charcoal-grilled skewers coated in nutty yaji spice. Smoky and a little fiery — learn more in our ",
+          },
+          { _type: "span", _key: "wto-b4b", marks: ["wto-l2"], text: "complete guide to suya" },
+          { _type: "span", _key: "wto-b4c", text: "." },
+        ],
+      },
+      {
+        _type: "block",
+        _key: "wto-h5",
+        style: "h2",
+        markDefs: [],
+        children: [{ _type: "span", _key: "wto-h5s", text: "5. Pepper soup" }],
+      },
+      {
+        _type: "block",
+        _key: "wto-b5",
+        style: "normal",
+        markDefs: [{ _key: "wto-l3", _type: "link", href: "/menu" }],
+        children: [
+          {
+            _type: "span",
+            _key: "wto-b5a",
+            text: "A light, aromatic, spiced broth with meat or fish — warming and full of flavour. Ready to taste them all? See the full ",
+          },
+          { _type: "span", _key: "wto-b5b", marks: ["wto-l3"], text: "NaijaGrill menu" },
+          { _type: "span", _key: "wto-b5c", text: "." },
+        ],
+      },
+    ],
+    faqs: [
+      {
+        question: "What should I order at a Nigerian restaurant for the first time?",
+        answer:
+          "Start with jollof rice and suya, then try egusi soup with pounded yam and a bowl of pepper soup. These five dishes are the best introduction to Nigerian food.",
+      },
+      {
+        question: "Is Nigerian food very spicy?",
+        answer:
+          "Some dishes carry warming heat, but it varies. Jollof rice and small chops are mild and beginner-friendly, and the team can guide you on spice levels.",
+      },
+      {
+        question: "What is swallow in Nigerian food?",
+        answer:
+          "Swallow is a soft staple like pounded yam, poundo, or amala that you eat with soups such as egusi or efo riro, using your hands to scoop.",
+      },
+    ],
+    seo: {
+      title: "What to Order at a Nigerian Restaurant for the First Time | NaijaGrill",
+      description:
+        "New to Nigerian food? Order jollof rice, egusi soup, pounded yam, suya, and pepper soup on your first visit. A beginner's guide from NaijaGrill, Birmingham.",
+    },
+  },
   {
     _id: "post-best-nigerian-food-birmingham",
     title: "Best Nigerian Food To Try In Birmingham",
