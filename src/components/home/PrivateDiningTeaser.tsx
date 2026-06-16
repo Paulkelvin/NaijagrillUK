@@ -18,11 +18,12 @@ export function PrivateDiningTeaser() {
             Private dining & catering
           </p>
           <h2 className="editorial-display text-[clamp(2.25rem,4vw,4rem)] font-light leading-[0.98]">
-            Planning a full table or a bigger celebration?
+            Planning a full table or need catering services?
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-[1.65] text-ivory/72 md:text-base">
-            Tell us the occasion, date, and guest count, and the team will help
-            shape restaurant hosting or Nigerian catering around it.
+            Book a table for the group or request Nigerian catering for your
+            event — tell us the occasion, date, and guest count, and the team
+            will shape it around you.
           </p>
         </div>
 
