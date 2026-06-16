@@ -152,7 +152,7 @@ export default async function StoryPage() {
               </div>
             </div>
             <div className="grid gap-4">
-              <div className="image-vignette-side relative min-h-[150px] overflow-hidden rounded-[1.8rem] bg-charcoal">
+              <div className="image-vignette-side relative min-h-[260px] overflow-hidden rounded-[1.8rem] bg-charcoal sm:min-h-[150px]">
                 <EditorialImage
                   src="/images/Naija-grill-and-spice-front.webp"
                   alt="The NaijaGrill storefront on Rookery Road, Handsworth"

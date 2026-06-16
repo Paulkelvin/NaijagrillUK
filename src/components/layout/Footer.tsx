@@ -3,9 +3,15 @@ import { Address } from "@/components/local/Address";
 import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { BUSINESS } from "@/lib/business";
-import type { ContactInfoData } from "@/sanity/types";
+import type { ContactInfoData, OpeningHoursData } from "@/sanity/types";
 
-export function Footer({ contact }: { contact: ContactInfoData }) {
+export function Footer({
+  contact,
+  hours,
+}: {
+  contact: ContactInfoData;
+  hours: OpeningHoursData;
+}) {
   return (
     <footer className="bg-charcoal text-ivory">
       <div className="mx-auto max-w-[1600px] px-6 py-10 md:px-12 lg:px-16">
@@ -59,20 +65,47 @@ export function Footer({ contact }: { contact: ContactInfoData }) {
               </Link>
             </nav>
 
-            <div className="flex flex-wrap gap-x-7 gap-y-2 text-sm leading-relaxed text-ivory/68">
-              <Address
-                contact={contact}
-                className="flex flex-wrap gap-x-3 gap-y-1"
-              />
-              <span className="hidden text-ivory/20 lg:inline">/</span>
-              <span>
+            <div className="grid gap-x-8 gap-y-6 border-t border-ivory/10 pt-6 text-sm leading-relaxed text-ivory/68 sm:grid-cols-2">
+              <div>
+                <p className="editorial-caption mb-2 text-ivory/40">Visit</p>
+                <Address contact={contact} className="space-y-0.5" />
+              </div>
+
+              <div>
+                <p className="editorial-caption mb-2 text-ivory/40">
+                  Opening hours
+                </p>
+                <p className="text-ivory/85">Open every day</p>
+                <p>{hours.lunchHours}</p>
+              </div>
+
+              <div>
+                <p className="editorial-caption mb-2 text-ivory/40">Call</p>
+                <a
+                  href={`tel:${contact.phone.replace(/\s/g, "")}`}
+                  className="block transition-colors hover:text-gold"
+                >
+                  {contact.phone}
+                </a>
+                {contact.landline && (
+                  <a
+                    href={`tel:${contact.landline.replace(/\s/g, "")}`}
+                    className="block transition-colors hover:text-gold"
+                  >
+                    {contact.landline}
+                  </a>
+                )}
+              </div>
+
+              <div>
+                <p className="editorial-caption mb-2 text-ivory/40">Email</p>
                 <a
                   href={`mailto:${contact.email}`}
-                  className="transition-colors hover:text-gold"
+                  className="block break-words transition-colors hover:text-gold"
                 >
                   {contact.email}
                 </a>
-              </span>
+              </div>
             </div>
           </div>
 

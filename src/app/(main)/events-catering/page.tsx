@@ -116,22 +116,22 @@ export default function EventsCateringPage() {
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="image-vignette relative min-h-[380px] overflow-hidden rounded-[2rem] sm:row-span-2">
               <EditorialImage
-                src="https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=1800&q=85"
-                alt="Chef preparing catering dishes"
+                src="/images/menu/naijagrill-assorted-spread.jpg"
+                alt="An assorted spread of Nigerian dishes for a catered event"
                 sizes="(max-width: 1024px) 100vw, 36vw"
               />
             </div>
             <div className="image-vignette-side relative min-h-[180px] overflow-hidden rounded-[1.5rem]">
               <EditorialImage
-                src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=85"
-                alt="Grilled Nigerian food for catering"
+                src="/images/menu/naijagrill-beef-suya.jpg"
+                alt="Beef suya grilled over charcoal for catering"
                 sizes="(max-width: 1024px) 100vw, 22vw"
               />
             </div>
             <div className="image-vignette-side relative min-h-[180px] overflow-hidden rounded-[1.5rem]">
               <EditorialImage
-                src="https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1200&q=85"
-                alt="Jollof rice prepared for events"
+                src="/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg"
+                alt="Party jollof rice with plantain and assorted meat for events"
                 sizes="(max-width: 1024px) 100vw, 22vw"
               />
             </div>

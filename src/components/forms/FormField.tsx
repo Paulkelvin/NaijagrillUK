@@ -16,7 +16,7 @@ export function FormField({
   variant = "light",
 }: FormFieldProps) {
   const isDark = variant === "dark";
-  const inputClass = `mt-3 w-full border-b bg-transparent py-3 outline-none transition-colors ${
+  const inputClass = `mt-1.5 w-full border-b bg-transparent py-2.5 outline-none transition-colors ${
     isDark
       ? "border-ivory/20 text-ivory placeholder:text-ivory/40 focus:border-gold"
       : "border-charcoal/20 text-charcoal focus:border-gold"

@@ -41,7 +41,7 @@ export function EventInquiryForm({
   }
 
   const isDark = variant === "dark";
-  const inputClass = `mt-3 w-full border-b bg-transparent py-3 outline-none transition-colors ${
+  const inputClass = `mt-1.5 w-full border-b bg-transparent py-2.5 outline-none transition-colors ${
     isDark
       ? "border-ivory/20 text-ivory focus:border-gold"
       : "border-charcoal/20 text-charcoal focus:border-gold"
@@ -49,8 +49,8 @@ export function EventInquiryForm({
   const buttonClass = isDark ? "editorial-button-dark" : "editorial-button";
 
   return (
-    <form action={formAction} noValidate className="mt-16 space-y-12">
-      <div className="grid gap-12 md:grid-cols-2">
+    <form action={formAction} noValidate className="mt-8 space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
         <FormField variant={variant} label="Name" name="name" error={state.fieldErrors?.name} />
         <FormField
           variant={variant}
@@ -61,7 +61,7 @@ export function EventInquiryForm({
         />
       </div>
 
-      <div className="grid gap-12 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <FormField variant={variant} label="Phone (optional)" name="phone">
           <PhoneInput name="phone" className={inputClass} />
         </FormField>
@@ -102,7 +102,7 @@ export function EventInquiryForm({
         </FormField>
       )}
 
-      <div className="grid gap-12 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         <FormField variant={variant} label="Preferred Date" name="eventDate" type="date" />
         <FormField variant={variant} label="Guests" name="guests">
           <input type="number" name="guests" min={1} max={200} className={inputClass} />

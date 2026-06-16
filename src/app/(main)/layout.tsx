@@ -54,7 +54,7 @@ export default async function MainLayout({
       >
         {children}
       </main>
-      <Footer contact={contact} />
+      <Footer contact={contact} hours={hours} />
       <FloatingMobileCta />
       <Analytics />
     </>
