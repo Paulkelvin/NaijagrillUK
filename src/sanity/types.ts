@@ -21,6 +21,7 @@ export type HomepageData = {
   storyHeadline: string;
   storyParagraphs: string[];
   storyImage?: SanityImage | string;
+  storyVideoUrl?: string;
   cuisineEyebrow: string;
   cuisineHeadline: string;
   cuisineFeatures: {

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { EditorialFrame } from "@/components/ui/EditorialFrame";
+import { resolveImageSrc } from "@/sanity/resolve-image";
 import type { HomepageData } from "@/sanity/types";
 
 export function StorySection({ data }: { data: HomepageData }) {
+  const posterUrl = resolveImageSrc(data.storyImage, 1200) ?? undefined;
   return (
     <section className="bg-ivory">
       <div className="mx-auto max-w-[1500px] px-6 py-16 md:px-12 md:py-20 lg:px-16 lg:py-24">
@@ -27,22 +29,36 @@ export function StorySection({ data }: { data: HomepageData }) {
           <div className="relative max-w-[420px] justify-self-center lg:col-span-4 lg:col-start-8 lg:w-full">
             <EditorialFrame>
               <div className="relative overflow-hidden bg-charcoal [border-radius:2.5rem_5.5rem_2.5rem_4rem]">
-                {/* aspect-ratio is set on the iframe itself (not a percentage
-                    height on an absolute child) so mobile Safari sizes it
-                    correctly instead of collapsing it to zero height. */}
-                <iframe
-                  src="https://drive.google.com/file/d/1GMcUNummV2Em2eWJ_eXfQLGDSjXWi2OR/preview"
-                  title="A glimpse inside NaijaGrill"
-                  loading="lazy"
-                  allow="autoplay; encrypted-media; fullscreen"
-                  className="block aspect-[4/5] w-full border-0"
-                />
-                {/* Mask Google Drive's top bar so the pop-out / open-in-new
-                    link cannot be clicked through to the video source. */}
-                <div
-                  className="absolute inset-x-0 top-0 z-20 h-14 cursor-default"
-                  aria-hidden
-                />
+                {data.storyVideoUrl ? (
+                  // Self-hosted video: plays on click with no cookie prompt.
+                  <video
+                    src={data.storyVideoUrl}
+                    poster={posterUrl}
+                    controls
+                    playsInline
+                    preload="none"
+                    className="block aspect-[4/5] w-full object-cover"
+                  />
+                ) : (
+                  <>
+                    {/* aspect-ratio is set on the iframe itself (not a percentage
+                        height on an absolute child) so mobile Safari sizes it
+                        correctly instead of collapsing it to zero height. */}
+                    <iframe
+                      src="https://drive.google.com/file/d/1GMcUNummV2Em2eWJ_eXfQLGDSjXWi2OR/preview"
+                      title="A glimpse inside NaijaGrill"
+                      loading="lazy"
+                      allow="autoplay; encrypted-media; fullscreen"
+                      className="block aspect-[4/5] w-full border-0"
+                    />
+                    {/* Mask Google Drive's top bar so the pop-out / open-in-new
+                        link cannot be clicked through to the video source. */}
+                    <div
+                      className="absolute inset-x-0 top-0 z-20 h-14 cursor-default"
+                      aria-hidden
+                    />
+                  </>
+                )}
               </div>
             </EditorialFrame>
             <div

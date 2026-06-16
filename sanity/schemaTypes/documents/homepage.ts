@@ -48,10 +48,20 @@ export const homepage = defineType({
     }),
     defineField({
       name: "storyImage",
-      title: "Story Image",
+      title: "Story Image / Video Poster",
+      description:
+        "Shown in the Our Story section. Also used as the poster for the Story video below.",
       type: "image",
       options: { hotspot: true },
       fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
+    }),
+    defineField({
+      name: "storyVideo",
+      title: "Story Video (self-hosted)",
+      description:
+        "Upload an MP4 for the Our Story section. Plays with no cookie prompt. Replaces the embedded video when set.",
+      type: "file",
+      options: { accept: "video/mp4,video/webm,video/quicktime" },
     }),
     defineField({
       name: "cuisineEyebrow",

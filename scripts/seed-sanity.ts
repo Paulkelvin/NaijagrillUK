@@ -157,6 +157,7 @@ async function seedHomepage() {
     storyHeadline: hp.storyHeadline,
     storyParagraphs: hp.storyParagraphs,
     ...(storyImage ? { storyImage } : {}),
+    ...(existing?.storyVideo ? { storyVideo: existing.storyVideo } : {}),
     cuisineEyebrow: hp.cuisineEyebrow,
     cuisineHeadline: hp.cuisineHeadline,
     cuisineFeatures: features,

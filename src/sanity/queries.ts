@@ -1,6 +1,7 @@
 export const homepageQuery = `*[_type == "homepage"][0]{
   heroEyebrow, heroHeadline, heroSubtext, heroImage,
   storyEyebrow, storyHeadline, storyParagraphs, storyImage,
+  "storyVideoUrl": storyVideo.asset->url,
   cuisineEyebrow, cuisineHeadline, cuisineFeatures,
   experienceEyebrow, experienceHeadline, experienceBody, experienceImage,
   videoEyebrow, videoHeadline, videoBody,
