@@ -34,7 +34,6 @@ export function mergeHomepage(
     storyParagraphs: cms.storyParagraphs?.length
       ? cms.storyParagraphs
       : fallback.storyParagraphs,
-    videos: cms.videos?.length ? cms.videos : fallback.videos,
     cuisineFeatures:
       cms.cuisineFeatures?.map((feature, index) => {
         const fb = fallbackFeatures[index];

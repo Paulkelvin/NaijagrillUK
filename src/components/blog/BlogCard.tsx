@@ -22,7 +22,7 @@ export function BlogCard({
       >
         <div
           className={`relative ${
-            isFeatured ? "aspect-[16/10] sm:aspect-[2/1]" : "aspect-[6/7]"
+            isFeatured ? "aspect-[16/10] sm:aspect-[2/1]" : "aspect-[10/11]"
           }`}
         >
           {imageSrc && (
@@ -46,8 +46,10 @@ export function BlogCard({
               {formatDate(post.publishedAt)}
             </p>
             <h2
-              className={`editorial-display font-light leading-[1.02] text-ivory drop-shadow-[0_6px_24px_rgba(0,0,0,0.65)] transition-colors group-hover:text-gold ${
-                isFeatured ? "text-4xl md:text-5xl" : "text-2xl md:text-3xl"
+              className={`editorial-display leading-[1.02] text-ivory drop-shadow-[0_6px_24px_rgba(0,0,0,0.65)] transition-colors group-hover:text-gold ${
+                isFeatured
+                  ? "font-light text-4xl md:text-5xl"
+                  : "font-semibold tracking-tight text-2xl md:text-3xl"
               }`}
             >
               {post.title}

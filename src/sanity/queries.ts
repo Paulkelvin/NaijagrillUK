@@ -4,8 +4,6 @@ export const homepageQuery = `*[_type == "homepage"][0]{
   "storyVideoUrl": storyVideo.asset->url,
   cuisineEyebrow, cuisineHeadline, cuisineFeatures,
   experienceEyebrow, experienceHeadline, experienceBody, experienceImage,
-  videoEyebrow, videoHeadline, videoBody,
-  videos[]{ title, url, orientation, poster, "fileUrl": videoFile.asset->url },
   visitHeadline, visitImage, seo
 }`;
 
