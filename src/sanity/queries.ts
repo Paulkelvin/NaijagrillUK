@@ -21,7 +21,7 @@ export const openingHoursQuery = `*[_type == "openingHours"][0]{
 }`;
 
 export const contactInfoQuery = `*[_type == "contactInfo"][0]{
-  email, phone, street, area, city, postcode, country, locationNote, instagram
+  email, phone, landline, street, area, city, postcode, country, locationNote, instagram
 }`;
 
 export const blogPostsQuery = `*[_type == "blogPost"] | order(publishedAt desc){

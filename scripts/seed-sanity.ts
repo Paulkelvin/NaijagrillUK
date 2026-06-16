@@ -15,6 +15,7 @@ import { createClient } from "@sanity/client";
 import {
   fallbackBlogCategories,
   fallbackBlogPosts,
+  fallbackContact,
   fallbackEvents,
   fallbackExplorePage,
   fallbackGalleryImages,
@@ -196,6 +197,26 @@ async function seedOpeningHours() {
   console.log("  • Opening hours seeded (2pm — 11pm, every day)");
 }
 
+async function seedContactInfo() {
+  console.log("\nContact info:");
+  const c = fallbackContact;
+  await client.createOrReplace({
+    _id: "contactInfo",
+    _type: "contactInfo",
+    email: c.email,
+    phone: c.phone,
+    ...(c.landline ? { landline: c.landline } : {}),
+    street: c.street,
+    area: c.area,
+    city: c.city,
+    postcode: c.postcode,
+    country: c.country,
+    ...(c.locationNote ? { locationNote: c.locationNote } : {}),
+    ...(c.instagram ? { instagram: c.instagram } : {}),
+  });
+  console.log("  • Contact info seeded (mobile + landline)");
+}
+
 async function seedGallery() {
   console.log("\nGallery images:");
   for (const item of fallbackGalleryImages) {
@@ -353,6 +374,7 @@ async function run() {
 
   await seedHomepage();
   await seedOpeningHours();
+  await seedContactInfo();
   await seedGallery();
   await seedEvents();
   await seedExplorePage();

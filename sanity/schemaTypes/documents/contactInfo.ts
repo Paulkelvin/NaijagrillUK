@@ -6,7 +6,8 @@ export const contactInfo = defineType({
   type: "document",
   fields: [
     defineField({ name: "email", title: "Email", type: "string" }),
-    defineField({ name: "phone", title: "Phone", type: "string" }),
+    defineField({ name: "phone", title: "Phone (mobile)", type: "string" }),
+    defineField({ name: "landline", title: "Landline", type: "string" }),
     defineField({ name: "street", title: "Street", type: "string" }),
     defineField({ name: "area", title: "Area", type: "string" }),
     defineField({ name: "city", title: "City", type: "string" }),
