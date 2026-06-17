@@ -31,6 +31,8 @@ export const BUSINESS = {
   // Landline (Birmingham) — E.164 and UK national display
   landline: "+441212160249",
   landlineDisplay: "0121 216 0249",
+  // WhatsApp — same number as mobile, E.164 without leading +
+  whatsappUrl: "https://wa.me/447438757560?text=Hi%20NaijaGrill%2C%20I%27d%20like%20to%20make%20an%20enquiry.",
   website: SITE_URL,
   cuisine: "Nigerian",
   priceRange: "£££",

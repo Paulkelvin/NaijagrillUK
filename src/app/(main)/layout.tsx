@@ -1,6 +1,7 @@
 import { Analytics } from "@/components/analytics/Analytics";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingMobileCta } from "@/components/layout/FloatingMobileCta";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { Header } from "@/components/layout/Header";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AmbientGraphics } from "@/components/ui/AmbientGraphics";
@@ -56,6 +57,7 @@ export default async function MainLayout({
       </main>
       <Footer contact={contact} hours={hours} />
       <FloatingMobileCta />
+      <WhatsAppButton />
       <Analytics />
     </>
   );
