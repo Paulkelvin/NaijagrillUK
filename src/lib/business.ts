@@ -3,7 +3,7 @@ export const BUSINESS = {
   legalName: "Naija Grill UK",
   tagline: "Where Birmingham meets the hearth of Nigeria.",
   description:
-    "Premium Nigerian cuisine in Handsworth, Birmingham. An editorial dining experience rooted in heritage, fire, and flavour.",
+    "Authentic Nigerian restaurant in Handsworth, Birmingham, serving jollof rice, suya, pepper soup, grilled fish, and small chops for dine-in, takeaway, and delivery.",
   address: {
     street: "77B Rookery Road",
     area: "Handsworth",

@@ -43,9 +43,9 @@ const cateringServices = [
 
 export async function generateMetadata() {
   return buildMetadata({
-    title: "Events & Catering",
+    title: "Nigerian Catering & Events in Birmingham | NaijaGrill",
     description:
-      "Event booking and Nigerian catering services from NaijaGrill, Handsworth, Birmingham.",
+      "Nigerian catering for weddings, parties, naming ceremonies, and corporate events in Birmingham — plus private dining and group bookings at NaijaGrill, Handsworth.",
     path: "/events-catering",
   });
 }

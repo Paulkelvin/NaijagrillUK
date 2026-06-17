@@ -34,9 +34,9 @@ const contactCards = [
 
 export async function generateMetadata() {
   return buildMetadata({
-    title: "Contact",
+    title: "Contact NaijaGrill | Nigerian Restaurant in Handsworth",
     description:
-      "Contact NaijaGrill at 77B Rookery Road, Handsworth, Birmingham B21 9QU.",
+      "Get in touch with NaijaGrill at 77B Rookery Road, Handsworth, Birmingham B21 9QU — for dine-in, takeaway, reservations, catering, and Uber Eats delivery.",
     path: "/contact",
   });
 }

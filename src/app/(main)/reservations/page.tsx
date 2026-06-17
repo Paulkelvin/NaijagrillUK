@@ -10,9 +10,9 @@ import { getContactInfo } from "@/sanity/fetch";
 
 export async function generateMetadata() {
   return buildMetadata({
-    title: "Reservations",
+    title: "Book a Table | NaijaGrill Nigerian Restaurant, Birmingham",
     description:
-      "Reserve a table at NaijaGrill, Handsworth, Birmingham. Premium Nigerian dining on Rookery Road.",
+      "Reserve a table at NaijaGrill on Rookery Road, Handsworth, Birmingham — authentic Nigerian food for dinner, lunch, and group bookings.",
     path: "/reservations",
   });
 }

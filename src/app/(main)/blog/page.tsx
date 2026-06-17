@@ -8,9 +8,9 @@ import { getBlogCategories, getBlogPosts } from "@/sanity/fetch";
 
 export async function generateMetadata() {
   return buildMetadata({
-    title: "Journal",
+    title: "Journal | Nigerian Food, Culture & Local Guides | NaijaGrill",
     description:
-      "Stories on Nigerian food, culture, events, and local guides from NaijaGrill, Handsworth, Birmingham.",
+      "Guides and stories on Nigerian food, culture, and Handsworth from NaijaGrill — what to order first, the best Nigerian dishes in Birmingham, and more.",
     path: "/blog",
   });
 }

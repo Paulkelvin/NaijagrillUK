@@ -68,9 +68,9 @@ const serviceNotes = [
 
 export async function generateMetadata() {
   return buildMetadata({
-    title: "Our Story",
+    title: "Our Story | NaijaGrill, Handsworth Birmingham",
     description:
-      "The story of NaijaGrill — premium Nigerian cuisine in Handsworth, Birmingham.",
+      "How NaijaGrill brought authentic Nigerian cooking — slow-simmered stews, party jollof, and charcoal suya — to Rookery Road in Handsworth, Birmingham.",
     path: "/story",
   });
 }
