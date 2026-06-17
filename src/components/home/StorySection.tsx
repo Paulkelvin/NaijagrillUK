@@ -1,9 +1,17 @@
+"use client";
+
+import { useRef, useEffect } from "react";
 import Link from "next/link";
 import { EditorialFrame } from "@/components/ui/EditorialFrame";
 import { resolveImageSrc } from "@/sanity/resolve-image";
 import type { HomepageData } from "@/sanity/types";
 
 export function StorySection({ data }: { data: HomepageData }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.volume = 0.3;
+  }, []);
   const posterUrl = resolveImageSrc(data.storyImage, 1200) ?? undefined;
   return (
     <section className="bg-ivory">
@@ -28,9 +36,10 @@ export function StorySection({ data }: { data: HomepageData }) {
 
           <div className="relative max-w-[420px] justify-self-center lg:col-span-4 lg:col-start-8 lg:w-full">
             <EditorialFrame>
-              <div className="relative overflow-hidden bg-charcoal [border-radius:2.5rem_5.5rem_2.5rem_4rem]">
+              <div className="relative overflow-hidden bg-charcoal">
                 {data.storyVideoUrl ? (
                   <video
+                    ref={videoRef}
                     src={data.storyVideoUrl}
                     poster={posterUrl}
                     controls
