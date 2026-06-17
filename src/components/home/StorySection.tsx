@@ -30,7 +30,6 @@ export function StorySection({ data }: { data: HomepageData }) {
             <EditorialFrame>
               <div className="relative overflow-hidden bg-charcoal [border-radius:2.5rem_5.5rem_2.5rem_4rem]">
                 {data.storyVideoUrl ? (
-                  // Self-hosted video: plays on click with no cookie prompt.
                   <video
                     src={data.storyVideoUrl}
                     poster={posterUrl}
@@ -39,25 +38,15 @@ export function StorySection({ data }: { data: HomepageData }) {
                     preload="none"
                     className="block aspect-[4/5] w-full object-cover"
                   />
+                ) : posterUrl ? (
+                  // No video uploaded yet — show poster image until one is added in Sanity Studio
+                  <img
+                    src={posterUrl}
+                    alt="A glimpse inside NaijaGrill"
+                    className="block aspect-[4/5] w-full object-cover"
+                  />
                 ) : (
-                  <>
-                    {/* aspect-ratio is set on the iframe itself (not a percentage
-                        height on an absolute child) so mobile Safari sizes it
-                        correctly instead of collapsing it to zero height. */}
-                    <iframe
-                      src="https://drive.google.com/file/d/1GMcUNummV2Em2eWJ_eXfQLGDSjXWi2OR/preview"
-                      title="A glimpse inside NaijaGrill"
-                      loading="lazy"
-                      allow="autoplay; encrypted-media; fullscreen"
-                      className="block aspect-[4/5] w-full border-0"
-                    />
-                    {/* Mask Google Drive's top bar so the pop-out / open-in-new
-                        link cannot be clicked through to the video source. */}
-                    <div
-                      className="absolute inset-x-0 top-0 z-20 h-14 cursor-default"
-                      aria-hidden
-                    />
-                  </>
+                  <div className="block aspect-[4/5] w-full bg-charcoal/60" />
                 )}
               </div>
             </EditorialFrame>
