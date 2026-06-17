@@ -80,7 +80,8 @@ export function restaurantSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-    name: BUSINESS.name,
+    name: BUSINESS.legalName,
+    alternateName: BUSINESS.name,
     description: BUSINESS.description,
     image: `${BUSINESS.website}/og-image.jpg`,
     logo: `${BUSINESS.website}/icons/icon-512.png`,
@@ -88,7 +89,7 @@ export function restaurantSchema() {
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
     priceRange: BUSINESS.priceRange,
-    servesCuisine: BUSINESS.cuisine,
+    servesCuisine: ["Nigerian", "West African", "African"],
     address: {
       "@type": "PostalAddress",
       streetAddress: BUSINESS.address.street,
@@ -115,7 +116,8 @@ export function localBusinessSchema(openingHours?: OpeningHoursSpecification[]) 
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${BUSINESS.website}/#localbusiness`,
-    name: BUSINESS.name,
+    name: BUSINESS.legalName,
+    alternateName: BUSINESS.name,
     description: BUSINESS.description,
     url: BUSINESS.website,
     telephone: BUSINESS.phone,

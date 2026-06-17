@@ -324,8 +324,14 @@ export async function generateMetadata() {
   return buildMetadata({
     title: "Menu | Nigerian Food for Dine-In & Uber Eats",
     description:
-      "Explore NaijaGrill's Nigerian menu in Handsworth, Birmingham - rice bowls, egusi, ayamase, suya, pepper soup, fish, sides, and delivery favourites.",
+      "Explore NaijaGrill's Nigerian and West African menu in Handsworth, Birmingham - rice bowls, egusi, ayamase, suya, pepper soup, fish, sides, and delivery favourites.",
     path: "/menu",
+    keywords: [
+      "order Nigerian food Birmingham",
+      "jollof rice and suya Birmingham",
+      "Nigerian soup and swallow Birmingham",
+      "African food delivery Birmingham",
+    ],
   });
 }
 

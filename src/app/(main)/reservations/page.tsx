@@ -14,6 +14,11 @@ export async function generateMetadata() {
     description:
       "Reserve a table at NaijaGrill on Rookery Road, Handsworth, Birmingham — authentic Nigerian food for dinner, lunch, and group bookings.",
     path: "/reservations",
+    keywords: [
+      "book Nigerian restaurant Birmingham",
+      "Nigerian restaurant table booking Handsworth",
+      "reserve African restaurant Birmingham",
+    ],
   });
 }
 

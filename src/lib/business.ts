@@ -1,9 +1,16 @@
+// Canonical host is the www subdomain (the bare apex 308-redirects to it), so
+// force www on every absolute URL — canonical tags, og:image, JSON-LD — to
+// avoid redirects that can stop Facebook/social scrapers fetching the image.
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.naijagrillandspice.co.uk"
+).replace(/^https:\/\/naijagrillandspice\.co\.uk/, "https://www.naijagrillandspice.co.uk");
+
 export const BUSINESS = {
   name: "NaijaGrill",
-  legalName: "Naija Grill UK",
+  legalName: "Naija Grill & Spice Kitchen",
   tagline: "Where Birmingham meets the hearth of Nigeria.",
   description:
-    "Authentic Nigerian restaurant in Handsworth, Birmingham, serving jollof rice, suya, pepper soup, grilled fish, and small chops for dine-in, takeaway, and delivery.",
+    "Authentic Nigerian and West African restaurant in Handsworth, Birmingham, serving jollof rice, suya, pepper soup, grilled fish, and small chops for dine-in, takeaway, and delivery.",
   address: {
     street: "77B Rookery Road",
     area: "Handsworth",
@@ -24,7 +31,7 @@ export const BUSINESS = {
   // Landline (Birmingham) — E.164 and UK national display
   landline: "+441212160249",
   landlineDisplay: "0121 216 0249",
-  website: process.env.NEXT_PUBLIC_SITE_URL ?? "https://naijagrillandspice.co.uk",
+  website: SITE_URL,
   cuisine: "Nigerian",
   priceRange: "£££",
   social: {

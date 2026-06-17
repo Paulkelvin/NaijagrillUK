@@ -23,6 +23,10 @@ export function Footer({
             <p className="editorial-display text-3xl font-light leading-tight md:text-4xl">
               {BUSINESS.tagline}
             </p>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-ivory/55">
+              {BUSINESS.legalName} serves authentic Nigerian and West African
+              food in Handsworth, Birmingham — dine in, takeaway, or delivery.
+            </p>
           </div>
 
           <div className="grid gap-7">

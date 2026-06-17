@@ -5,6 +5,27 @@ import type { SeoMetadata } from "@/sanity/types";
 
 const siteUrl = BUSINESS.website;
 
+// Optional Facebook App ID (clears the "Missing fb:app_id" debugger warning and
+// unlocks share analytics). Set NEXT_PUBLIC_FB_APP_ID in the environment.
+const fbAppId = process.env.NEXT_PUBLIC_FB_APP_ID;
+
+// Site-wide base keywords (head + medium terms). Pages append their own
+// long-tail terms via the `keywords` option. Meta keywords carry little weight
+// with Google, but the same terms are mirrored across titles, descriptions,
+// headings, and JSON-LD where they actually count.
+const BASE_KEYWORDS = [
+  "Nigerian restaurant Birmingham",
+  "African restaurant Birmingham",
+  "Nigerian food Birmingham",
+  "Nigerian food Handsworth",
+  "West African food Birmingham",
+  "jollof rice Birmingham",
+  "suya Birmingham",
+  "Nigerian catering Birmingham",
+  "Nigerian takeaway Birmingham",
+  "Naija Grill & Spice Kitchen",
+];
+
 type BuildMetadataOptions = {
   title?: string;
   description?: string;
@@ -14,6 +35,7 @@ type BuildMetadataOptions = {
   type?: "website" | "article";
   publishedTime?: string;
   noIndex?: boolean;
+  keywords?: string[];
 };
 
 export function buildMetadata({
@@ -25,6 +47,7 @@ export function buildMetadata({
   type = "website",
   publishedTime,
   noIndex,
+  keywords = [],
 }: BuildMetadataOptions): Metadata {
   const resolvedTitle = seo?.title ?? title ?? BUSINESS.legalName;
   const resolvedDescription =
@@ -35,6 +58,8 @@ export function buildMetadata({
   const ogImage =
     resolveImageSrc(seo?.ogImage, 1200) ?? image ?? `${siteUrl}/og-image.jpg`;
   const shouldNoIndex = noIndex ?? seo?.noIndex ?? false;
+  // Page-specific keywords first, then the shared base, de-duplicated.
+  const resolvedKeywords = Array.from(new Set([...keywords, ...BASE_KEYWORDS]));
 
   return {
     metadataBase: new URL(siteUrl),
@@ -44,7 +69,9 @@ export function buildMetadata({
     authors: [{ name: BUSINESS.legalName, url: siteUrl }],
     creator: BUSINESS.legalName,
     publisher: BUSINESS.legalName,
+    keywords: resolvedKeywords,
     alternates: { canonical },
+    ...(fbAppId ? { facebook: { appId: fbAppId } } : {}),
     robots: shouldNoIndex
       ? { index: false, follow: false }
       : {

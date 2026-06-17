@@ -47,6 +47,12 @@ export async function generateMetadata() {
     description:
       "Nigerian catering for weddings, parties, naming ceremonies, and corporate events in Birmingham — plus private dining and group bookings at NaijaGrill, Handsworth.",
     path: "/events-catering",
+    keywords: [
+      "Nigerian wedding catering Birmingham",
+      "African party catering Birmingham",
+      "naming ceremony catering Birmingham",
+      "corporate Nigerian catering Birmingham",
+    ],
   });
 }
 

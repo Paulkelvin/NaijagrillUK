@@ -67,6 +67,12 @@ export async function generateMetadata() {
     description:
       "Visit NaijaGrill, a Nigerian restaurant in Handsworth, Birmingham for jollof rice, suya, egusi, reservations, catering, and Uber Eats delivery.",
     path,
+    keywords: [
+      "best Nigerian restaurant in Handsworth",
+      "where to eat Nigerian food in Birmingham",
+      "authentic African restaurant Handsworth",
+      "Nigerian restaurant near me Birmingham",
+    ],
   });
 }
 
