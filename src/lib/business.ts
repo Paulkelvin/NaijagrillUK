@@ -24,7 +24,7 @@ export const BUSINESS = {
   // Landline (Birmingham) — E.164 and UK national display
   landline: "+441212160249",
   landlineDisplay: "0121 216 0249",
-  website: process.env.NEXT_PUBLIC_SITE_URL ?? "https://naijagrill.co.uk",
+  website: process.env.NEXT_PUBLIC_SITE_URL ?? "https://naijagrillandspice.co.uk",
   cuisine: "Nigerian",
   priceRange: "£££",
   social: {

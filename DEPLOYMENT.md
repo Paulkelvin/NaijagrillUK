@@ -17,7 +17,7 @@ cp .env.example .env.local
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `NEXT_PUBLIC_SITE_URL` | Yes | Production URL, e.g. `https://naijagrill.co.uk` |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Production URL, e.g. `https://naijagrillandspice.co.uk` |
 | `NEXT_PUBLIC_SANITY_PROJECT_ID` | Yes | Sanity project ID |
 | `NEXT_PUBLIC_SANITY_DATASET` | Yes | Usually `production` |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
