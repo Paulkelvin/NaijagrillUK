@@ -43,7 +43,7 @@ export function StorySection({ data }: { data: HomepageData }) {
                     src={data.storyVideoUrl}
                     controls
                     playsInline
-                    preload="none"
+                    preload="metadata"
                     className="block aspect-[4/5] w-full object-cover"
                   />
                 ) : posterUrl ? (
