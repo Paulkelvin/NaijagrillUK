@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { sendReservationEmails } from "@/lib/email";
 import type { ActionResult } from "./types";
 
 const reservationSchema = z.object({
@@ -68,6 +69,15 @@ export async function submitReservation(
       message: "Something went wrong. Please try again or email us directly.",
     };
   }
+
+  await sendReservationEmails({
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    date: parsed.data.date,
+    guests: parsed.data.guests,
+    notes: parsed.data.notes,
+  });
 
   return {
     success: true,

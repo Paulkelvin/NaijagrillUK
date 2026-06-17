@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { sendNewsletterEmails } from "@/lib/email";
 import type { ActionResult } from "./types";
 
 const newsletterSchema = z.object({
@@ -52,6 +53,8 @@ export async function submitNewsletter(
       message: "Something went wrong. Please try again.",
     };
   }
+
+  await sendNewsletterEmails(parsed.data.email.toLowerCase());
 
   return {
     success: true,

@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { sendEventInquiryEmails } from "@/lib/email";
 import type { ActionResult } from "./types";
 
 const eventInquirySchema = z.object({
@@ -78,6 +79,16 @@ export async function submitEventInquiry(
       message: "Something went wrong. Please try again or email us directly.",
     };
   }
+
+  await sendEventInquiryEmails({
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    eventType,
+    eventDate: parsed.data.eventDate,
+    guests: parsed.data.guests,
+    message: parsed.data.message,
+  });
 
   return {
     success: true,

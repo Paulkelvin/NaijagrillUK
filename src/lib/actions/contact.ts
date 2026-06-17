@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { sendContactEmails } from "@/lib/email";
 import type { ActionResult } from "./types";
 
 const contactSchema = z.object({
@@ -62,6 +63,13 @@ export async function submitContactMessage(
       message: "Something went wrong. Please try again or email us directly.",
     };
   }
+
+  await sendContactEmails({
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    message: parsed.data.message,
+  });
 
   return {
     success: true,
