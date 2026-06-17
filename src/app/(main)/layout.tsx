@@ -3,6 +3,8 @@ import { Footer } from "@/components/layout/Footer";
 import { FloatingMobileCta } from "@/components/layout/FloatingMobileCta";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { Header } from "@/components/layout/Header";
+
+export const revalidate = 60;
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AmbientGraphics } from "@/components/ui/AmbientGraphics";
 import {
