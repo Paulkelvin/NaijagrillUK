@@ -73,8 +73,8 @@ export default function EventsCateringPage() {
         eyebrow="Events & Catering"
         title="Bring NaijaGrill to the moments that matter."
         description="Book intimate celebrations in the restaurant or enquire about Nigerian catering for weddings, engagements, naming ceremonies, and family events."
-        image="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=2400&q=85"
-        imageAlt="Celebration table with warm restaurant atmosphere"
+        image="/images/naija-grill-and-spice-room2.jpg"
+        imageAlt="NaijaGrill dining room with burgundy leather booths and warm pendant lighting"
         heightClassName="min-h-[64vh]"
       />
 
