@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/business";
+import { resolveImageSrc } from "@/sanity/resolve-image";
 import type { SeoMetadata } from "@/sanity/types";
 
 const siteUrl = BUSINESS.website;
@@ -29,7 +30,10 @@ export function buildMetadata({
   const resolvedDescription =
     seo?.description ?? description ?? BUSINESS.description;
   const canonical = `${siteUrl}${path}`;
-  const ogImage = image ?? `${siteUrl}/og-image.jpg`;
+  // Priority: a share image set in Studio (SEO → Open Graph Image) wins, then
+  // the page's own image (hero/featured), then the site-wide storefront image.
+  const ogImage =
+    resolveImageSrc(seo?.ogImage, 1200) ?? image ?? `${siteUrl}/og-image.jpg`;
   const shouldNoIndex = noIndex ?? seo?.noIndex ?? false;
 
   return {

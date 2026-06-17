@@ -12,7 +12,6 @@ import { Reveal } from "@/components/ui/Reveal";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
-import { resolveImageSrc } from "@/sanity/resolve-image";
 import {
   getBlogPosts,
   getHomepage,
@@ -27,7 +26,8 @@ export async function generateMetadata() {
     description: homepage.seo?.description,
     path: "/",
     seo: homepage.seo,
-    image: resolveImageSrc(homepage.heroImage, 1200),
+    // Share card uses the storefront photo by default (set a custom image in
+    // Studio → SEO → Open Graph Image to override).
   });
 }
 
