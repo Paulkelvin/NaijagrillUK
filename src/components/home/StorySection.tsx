@@ -41,7 +41,6 @@ export function StorySection({ data }: { data: HomepageData }) {
                   <video
                     ref={videoRef}
                     src={data.storyVideoUrl}
-                    poster={posterUrl}
                     controls
                     playsInline
                     preload="none"
