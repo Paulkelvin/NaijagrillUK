@@ -9,14 +9,14 @@ export function WhatsAppButton() {
       aria-label="Chat with NaijaGrill on WhatsApp"
       className="group fixed bottom-[5.5rem] right-4 z-50 lg:bottom-6 lg:right-6"
     >
-      {/* Pulse ring */}
+      {/* Pulse ring — 3 pulses on load then stops */}
       <span
         aria-hidden
-        className="absolute inset-0 rounded-full bg-[#25D366] opacity-60 animate-ping [animation-duration:2.4s]"
+        className="absolute inset-0 rounded-full bg-[#0e7a4a] opacity-50 animate-ping [animation-duration:4s] [animation-iteration-count:3]"
       />
 
       {/* Main button */}
-      <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-[0_6px_24px_rgba(37,211,102,0.45)] transition-transform duration-300 group-hover:scale-110">
+      <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#0e7a4a] shadow-[0_6px_24px_rgba(14,122,74,0.38)] transition-transform duration-300 group-hover:scale-110">
         <svg
           viewBox="0 0 24 24"
           className="h-7 w-7 fill-white"
