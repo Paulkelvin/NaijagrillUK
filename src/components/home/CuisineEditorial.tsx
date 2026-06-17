@@ -80,11 +80,17 @@ const localCuisineImages: Record<string, string> = {
   "white rice with ayamase": "/images/menu/naijagrill-white-rice-ayamase-stew.jpg",
   "fried rice": "/images/menu/naijagrill-fried-rice-peppered-hake-plantain.jpg",
   "poundo with egusi": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+  "poundo & egusi": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
   "egusi soup": "/images/menu/naijagrill-poundo-egusi-soup.jpg",
   "efo riro": "/images/menu/naijagrill-efo-riro-soup.jpg",
-  "amala, ewedu & gbegiri":
-    "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
+  "amala, ewedu & gbegiri": "/images/menu/naijagrill-amala-ewedu-gbegiri.jpg",
   "grilled fish": "/images/menu/naijagrill-grilled-fish-yam-plantain.jpg",
+  "beef suya": "/images/menu/naijagrill-beef-suya.jpg",
+  "small chops": "/images/menu/naijagrill-small-chops-platter.jpg",
+  "okro seafood soup": "/images/menu/naijagrill-okro-seafood-soup.jpg",
+  "beans with plantain": "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+  "puff puff": "/images/menu/naijagrill-puff-puff.jpg",
+  "chicken suya": "/images/menu/naijagrill-beef-suya.jpg",
 };
 
 function imageForCuisineFeature(feature: HomepageData["cuisineFeatures"][number]) {
