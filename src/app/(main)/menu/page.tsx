@@ -394,12 +394,25 @@ function menuPageSchema(items: MenuDish[]) {
       description: section.description,
       hasMenuItem: items
         .filter((item) => item.category === section.id)
-        .map((item) => ({
-          "@type": "MenuItem",
-          name: item.title,
-          description: item.description,
-          image: absoluteImageUrl(item.image),
-        })),
+        .map((item) => {
+          const priceValue = item.price.replace(/[^0-9.]/g, "");
+          return {
+            "@type": "MenuItem",
+            name: item.title,
+            description: item.description,
+            image: absoluteImageUrl(item.image),
+            ...(priceValue
+              ? {
+                  offers: {
+                    "@type": "Offer",
+                    price: priceValue,
+                    priceCurrency: "GBP",
+                    availability: "https://schema.org/InStock",
+                  },
+                }
+              : {}),
+          };
+        }),
     })),
   };
 }

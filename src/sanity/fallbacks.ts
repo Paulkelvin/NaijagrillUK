@@ -328,21 +328,21 @@ export const fallbackMenuItems: MenuItemData[] = [
 
 export const fallbackTestimonials: TestimonialData[] = [
   {
-    _id: "1",
+    _id: "testimonial-1",
     quote:
       "The jollof alone would justify the journey across Birmingham. Everything else felt like a generous afterthought.",
     author: "Elena M.",
     context: "Evening service",
   },
   {
-    _id: "2",
+    _id: "testimonial-2",
     quote:
       "Finally — Nigerian food presented with the same care you expect from the city's best dining rooms.",
     author: "James O.",
     context: "Private dining",
   },
   {
-    _id: "3",
+    _id: "testimonial-3",
     quote:
       "No gimmicks. Just extraordinary flavour, beautiful plating, and a room that knows when to step back.",
     author: "Amara K.",

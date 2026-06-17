@@ -22,6 +22,7 @@ import {
   fallbackHomepage,
   fallbackMenuItems,
   fallbackOpeningHours,
+  fallbackTestimonials,
 } from "@/sanity/fallbacks";
 
 // --- load .env.local -------------------------------------------------------
@@ -183,6 +184,22 @@ async function seedOpeningHours() {
     })),
   });
   console.log("  • Opening hours seeded (2pm — 11pm, every day)");
+}
+
+async function seedTestimonials() {
+  console.log("\nTestimonials:");
+  for (let i = 0; i < fallbackTestimonials.length; i++) {
+    const t = fallbackTestimonials[i];
+    await client.createOrReplace({
+      _id: t._id,
+      _type: "testimonial",
+      quote: t.quote,
+      author: t.author,
+      ...(t.context ? { context: t.context } : {}),
+      order: i + 1,
+    });
+    console.log("  •", t.author);
+  }
 }
 
 async function seedContactInfo() {
@@ -362,6 +379,7 @@ async function run() {
 
   await seedHomepage();
   await seedOpeningHours();
+  await seedTestimonials();
   await seedContactInfo();
   await seedGallery();
   await seedEvents();
@@ -370,7 +388,8 @@ async function run() {
   await seedBlog();
 
   console.log(
-    `\nDone. Seeded homepage, ${fallbackGalleryImages.length} gallery images, ` +
+    `\nDone. Seeded homepage, ${fallbackTestimonials.length} testimonials, ` +
+      `${fallbackGalleryImages.length} gallery images, ` +
       `${fallbackEvents.length} events, explore page, ${fallbackMenuItems.length} menu items, ` +
       `${fallbackBlogCategories.length} blog categories and ${fallbackBlogPosts.length} posts.`,
   );

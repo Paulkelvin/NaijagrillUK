@@ -83,6 +83,7 @@ export function restaurantSchema() {
     name: BUSINESS.name,
     description: BUSINESS.description,
     image: `${BUSINESS.website}/og-image.jpg`,
+    logo: `${BUSINESS.website}/icons/icon-512.png`,
     url: BUSINESS.website,
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
@@ -120,6 +121,7 @@ export function localBusinessSchema(openingHours?: OpeningHoursSpecification[]) 
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
     image: `${BUSINESS.website}/og-image.jpg`,
+    logo: `${BUSINESS.website}/icons/icon-512.png`,
     address: {
       "@type": "PostalAddress",
       streetAddress: BUSINESS.address.street,
@@ -192,7 +194,7 @@ export function articleSchema(post: BlogPostData, imageUrl?: string | null) {
       name: BUSINESS.legalName,
       logo: {
         "@type": "ImageObject",
-        url: `${BUSINESS.website}/og-image.jpg`,
+        url: `${BUSINESS.website}/icons/icon-512.png`,
       },
     },
     mainEntityOfPage: {
