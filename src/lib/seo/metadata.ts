@@ -29,7 +29,7 @@ export function buildMetadata({
   const resolvedDescription =
     seo?.description ?? description ?? BUSINESS.description;
   const canonical = `${siteUrl}${path}`;
-  const ogImage = image ?? `${siteUrl}/opengraph-image`;
+  const ogImage = image ?? `${siteUrl}/og-image.jpg`;
   const shouldNoIndex = noIndex ?? seo?.noIndex ?? false;
 
   return {

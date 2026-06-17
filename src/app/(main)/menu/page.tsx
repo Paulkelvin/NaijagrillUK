@@ -374,7 +374,7 @@ function buildMenuDishes(cmsItems: MenuItemData[]) {
 }
 
 function absoluteImageUrl(image: MenuDish["image"]) {
-  if (typeof image !== "string") return `${BUSINESS.website}/opengraph-image`;
+  if (typeof image !== "string") return `${BUSINESS.website}/og-image.jpg`;
   if (image.startsWith("http")) return image;
   return `${BUSINESS.website}${image}`;
 }

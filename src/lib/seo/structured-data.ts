@@ -82,7 +82,7 @@ export function restaurantSchema() {
     "@type": "Restaurant",
     name: BUSINESS.name,
     description: BUSINESS.description,
-    image: `${BUSINESS.website}/opengraph-image`,
+    image: `${BUSINESS.website}/og-image.jpg`,
     url: BUSINESS.website,
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
@@ -119,7 +119,7 @@ export function localBusinessSchema(openingHours?: OpeningHoursSpecification[]) 
     url: BUSINESS.website,
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
-    image: `${BUSINESS.website}/opengraph-image`,
+    image: `${BUSINESS.website}/og-image.jpg`,
     address: {
       "@type": "PostalAddress",
       streetAddress: BUSINESS.address.street,
@@ -186,13 +186,13 @@ export function articleSchema(post: BlogPostData, imageUrl?: string | null) {
       name: post.author,
     },
     datePublished: post.publishedAt,
-    image: imageUrl ?? `${BUSINESS.website}/opengraph-image`,
+    image: imageUrl ?? `${BUSINESS.website}/og-image.jpg`,
     publisher: {
       "@type": "Organization",
       name: BUSINESS.legalName,
       logo: {
         "@type": "ImageObject",
-        url: `${BUSINESS.website}/opengraph-image`,
+        url: `${BUSINESS.website}/og-image.jpg`,
       },
     },
     mainEntityOfPage: {
@@ -231,7 +231,7 @@ export function eventSchema(event: EventData, imageUrl?: string | null) {
       name: event.location || BUSINESS.name,
       address: formattedAddress,
     },
-    image: imageUrl ?? `${BUSINESS.website}/opengraph-image`,
+    image: imageUrl ?? `${BUSINESS.website}/og-image.jpg`,
     organizer: {
       "@type": "Organization",
       name: BUSINESS.legalName,
