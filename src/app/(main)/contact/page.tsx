@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CopyablePhoneLink } from "@/components/ui/CopyablePhoneLink";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { OpeningHours } from "@/components/local/OpeningHours";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -127,23 +128,21 @@ export default async function ContactPage() {
             {contact.phone && (
               <div className="rounded-[1.25rem] bg-ivory/10 p-4">
                 <p className="editorial-caption mb-2 text-ivory/55">Mobile</p>
-                <a
+                <CopyablePhoneLink
+                  phone={contact.phone}
                   href={`tel:${contact.phone.replace(/\s/g, "")}`}
-                  className="text-sm text-ivory transition-colors hover:text-gold"
-                >
-                  {contact.phone}
-                </a>
+                  linkClassName="text-sm text-ivory transition-colors hover:text-gold"
+                />
               </div>
             )}
             {contact.landline && (
               <div className="rounded-[1.25rem] bg-ivory/10 p-4">
                 <p className="editorial-caption mb-2 text-ivory/55">Landline</p>
-                <a
+                <CopyablePhoneLink
+                  phone={contact.landline}
                   href={`tel:${contact.landline.replace(/\s/g, "")}`}
-                  className="text-sm text-ivory transition-colors hover:text-gold"
-                >
-                  {contact.landline}
-                </a>
+                  linkClassName="text-sm text-ivory transition-colors hover:text-gold"
+                />
               </div>
             )}
           </div>

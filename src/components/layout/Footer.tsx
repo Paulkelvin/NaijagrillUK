@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CopyablePhoneLink } from "@/components/ui/CopyablePhoneLink";
 import { Address } from "@/components/local/Address";
 import { NewsletterSignup } from "@/components/newsletter/NewsletterSignup";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
@@ -85,19 +86,19 @@ export function Footer({
 
               <div>
                 <p className="editorial-caption mb-2 text-ivory/40">Call</p>
-                <a
+                <CopyablePhoneLink
+                  phone={contact.phone}
                   href={`tel:${contact.phone.replace(/\s/g, "")}`}
-                  className="block transition-colors hover:text-gold"
-                >
-                  {contact.phone}
-                </a>
+                  linkClassName="transition-colors hover:text-gold"
+                />
                 {contact.landline && (
-                  <a
-                    href={`tel:${contact.landline.replace(/\s/g, "")}`}
-                    className="block transition-colors hover:text-gold"
-                  >
-                    {contact.landline}
-                  </a>
+                  <div className="mt-1">
+                    <CopyablePhoneLink
+                      phone={contact.landline}
+                      href={`tel:${contact.landline.replace(/\s/g, "")}`}
+                      linkClassName="transition-colors hover:text-gold"
+                    />
+                  </div>
                 )}
               </div>
 

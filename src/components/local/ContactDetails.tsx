@@ -1,4 +1,5 @@
 import type { ContactInfoData } from "@/sanity/types";
+import { CopyablePhoneLink } from "@/components/ui/CopyablePhoneLink";
 import { Address } from "./Address";
 
 type ContactDetailsProps = {
@@ -26,23 +27,21 @@ export function ContactDetails({
       {contact.phone && (
         <div>
           <p className="editorial-caption mb-3">Mobile</p>
-          <a
+          <CopyablePhoneLink
+            phone={contact.phone}
             href={`tel:${contact.phone.replace(/\s/g, "")}`}
-            className="text-charcoal transition-colors hover:text-gold"
-          >
-            {contact.phone}
-          </a>
+            linkClassName="text-charcoal transition-colors hover:text-gold"
+          />
         </div>
       )}
       {contact.landline && (
         <div>
           <p className="editorial-caption mb-3">Landline</p>
-          <a
+          <CopyablePhoneLink
+            phone={contact.landline}
             href={`tel:${contact.landline.replace(/\s/g, "")}`}
-            className="text-charcoal transition-colors hover:text-gold"
-          >
-            {contact.landline}
-          </a>
+            linkClassName="text-charcoal transition-colors hover:text-gold"
+          />
         </div>
       )}
       <div>
