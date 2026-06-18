@@ -18,6 +18,7 @@ export type HomepageData = {
   heroSubtext: string;
   heroImage?: SanityImage | string;
   heroVideoUrl?: string;
+  heroVideoMobileUrl?: string;
   storyEyebrow: string;
   storyHeadline: string;
   storyParagraphs: string[];

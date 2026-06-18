@@ -31,6 +31,14 @@ export const homepage = defineType({
       options: { accept: "video/mp4,video/webm,video/quicktime" },
     }),
     defineField({
+      name: "heroVideoMobile",
+      title: "Hero Video — Mobile (optional, smaller file)",
+      description:
+        "Optional lighter/smaller version of the Hero Video shown on phones to save data. Falls back to the main Hero Video if not set.",
+      type: "file",
+      options: { accept: "video/mp4,video/webm,video/quicktime" },
+    }),
+    defineField({
       name: "heroImage",
       title: "Hero Image / Video Poster",
       description:

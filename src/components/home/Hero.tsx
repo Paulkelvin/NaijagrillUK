@@ -1,29 +1,19 @@
 import Link from "next/link";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { EditorialImage } from "@/components/ui/EditorialImage";
-import { resolveImageSrc } from "@/sanity/resolve-image";
+import { HeroVideo } from "@/components/home/HeroVideo";
 import type { HomepageData } from "@/sanity/types";
 
 export function Hero({ data }: { data: HomepageData }) {
-  // The Hero Image doubles as the video poster (instant paint while the video
-  // loads) and as the fallback when no Hero Video is set in Sanity.
-  const posterUrl = resolveImageSrc(data.heroImage, 2400) ?? undefined;
   return (
     <section className="relative h-[100svh] overflow-hidden">
       <div className="image-vignette absolute inset-0">
         {data.heroVideoUrl ? (
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster={posterUrl}
-            preload="auto"
-            aria-hidden
-            className="h-full w-full object-cover"
-          >
-            <source src={data.heroVideoUrl} type="video/mp4" />
-          </video>
+          <HeroVideo
+            image={data.heroImage}
+            desktopUrl={data.heroVideoUrl}
+            mobileUrl={data.heroVideoMobileUrl}
+          />
         ) : (
           <EditorialImage
             src={data.heroImage}

@@ -2,13 +2,15 @@
  * Uploads a hero background video to Sanity and attaches it to the homepage
  * document's `heroVideo` field (the source of truth for the homepage hero).
  *
- * Usage:  node scripts/upload-hero-video.mjs [path-to-video.mp4]
- * Default video path: naijagrill-hero.mp4 (in the project root)
+ * Usage:  node scripts/upload-hero-video.mjs [path-to-video.mp4] [fieldName]
+ * Defaults: naijagrill-hero.mp4 → heroVideo
+ * Mobile:   node scripts/upload-hero-video.mjs naijagrill-hero-mobile.mp4 heroVideoMobile
  *
  * Requires in .env.local:
  *   NEXT_PUBLIC_SANITY_PROJECT_ID, NEXT_PUBLIC_SANITY_DATASET, SANITY_API_WRITE_TOKEN
  */
 import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { createClient } from "@sanity/client";
 
 // --- load .env.local -------------------------------------------------------
@@ -39,13 +41,14 @@ const client = createClient({
 });
 
 const filePath = process.argv[2] ?? "naijagrill-hero.mp4";
+const field = process.argv[3] ?? "heroVideo";
 const buffer = readFileSync(filePath);
 console.log(
-  `Uploading ${filePath} (${(buffer.length / 1048576).toFixed(1)} MB) to Sanity…`,
+  `Uploading ${filePath} (${(buffer.length / 1048576).toFixed(1)} MB) to Sanity → ${field}…`,
 );
 
 const asset = await client.assets.upload("file", buffer, {
-  filename: "naijagrill-hero.mp4",
+  filename: basename(filePath),
   contentType: "video/mp4",
 });
 console.log("  ✓ uploaded asset:", asset._id);
@@ -60,17 +63,17 @@ if (!ids.length) {
   process.exit(1);
 }
 
-const heroVideo = {
+const fileField = {
   _type: "file",
   asset: { _type: "reference", _ref: asset._id },
 };
 
 for (const id of ids) {
-  await client.patch(id).set({ heroVideo }).commit();
-  console.log("  ✓ set heroVideo on", id);
+  await client.patch(id).set({ [field]: fileField }).commit();
+  console.log(`  ✓ set ${field} on`, id);
 }
 
 const url = await client.fetch(
-  `*[_type == "homepage"][0].heroVideo.asset->url`,
+  `*[_type == "homepage"][0].${field}.asset->url`,
 );
-console.log("\nDone. heroVideo URL is now:\n  " + url);
+console.log(`\nDone. ${field} URL is now:\n  ` + url);
