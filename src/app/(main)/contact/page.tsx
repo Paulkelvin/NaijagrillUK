@@ -92,7 +92,10 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-[1500px] gap-10 px-6 pb-16 md:px-12 md:pb-20 lg:grid-cols-[1.18fr_0.82fr] lg:px-16">
+      <section
+        id="contact-form"
+        className="mx-auto grid max-w-[1500px] scroll-mt-24 gap-10 px-6 pb-16 md:px-12 md:pb-20 lg:grid-cols-[1.18fr_0.82fr] lg:px-16"
+      >
         <div className="rounded-[2rem] bg-cream/75 p-6 shadow-[0_24px_70px_rgba(22,15,11,0.08)] md:p-8 lg:p-10">
           <p className="editorial-caption mb-3 text-gold">Message us</p>
           <h2 className="editorial-display text-3xl font-light leading-[1] text-charcoal md:text-4xl">

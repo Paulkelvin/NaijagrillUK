@@ -174,7 +174,7 @@ export default async function NigerianRestaurantBirminghamPage() {
             </Link>
             , or ask about{" "}
             <Link
-              href="/events-catering"
+              href="/events-catering#enquiry"
               className="text-charcoal underline decoration-gold/50 underline-offset-4"
             >
               events and catering
@@ -265,7 +265,7 @@ export default async function NigerianRestaurantBirminghamPage() {
                 Get directions
               </a>
               <Link
-                href="/contact"
+                href="/contact#contact-form"
                 className="inline-flex rounded-full bg-charcoal px-6 py-4 text-xs font-black uppercase tracking-[0.16em] text-ivory transition-colors hover:bg-burgundy"
               >
                 Contact us

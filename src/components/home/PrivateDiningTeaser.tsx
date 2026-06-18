@@ -46,7 +46,7 @@ export function PrivateDiningTeaser() {
               Plan your event
             </Link>
             <Link
-              href="/contact"
+              href="/contact#contact-form"
               className="text-xs uppercase tracking-[0.2em] text-ivory/70 transition-colors hover:text-gold"
             >
               Ask a question
