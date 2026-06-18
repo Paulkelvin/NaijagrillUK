@@ -7,9 +7,9 @@ const resend = process.env.RESEND_API_KEY
 
 const FROM =
   process.env.RESEND_FROM_EMAIL ?? `noreply@naijagrillandspice.co.uk`;
-const OWNER = "paulopackager@gmail.com";
+const OWNER = ["quayumm2008@yahoo.co.uk", "paulopackager@gmail.com"];
 
-async function send(to: string, subject: string, html: string) {
+async function send(to: string | string[], subject: string, html: string) {
   if (!resend) return;
   await resend.emails.send({ from: FROM, to, subject, html });
 }
