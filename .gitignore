@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw/working video files — the hero video lives in Sanity, not in git
+*.mp4
+*.mov
+*.MOV

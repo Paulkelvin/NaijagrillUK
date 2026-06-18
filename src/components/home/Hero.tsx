@@ -1,18 +1,37 @@
 import Link from "next/link";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { EditorialImage } from "@/components/ui/EditorialImage";
+import { resolveImageSrc } from "@/sanity/resolve-image";
 import type { HomepageData } from "@/sanity/types";
 
 export function Hero({ data }: { data: HomepageData }) {
+  // The Hero Image doubles as the video poster (instant paint while the video
+  // loads) and as the fallback when no Hero Video is set in Sanity.
+  const posterUrl = resolveImageSrc(data.heroImage, 2400) ?? undefined;
   return (
     <section className="relative h-[100svh] overflow-hidden">
       <div className="image-vignette absolute inset-0">
-        <EditorialImage
-          src={data.heroImage}
-          alt="Nigerian cuisine at NaijaGrill"
-          priority
-          sizes="100vw"
-        />
+        {data.heroVideoUrl ? (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={posterUrl}
+            preload="auto"
+            aria-hidden
+            className="h-full w-full object-cover"
+          >
+            <source src={data.heroVideoUrl} type="video/mp4" />
+          </video>
+        ) : (
+          <EditorialImage
+            src={data.heroImage}
+            alt="Nigerian cuisine at NaijaGrill"
+            priority
+            sizes="100vw"
+          />
+        )}
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-charcoal/92 via-charcoal/45 to-charcoal/40" />
       <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/25 to-transparent" />

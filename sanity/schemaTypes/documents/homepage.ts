@@ -23,8 +23,18 @@ export const homepage = defineType({
       rows: 3,
     }),
     defineField({
+      name: "heroVideo",
+      title: "Hero Video (self-hosted)",
+      description:
+        "Background video for the homepage hero. Plays muted, looped, and autoplays. Uploaded MP4 (H.264) recommended. When set, it replaces the Hero Image.",
+      type: "file",
+      options: { accept: "video/mp4,video/webm,video/quicktime" },
+    }),
+    defineField({
       name: "heroImage",
-      title: "Hero Image",
+      title: "Hero Image / Video Poster",
+      description:
+        "Shown in the hero. Also used as the poster (still frame) while the Hero Video loads, and as the fallback when no video is set.",
       type: "image",
       options: { hotspot: true },
       fields: [defineField({ name: "alt", title: "Alt text", type: "string" })],
