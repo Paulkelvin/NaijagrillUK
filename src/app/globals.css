@@ -157,7 +157,7 @@ body::before {
   }
 
   .kitchen-marquee-track {
-    animation: kitchen-marquee 22s linear infinite;
+    animation: kitchen-marquee 40s linear infinite;
   }
 
   .kitchen-marquee:hover .kitchen-marquee-track {
