@@ -23,8 +23,8 @@ export function Hero({ data }: { data: HomepageData }) {
           />
         )}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/92 via-charcoal/45 to-charcoal/40" />
-      <div className="absolute inset-0 bg-gradient-to-r from-charcoal/50 via-charcoal/15 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-charcoal/30 via-charcoal/10 to-transparent" />
 
       <div className="relative flex h-full flex-col justify-end px-6 pb-28 pt-20 md:px-12 md:pb-16 md:pt-28 lg:px-16 lg:pb-20">
         <div className="mx-auto w-full max-w-[1600px]">
