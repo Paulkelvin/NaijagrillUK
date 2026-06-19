@@ -55,20 +55,14 @@ export function HeroVideo({
 
   return (
     <>
-      {/* Ambient backdrop. When a video is layered on top, the mobile poster is
-          blurred + scaled so the fit-to-width video reads against a soft
-          background instead of empty bars. With no video (reduced-motion /
-          data-saver), the poster IS the hero, so it stays sharp and full-bleed. */}
+      {/* Poster: the LCP element and the fallback for no-JS / reduced-motion /
+          data-saver visitors. The mobile video is portrait and the desktop one
+          landscape, so both fill the hero edge-to-edge with object-cover. */}
       <EditorialImage
         src={image}
         alt="Nigerian cuisine at NaijaGrill"
         priority
         sizes="100vw"
-        className={
-          videoSrc
-            ? "object-cover scale-110 blur-xl md:scale-100 md:blur-0"
-            : "object-cover"
-        }
       />
       {videoSrc && (
         <video
@@ -79,9 +73,7 @@ export function HeroVideo({
           playsInline
           preload="metadata"
           aria-hidden
-          // On phones show the whole landscape frame (the food isn't cropped or
-          // zoomed); on tablet/desktop fill the hero edge-to-edge.
-          className="absolute inset-0 h-full w-full object-contain md:object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
         >
           <source src={videoSrc} type="video/mp4" />
         </video>
