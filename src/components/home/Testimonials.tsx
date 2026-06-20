@@ -1,11 +1,4 @@
-import Image from "next/image";
 import type { TestimonialData } from "@/sanity/types";
-
-const portraits = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=80",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80",
-  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=500&q=80",
-];
 
 function RatingStars() {
   return (
@@ -24,6 +17,12 @@ function RatingStars() {
   );
 }
 
+const accentColours = [
+  "bg-gold/80 text-charcoal",
+  "bg-charcoal text-ivory",
+  "bg-stone text-ivory",
+];
+
 function QuoteCard({
   item,
   index,
@@ -31,6 +30,8 @@ function QuoteCard({
   item: TestimonialData;
   index: number;
 }) {
+  const initial = item.author.charAt(0).toUpperCase();
+
   return (
     <figure
       className="smooth-card-motion flex min-h-[360px] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-[1.9rem] border border-charcoal/10 bg-ivory p-6 hover:-translate-y-1 md:w-[410px] lg:w-[455px]"
@@ -45,14 +46,11 @@ function QuoteCard({
         </blockquote>
       </div>
       <figcaption className="mt-8 flex items-center gap-4 border-t border-charcoal/10 pt-5">
-        <div className="relative aspect-square w-14 overflow-hidden rounded-full bg-charcoal/10 ring-4 ring-ivory/70">
-          <Image
-            src={portraits[index % portraits.length]}
-            alt=""
-            fill
-            sizes="56px"
-            className="object-cover contrast-105"
-          />
+        <div
+          className={`flex aspect-square w-14 items-center justify-center rounded-full text-xl font-bold ${accentColours[index % accentColours.length]}`}
+          aria-hidden="true"
+        >
+          {initial}
         </div>
         <div>
           <p className="text-sm font-black text-charcoal">{item.author}</p>
