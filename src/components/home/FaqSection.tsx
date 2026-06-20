@@ -1,5 +1,10 @@
 const faqs = [
   {
+    question: "Is the food suitable for Muslim diners?",
+    answer:
+      "We cook without pork and without alcohol in our food. We don't hold a formal halal certification at this time, so if you have specific requirements, the best thing to do is ask us directly before you visit or order. Call or WhatsApp us on 07438 757560 and we'll give you a straight answer about what's on the menu.",
+  },
+  {
     question: "Do I need to book before visiting?",
     answer:
       "Reservations are recommended for evening service, especially Thursday to Saturday. Walk-ins are welcome when the room allows.",
