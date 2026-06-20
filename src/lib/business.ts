@@ -8,6 +8,17 @@ const SITE_URL = (
 export const BUSINESS = {
   name: "NaijaGrill",
   legalName: "Naija Grill & Spice Kitchen",
+  alternateNames: [
+    "NaijaGrill",
+    "Naija Grill",
+    "Naija Grill and Spice",
+    "Naija Grill and Spice Kitchen",
+    "Naija Grill & Spice",
+    "NaijaGrill and Spice Kitchen",
+    "naijagrillandspice",
+    "Naija Grill Birmingham",
+    "Naija Grill Handsworth",
+  ],
   tagline: "Where Birmingham meets the hearth of Nigeria.",
   description:
     "Authentic Nigerian and West African restaurant in Handsworth, Birmingham, serving jollof rice, suya, pepper soup, grilled fish, and small chops for dine-in, takeaway, and delivery.",

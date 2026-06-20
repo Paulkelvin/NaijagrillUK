@@ -24,6 +24,13 @@ const BASE_KEYWORDS = [
   "Nigerian catering Birmingham",
   "Nigerian takeaway Birmingham",
   "Naija Grill & Spice Kitchen",
+  "Naija Grill",
+  "NaijaGrill",
+  "Naija Grill and Spice",
+  "Naija Grill and Spice Kitchen",
+  "Naija Grill Birmingham",
+  "Naija Grill Handsworth",
+  "naijagrillandspice",
 ];
 
 type BuildMetadataOptions = {
