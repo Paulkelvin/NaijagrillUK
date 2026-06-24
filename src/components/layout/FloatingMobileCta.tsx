@@ -72,7 +72,7 @@ function ItemContent({
 
 export function FloatingMobileCta() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-charcoal/10 bg-ivory/95 backdrop-blur-xl shadow-[0_-10px_30px_rgba(22,15,11,0.10)] pb-[env(safe-area-inset-bottom,0px)] lg:hidden after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-12 after:bg-ivory/95">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-charcoal/10 bg-ivory shadow-[0_-10px_30px_rgba(22,15,11,0.10)] pb-[env(safe-area-inset-bottom,0px)] lg:hidden [transform:translate3d(0,0,0)] after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-16 after:bg-ivory">
       <div className="mx-auto grid max-w-md grid-cols-4 gap-3 px-5 py-1">
         <a href={`tel:${BUSINESS.phone.replace(/\s/g, "")}`} className={itemClass}>
           <ItemContent icon={<PhoneIcon />} label="Call" />
