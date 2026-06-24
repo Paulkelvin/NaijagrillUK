@@ -56,10 +56,11 @@ export const BUSINESS = {
   },
   reviews: {
     provider: "Google",
-    rating: undefined as number | undefined,
-    reviewCount: undefined as number | undefined,
+    rating: 5.0 as number | undefined,
+    reviewCount: 4 as number | undefined,
+    profileUrl: "https://share.google/95Cf3n8hOcPSL4U4G",
     readReviewsUrl:
-      "https://www.google.com/search?q=NaijaGrill%2077B%20Rookery%20Road%20reviews",
+      "https://share.google/95Cf3n8hOcPSL4U4G",
     leaveReviewUrl:
       "https://www.google.com/search?q=NaijaGrill%2077B%20Rookery%20Road%20leave%20a%20review",
   },

@@ -328,25 +328,32 @@ export const fallbackMenuItems: MenuItemData[] = [
 
 export const fallbackTestimonials: TestimonialData[] = [
   {
-    _id: "testimonial-1",
+    _id: "testimonial-google-1",
     quote:
-      "The jollof alone would justify the journey across Birmingham. Everything else felt like a generous afterthought.",
-    author: "Elena M.",
-    context: "Evening service",
+      "Naija grill has great customer service and the food is so tasty. I can call the restaurant, home away from home.",
+    author: "Olujobi Olasunkanmi",
+    context: "Dine-in",
   },
   {
-    _id: "testimonial-2",
+    _id: "testimonial-google-2",
     quote:
-      "Finally — Nigerian food presented with the same care you expect from the city's best dining rooms.",
-    author: "James O.",
-    context: "Private dining",
+      "The best place to get real African / Nigerian food. Jolof rice, fried rice, beef suya, chicken suya, abula, seafood Okra, efo riro, egusi soup etc.",
+    author: "Mustapha Abdul Rasheed",
+    context: "Delivery",
   },
   {
-    _id: "testimonial-3",
+    _id: "testimonial-google-3",
     quote:
-      "No gimmicks. Just extraordinary flavour, beautiful plating, and a room that knows when to step back.",
-    author: "Amara K.",
-    context: "Weekend lunch",
+      "I always order from this shop. Excellent service and mouth watering food. 10/10. Everything is always fresh whenever I order, let it be the lamb chops, donner, chips, salad or even the chicken tikka — everything is always fresh and delicious.",
+    author: "Asha Begum",
+    context: "Delivery",
+  },
+  {
+    _id: "testimonial-google-4",
+    quote:
+      "I love the food here and the people who work here are very nice and I feel comfortable being there.",
+    author: "Samad Oluwa",
+    context: "Takeaway",
   },
 ];
 
