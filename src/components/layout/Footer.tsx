@@ -14,7 +14,7 @@ export function Footer({
   hours: OpeningHoursData;
 }) {
   return (
-    <footer className="bg-charcoal text-ivory">
+    <footer className="bg-charcoal text-ivory pb-20 lg:pb-0">
       <div className="mx-auto max-w-[1600px] px-6 py-10 md:px-12 lg:px-16">
         <div className="grid gap-8 lg:grid-cols-[0.8fr_1fr_0.8fr] lg:items-start">
           <div className="max-w-md">

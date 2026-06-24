@@ -1,6 +1,13 @@
 import { BUSINESS } from "@/lib/business";
 import type { TestimonialData } from "@/sanity/types";
 
+const REVIEW_URLS: Record<string, string> = {
+  "testimonial-google-1": "https://maps.app.goo.gl/EBwrTu8MPCY1HGHS9?g_st=ic",
+  "testimonial-google-2": "https://maps.app.goo.gl/rbHzTcD4UdocMJ8G8?g_st=ic",
+  "testimonial-google-3": "https://maps.app.goo.gl/xgCCGueWMtzd9qkc8?g_st=ic",
+  "testimonial-google-4": "https://maps.app.goo.gl/DgaTGNhD8SPfmegy9?g_st=ic",
+};
+
 function RatingStars() {
   return (
     <div className="flex items-center gap-1 text-gold" aria-label="5 star review">
@@ -29,57 +36,35 @@ function GoogleIcon() {
   );
 }
 
-const accentColours = [
-  "bg-gold/80 text-charcoal",
-  "bg-charcoal text-ivory",
-  "bg-stone text-ivory",
-];
-
-function QuoteCard({
-  item,
-  index,
-}: {
-  item: TestimonialData;
-  index: number;
-}) {
-  const initial = item.author.charAt(0).toUpperCase();
+function QuoteCard({ item }: { item: TestimonialData }) {
+  const reviewUrl = REVIEW_URLS[item._id] ?? BUSINESS.reviews.profileUrl;
 
   return (
-    <figure
-      className="smooth-card-motion flex min-h-[360px] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-[1.9rem] border border-charcoal/10 bg-ivory p-6 hover:-translate-y-1 md:w-[410px] lg:w-[455px]"
+    <a
+      href={reviewUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="smooth-card-motion flex min-h-[320px] w-[82vw] shrink-0 snap-start flex-col justify-between rounded-[1.9rem] border border-charcoal/10 bg-ivory p-6 no-underline hover:-translate-y-1 md:w-[410px] lg:w-[455px]"
     >
       <div>
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <a
-            href={BUSINESS.reviews.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
-          >
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5">
             <GoogleIcon />
             <span className="editorial-caption text-stone">Google Review</span>
-          </a>
+          </div>
           <RatingStars />
         </div>
-        <blockquote className="editorial-display text-[1.5rem] font-light leading-[1.28] text-charcoal md:text-[1.78rem]">
+        <blockquote className="editorial-display text-[1.35rem] font-light leading-[1.3] text-charcoal md:text-[1.65rem]">
           &ldquo;{item.quote}&rdquo;
         </blockquote>
       </div>
-      <figcaption className="mt-8 flex items-center gap-4 border-t border-charcoal/10 pt-5">
-        <div
-          className={`flex aspect-square w-14 items-center justify-center rounded-full text-xl font-bold ${accentColours[index % accentColours.length]}`}
-          aria-hidden="true"
-        >
-          {initial}
-        </div>
-        <div>
-          <p className="text-sm font-black text-charcoal">{item.author}</p>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-stone">
-            {item.context}
-          </p>
-        </div>
-      </figcaption>
-    </figure>
+      <p className="mt-6 border-t border-charcoal/10 pt-4 text-sm font-black text-charcoal">
+        {item.author}
+        <span className="ml-2 text-xs font-semibold uppercase tracking-[0.2em] text-stone">
+          {item.context}
+        </span>
+      </p>
+    </a>
   );
 }
 
@@ -90,10 +75,10 @@ export function Testimonials({ items }: { items: TestimonialData[] }) {
     <section className="overflow-hidden bg-ivory">
       <div className="mx-auto max-w-[1500px] px-6 py-16 md:px-12 md:py-24 lg:px-16">
         <div className="mb-9 border-t border-charcoal/10 pt-10">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <div className="min-w-0">
               <p className="editorial-caption mb-3 text-gold">Google Reviews</p>
-              <h2 className="editorial-display text-[clamp(2.2rem,9vw,5.25rem)] font-light leading-[0.92] text-charcoal">
+              <h2 className="editorial-display whitespace-nowrap text-[clamp(1.75rem,5.5vw,5.25rem)] font-light leading-[0.92] text-charcoal">
                 What our guests say
               </h2>
             </div>
@@ -121,7 +106,6 @@ export function Testimonials({ items }: { items: TestimonialData[] }) {
               <QuoteCard
                 key={`${item._id}-${index}`}
                 item={item}
-                index={index}
               />
             ))}
           </div>

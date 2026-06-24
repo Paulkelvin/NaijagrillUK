@@ -53,7 +53,7 @@ export default async function MainLayout({
       <Header />
       <main
         id="main-content"
-        className="flex min-h-screen flex-1 flex-col pb-16 lg:pb-0"
+        className="flex min-h-screen flex-1 flex-col"
       >
         {children}
       </main>
