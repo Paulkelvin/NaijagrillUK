@@ -1,25 +1,27 @@
 import Script from "next/script";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const GADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
 const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
 
 export function Analytics() {
-  if (!GA_ID && !CLARITY_ID) return null;
+  if (!GA_ID && !GADS_ID && !CLARITY_ID) return null;
 
   return (
     <>
-      {GA_ID && (
+      {(GA_ID || GADS_ID) && (
         <>
           <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID || GADS_ID}`}
             strategy="afterInteractive"
           />
-          <Script id="ga4-init" strategy="afterInteractive">
+          <Script id="gtag-init" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${GA_ID}');
+              ${GA_ID ? `gtag('config', '${GA_ID}');` : ""}
+              ${GADS_ID ? `gtag('config', '${GADS_ID}');` : ""}
             `}
           </Script>
         </>
