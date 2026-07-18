@@ -71,11 +71,14 @@ Milestones 5 and 6 are independent of each other (both only need 0–4) and can 
 **Objective:** Establish tooling and folder skeleton before any feature code exists, so every later milestone follows the same conventions from its first commit.
 
 **Tasks:**
-- [ ] Write `ENGINEERING_STANDARDS.md` (done alongside this document)
-- [ ] Add `vitest` as a devDependency; add `npm test` script
-- [ ] Create empty skeleton: `src/lib/seo/{config,logger,sync-log,retry,normalize,types}.ts`
-- [ ] Add `CRON_SECRET`, `GSC_*`, `GA4_*` placeholders to `.env.example`
-- [ ] Add a commented-out `vercel.json` crons block (uncommented in Milestone 4)
+- [x] Write `ENGINEERING_STANDARDS.md` (done alongside this document)
+- [x] Add `vitest` as a devDependency; add `npm test` script
+- [x] Create empty skeleton: `src/lib/seo/{config,logger,sync-log,retry,normalize,types}.ts`
+- [x] Add `CRON_SECRET`, `GSC_*`, `GA4_*` placeholders to `.env.example`
+- [~] `vercel.json` crons block — **deviation:** JSON has no comment syntax, so a
+      "commented-out" block isn't literally possible. Deferred `vercel.json`
+      creation to Milestone 4 in full, rather than committing an empty/misleading
+      stub now. See "Deviations from Plan" below.
 
 **Dependencies:** None.
 
@@ -91,16 +94,40 @@ Milestones 5 and 6 are independent of each other (both only need 0–4) and can 
 - `vercel.json` (new file)
 
 **Tests to perform:**
-- `npm test` exits 0
-- `npm run lint` exits 0
-- `npm run build` still succeeds (empty modules don't break the build)
+- `npm test` exits 0 — confirmed (`No test files found, exiting with code 0`, `passWithNoTests: true`)
+- `npm run lint` exits 0 — **for new files.** Pre-existing lint errors in
+  `scripts/gen-brand-assets.cjs` (3 `no-require-imports` errors) and a
+  pre-existing warning in `src/components/home/StorySection.tsx` predate this
+  milestone (confirmed via `git log` on those files) and are out of scope.
+  `npx eslint src/lib/seo/ vitest.config.ts` — clean, zero output.
+- `npm run build` still succeeds — confirmed, TypeScript + Turbopack build
+  completes with no errors, all 37 routes generate correctly.
 
 **Success criteria (DoD):**
-- All scaffolding files exist and compile
-- CHANGELOG.md updated
+- All scaffolding files exist and compile — met
+- CHANGELOG.md updated — met
 
 **Risks & rollback:**
 - Risk: none significant — this is inert scaffolding. Rollback: `git revert` the single commit.
+
+**Completed:** 2026-07-18.
+
+### Deviations from Plan
+
+- **`vercel.json` not created in this milestone.** The original task said "add a
+  commented-out crons block" — JSON has no comment syntax, so this was not
+  literally achievable. Rather than commit a placeholder file (`{ "crons": [] }`)
+  that adds no information and could be mistaken for a deliberate empty config,
+  `vercel.json` creation is deferred in full to Milestone 4, where it will be
+  created once with real, active cron entries. No functional impact — nothing
+  in Milestones 1–3 depends on `vercel.json` existing.
+- **`sync-log` module's `SyncSource` type includes `"ping"` and `"retention"`**
+  (Milestones 4 and 8) in addition to ARCHITECTURE.md's original comment list
+  (`gsc | ga4 | dataforseo | cms | crawler`) on `sync_log.source`. This is not
+  a schema change — `source` is an unconstrained `TEXT` column, so no
+  migration is affected — but the descriptive comment in the Milestone 1
+  migration should list the full set. Noted here so it isn't missed when
+  Milestone 1 is written.
 
 ---
 

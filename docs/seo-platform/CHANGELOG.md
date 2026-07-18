@@ -9,6 +9,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 0 (Standards & Scaffolding) complete.** `vitest` added as the
+  test runner (`npm test` / `npm run test:watch`); `vitest.config.ts` with
+  the `@/` path alias matching `tsconfig.json` and `passWithNoTests: true`
+  for the pre-implementation state
+- `src/lib/seo/{config,logger,sync-log,retry,normalize}.ts` — placeholder
+  modules, each documenting which milestone implements it; no logic yet
+- `src/lib/seo/types.ts` — shared `SyncSource`, `SyncStatus`, `SyncMetadata`,
+  `CompleteSyncRunInput` type contracts used by Milestones 3–8
+- `CRON_SECRET`, `GSC_CLIENT_EMAIL`, `GSC_PRIVATE_KEY`, `GSC_PROPERTY_URL`,
+  `GA4_CLIENT_EMAIL`, `GA4_PRIVATE_KEY`, `GA4_PROPERTY_ID` placeholders in
+  `.env.example`, documented as inert until Milestone 2
 - `ENGINEERING_STANDARDS.md` — folder structure, naming conventions, error handling, logging, background job architecture, retry strategy, configuration management, testing strategy, documentation requirements, git workflow, and an observability requirements section built in from the start (not bolted on later)
 - `PHASE_1_IMPLEMENTATION.md` — 10 sequential milestones (0–9) covering scaffolding, database schema, config, logging/sync_log, cron infrastructure proof, GSC sync, GA4 sync, observability layer, retention/archival, and a deferred minimal read-only UI. Each milestone specifies objective, tasks, dependencies, database changes, files, tests, Definition of Done, and risks/rollback
 - Architecture document (ARCHITECTURE.md) — complete system design covering vision, database schema, data pipeline, intelligence engine, API design, frontend architecture, and roadmap
