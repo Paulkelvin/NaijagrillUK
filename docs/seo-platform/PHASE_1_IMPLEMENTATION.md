@@ -408,11 +408,11 @@ None of these change any table's purpose, relationship, or the algorithms that r
 **Objective:** Wire GSC/GA4 credentials safely with fail-fast validation, before any job tries to use them.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/config.ts`: Zod schemas for GSC, GA4, and cron secret config
-- [ ] Implement `getGscConfig()` / `isGscConfigured()`, `getGa4Config()` / `isGa4Configured()` (mirrors `isSupabaseConfigured()`)
-- [ ] Implement `normalizePrivateKey()` — handles both literal `\n` and real-newline PEM key formats
-- [ ] Document exact env var setup (service account creation, property verification) in this document's runbook appendix
-- [ ] Update `.env.example` with real variable names and comments (already stubbed in Milestone 0)
+- [x] Implement `src/lib/seo/config.ts`: Zod schemas for GSC, GA4, and cron secret config
+- [x] Implement `getGscConfig()` / `isGscConfigured()`, `getGa4Config()` / `isGa4Configured()` (mirrors `isSupabaseConfigured()`) — plus `getCronSecret()` / `isCronSecretConfigured()`, folded into this milestone since the task list already scoped "cron secret config" in and Milestone 4's cron routes need it read the same way
+- [x] Implement `normalizePrivateKey()` — handles both literal `\n` and real-newline PEM key formats
+- [x] Document exact env var setup (service account creation, property verification) — added as `DEPLOYMENT.md` §8 rather than an appendix in this document, matching where the equivalent Sanity/Supabase/Analytics setup steps already live (consistency over introducing a second setup-doc location)
+- [x] Update `.env.example` with real variable names and comments (already stubbed in Milestone 0, refined here)
 
 **Dependencies:** Milestone 0.
 
@@ -420,25 +420,40 @@ None of these change any table's purpose, relationship, or the algorithms that r
 
 **Database changes:** None.
 
-**Files to create/modify:**
+**Files created/modified:**
 - `src/lib/seo/config.ts`
 - `src/lib/seo/config.test.ts`
 - `.env.example`
-- `DEPLOYMENT.md` (add GSC/GA4 service account setup section)
+- `DEPLOYMENT.md` (§8, GSC/GA4 service account setup)
 
-**Tests to perform (unit, via Vitest):**
-- Valid full config → parses correctly
-- Missing required var → `isXConfigured()` returns false, no throw
-- Malformed private key (missing PEM header) → clear validation error
-- Escaped `\n` in private key → `normalizePrivateKey()` produces valid real-newline PEM
+**Tests performed (13 unit tests via Vitest, all passing):**
+- [x] Valid full GSC config → parses correctly, values round-trip including normalized private key
+- [x] Valid full GA4 config → same
+- [x] Missing required var (GSC `propertyUrl`, GA4 `propertyId`) → `isXConfigured()` returns `false`, confirmed not to throw
+- [x] Malformed private key (missing PEM header) → `getGscConfig()`/`getGa4Config()` throw with a message naming the field and the specific problem
+- [x] Invalid `clientEmail` → throws naming the field
+- [x] Invalid `propertyUrl` → `isGscConfigured()` returns `false`
+- [x] `normalizePrivateKey()`: literal `\n` → real newlines, confirmed exact output
+- [x] `normalizePrivateKey()`: idempotent on a key that already has real newlines
+- [x] Cron secret: unset → `isCronSecretConfigured()` false, `getCronSecret()` throws; set → both work; empty string → treated as unset
 
 **Success criteria (DoD):**
-- `npm test` covers all four cases above and passes
-- No code outside `config.ts` reads `process.env.GSC_*` / `GA4_*` directly (grep check)
+- [x] `npm test` — 13/13 passing, covers all four originally-specified cases plus the additional edge cases above
+- [x] Grep-verified: no code outside `config.ts` reads `process.env.GSC_*`/`GA4_*`/`CRON_SECRET` directly (only `config.test.ts`, which is expected — it's exercising the module)
+- [x] `npm run lint` — clean on the new files; repo-wide, same 2 pre-existing unrelated issues as Milestones 0/1
+- [x] `npm run build` — succeeds
+
+**Deviations from plan:**
+- Added `isCronSecretConfigured()`/`getCronSecret()` even though not called out in this milestone's original "Files"/"Tests" bullets — the Tasks list already said "Zod schemas for GSC, GA4, **and cron secret config**", and mirroring the exact same pattern now means Milestone 4's cron routes read it through `config.ts` from day one rather than reaching for `process.env.CRON_SECRET` directly and creating exactly the inconsistency ENGINEERING_STANDARDS.md §7 rules out.
+- Env var setup documentation went into `DEPLOYMENT.md` §8 (new section, correctly renumbered — the existing Post-Deploy Checklist shifted from §8 to §9) instead of "this document's runbook appendix" as originally planned. `PHASE_1_IMPLEMENTATION.md` doesn't otherwise contain operational setup instructions (that's what `DEPLOYMENT.md` and, as of this milestone, `DATABASE_OPERATIONS.md` are for) — putting it there would have split "how to deploy this app" across two documents for no benefit. Verified the documented `npx tsx -e "..."` verification snippet actually runs and produces the claimed output before writing it into the doc.
+
+**New risks/trade-offs discovered:** None beyond what was already anticipated. The GSC/GA4 service-account setup itself (the fiddly part) is still ahead of us in Milestone 5 — this milestone only proved the config-parsing side is solid.
 
 **Risks & rollback:**
 - Risk: GSC/GA4 service account setup is fiddly and can take 2-3 days per ARCHITECTURE.md's own risk note (domain property verification, correct API scopes). Mitigation: this milestone only wires config parsing — actual auth is proven in Milestone 5, isolating the two risks.
 - Rollback: this module has no side effects; safe to revert independently.
+
+**Completed:** 2026-07-18.
 
 ---
 

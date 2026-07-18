@@ -9,6 +9,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 2 (Configuration & Secrets) complete.** `src/lib/seo/config.ts`
+  — Zod-validated `getGscConfig()`/`isGscConfigured()`,
+  `getGa4Config()`/`isGa4Configured()`, `getCronSecret()`/`isCronSecretConfigured()`,
+  and `normalizePrivateKey()` (handles both literal `\n` and real-newline PEM
+  keys). The only module permitted to read `process.env` for GSC/GA4/cron
+  secret vars — grep-verified. 13 unit tests, all passing. `DEPLOYMENT.md` §8
+  — full GSC/GA4 service-account setup walkthrough, including a verification
+  command that was actually run before being documented
 - `DATABASE_OPERATIONS.md` — operational runbook: fresh-database setup,
   running/applying migrations, seeding, dev-database reset, backup/restore
   (tested end-to-end locally: seed → `pg_dump` → restore → verified intact),

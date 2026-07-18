@@ -116,7 +116,71 @@ Vercel will automatically:
 - Serve the dynamic `/opengraph-image` for social sharing
 - Statically generate blog posts and pages at build time
 
-## 8. Post-Deploy Checklist
+## 8. SEO Platform: Google Service Accounts (Optional, Phase 1)
+
+Only needed once you're ready to test the GSC/GA4 sync jobs (`docs/seo-platform/PHASE_1_IMPLEMENTATION.md` Milestones 5-6). The site and its existing features work fully without this — `isGscConfigured()`/`isGa4Configured()` (`src/lib/seo/config.ts`) keep the pipeline inert until these are set.
+
+GSC and GA4 use separate service accounts in this walkthrough (a single account with access to both APIs also works — same steps, reuse one JSON key for both sets of env vars).
+
+### 8.1 Create the Google Cloud project and service account(s)
+
+1. In the [Google Cloud Console](https://console.cloud.google.com), create a project (or reuse one) — the project doesn't need to be linked to the same Google account that owns the GSC property or GA4 account.
+2. Enable the required APIs for that project:
+   - **Search Console API** — for GSC
+   - **Google Analytics Data API** — for GA4
+3. Create a service account: **IAM & Admin → Service Accounts → Create Service Account**. Name it something identifiable (e.g. `seo-platform`).
+4. Generate a key: open the service account → **Keys → Add Key → Create new key → JSON**. This downloads a `.json` file containing `client_email` and `private_key` — these map directly to `GSC_CLIENT_EMAIL`/`GSC_PRIVATE_KEY` (and `GA4_CLIENT_EMAIL`/`GA4_PRIVATE_KEY` if reusing the same account).
+
+The service account itself has no access to your GSC property or GA4 data yet — that's granted separately in the next two steps, inside GSC/GA4 themselves, not in Google Cloud.
+
+### 8.2 Grant Search Console access
+
+1. Open [Search Console](https://search.google.com/search-console) for `naijagrillandspice.co.uk`.
+2. **Settings → Users and permissions → Add user**.
+3. Enter the service account's `client_email` (looks like `seo-platform@your-project.iam.gserviceaccount.com`).
+4. Grant **Full** or **Restricted** — Restricted (read-only) is sufficient; the sync job only calls `searchanalytics.query`, never a write endpoint.
+5. Set `GSC_PROPERTY_URL` to the exact property URL as it appears in Search Console (must match exactly — GSC properties are matched by exact URL, not domain).
+
+### 8.3 Grant GA4 access
+
+1. Open [Google Analytics](https://analytics.google.com) → **Admin → Property Access Management** for the relevant GA4 property.
+2. **Add users**, enter the service account's `client_email`.
+3. Role: **Viewer** — sufficient; the sync job only calls `runReport`, never a write/admin endpoint.
+4. Set `GA4_PROPERTY_ID` to the numeric property ID (Admin → Property Settings → Property ID — not the Measurement ID used by `NEXT_PUBLIC_GA_MEASUREMENT_ID`, a different identifier for a different API).
+
+### 8.4 Set environment variables
+
+Add to `.env.local` (or your hosting platform's environment variables):
+
+```
+GSC_CLIENT_EMAIL=seo-platform@your-project.iam.gserviceaccount.com
+GSC_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GSC_PROPERTY_URL=https://www.naijagrillandspice.co.uk
+
+GA4_CLIENT_EMAIL=seo-platform@your-project.iam.gserviceaccount.com
+GA4_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GA4_PROPERTY_ID=123456789
+```
+
+The private key from the downloaded JSON file already contains literal `\n` sequences when copied as a single line — paste it as-is, in quotes. `normalizePrivateKey()` (`src/lib/seo/config.ts`) handles both that form and a version with real newlines, so either works.
+
+Also set `CRON_SECRET` (any random string — `openssl rand -hex 32`) before Milestone 4's cron routes exist; harmless to set now.
+
+### 8.5 Verify parsing
+
+No sync job reads this config yet (that's Milestones 5-6), but you can confirm the values parse correctly right now:
+
+```bash
+npx tsx -e "
+import { isGscConfigured, isGa4Configured } from './src/lib/seo/config';
+console.log('GSC configured:', isGscConfigured());
+console.log('GA4 configured:', isGa4Configured());
+"
+```
+
+`false` with no thrown error means something's missing or malformed but the app stays inert (by design) — check for a typo'd variable name or a private key missing its `BEGIN`/`END` markers before assuming a deeper problem.
+
+## 9. Post-Deploy Checklist
 
 - [ ] Verify all pages load with Sanity content
 - [ ] Test reservation form submission in Supabase
