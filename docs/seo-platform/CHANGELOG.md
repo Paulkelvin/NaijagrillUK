@@ -9,6 +9,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 1 (Database Foundation) implemented and locally validated.**
+  `supabase/migrations/20260718000000_seo_platform_core.sql` — 11 tables
+  (`sites`, `site_configs`, `topic_clusters`, `pages`, `keywords`,
+  `cluster_keywords`, `keyword_page_metrics(_weekly)`, `page_metrics(_weekly)`,
+  `sync_log`), 19 foreign keys, 9 unique constraints, 33 CHECK constraints,
+  9 indexes tied to documented query patterns, a shared `updated_at` trigger,
+  RLS enabled with zero anon/authenticated policies (default-deny), and
+  seed data for the restaurant site. Fully idempotent — verified re-runnable
+  against a local PostgreSQL 16 instance configured to replicate Supabase's
+  `anon`/`authenticated`/`service_role` model. **Not yet applied to the
+  production Supabase project** — see PHASE_1_IMPLEMENTATION.md Milestone 1
 - **Milestone 0 (Standards & Scaffolding) complete.** `vitest` added as the
   test runner (`npm test` / `npm run test:watch`); `vitest.config.ts` with
   the `@/` path alias matching `tsconfig.json` and `passWithNoTests: true`

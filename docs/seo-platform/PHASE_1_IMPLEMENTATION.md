@@ -138,11 +138,11 @@ Milestones 5 and 6 are independent of each other (both only need 0–4) and can 
 **Tables included:** `sites`, `site_configs`, `topic_clusters`, `pages`, `keywords`, `cluster_keywords`, `keyword_page_metrics`, `keyword_page_metrics_weekly`, `page_metrics`, `page_metrics_weekly`, `sync_log`.
 
 **Tasks:**
-- [ ] Write migration `supabase/migrations/<timestamp>_seo_platform_core.sql`, copied and adapted from ARCHITECTURE.md §3's schema block (tables above only)
-- [ ] Add RLS: enable RLS on every new table, **no anon policies** (these are server-only tables, unlike the public form tables) — access is via service-role key exclusively, per ARCHITECTURE.md's "Row-Level Security" note
-- [ ] Seed one `sites` row for `naijagrillandspice.co.uk`, `business_type = 'restaurant'`
-- [ ] Seed matching `site_configs` row using the Restaurant preset from ARCHITECTURE.md Appendix B
-- [ ] Apply migration via Supabase SQL editor (matching current repo practice — see DEPLOYMENT.md)
+- [x] Write migration `supabase/migrations/20260718000000_seo_platform_core.sql`, adapted from ARCHITECTURE.md §3's schema block (tables above only)
+- [x] Add RLS: enable RLS on every new table, **no anon policies** (these are server-only tables, unlike the public form tables) — access is via service-role key exclusively, per ARCHITECTURE.md's "Row-Level Security" note
+- [x] Seed one `sites` row for `naijagrillandspice.co.uk`, `business_type = 'restaurant'`
+- [x] Seed matching `site_configs` row using the Restaurant preset from ARCHITECTURE.md Appendix B
+- [ ] Apply migration via Supabase SQL editor against the real production project — **not yet done.** Validated exhaustively against a local PostgreSQL 16 instance configured to replicate Supabase's role/RLS model (see below); applying to the actual Supabase project is the one remaining action item, since I don't have credentials/access to it from this environment. Runbook is in the Validation section below — copy-paste the migration file into the SQL editor.
 
 **Dependencies:** Milestone 0 (folder conventions).
 
@@ -153,21 +153,212 @@ Milestones 5 and 6 are independent of each other (both only need 0–4) and can 
 **Files to create/modify:**
 - `supabase/migrations/<timestamp>_seo_platform_core.sql`
 
-**Tests to perform:**
-- Apply migration to Supabase; verify all 11 tables + indexes exist via SQL editor `\d` / information_schema query
-- Attempt a read with the **anon** key against `sites` — must be denied (RLS working)
-- Attempt a read with the **service role** key — must succeed
-- Insert a duplicate `(site_id, path)` into `pages` — must fail on the unique constraint (confirms dedup constraints are live before any sync code depends on them)
+**Tests performed (against a local PostgreSQL 16 instance, configured to replicate Supabase's `anon`/`authenticated`/`service_role` model — see "Validation Methodology" below):**
+- [x] Empty database → full migration sequence (existing + new) applies cleanly, exit 0
+- [x] Full migration sequence re-run end to end → new migration is fully idempotent (every statement a no-op on re-run, seed `INSERT`s become `0 rows` via `ON CONFLICT DO NOTHING`)
+- [x] `anon` role: `SELECT` on `sites`/`keyword_page_metrics` → 0 rows (RLS filter, confirmed not an empty-table artifact by cross-checking as superuser)
+- [x] `anon` role: `INSERT` into `sites` → rejected (`new row violates row-level security policy`)
+- [x] `authenticated` role: `SELECT` on `sync_log` → 0 rows, same mechanism
+- [x] `service_role`: `SELECT`/`INSERT` on `sites`, `keywords` → succeeds (simulated ingestion)
+- [x] 6 targeted constraint-violation tests (clicks > impressions, position out of range, non-Monday `week_start`, `failed` status without `error_message`, `started` status with `completed_at` set, duplicate `keyword_normalized`) → all correctly rejected with the expected named constraint
+- [x] Idempotent upsert on `keyword_page_metrics` (`ON CONFLICT ... DO UPDATE`, run twice with different values) → exactly 1 row survives with the latest values; `updated_at` trigger verified to fire correctly across a real transaction boundary (initial same-transaction test was a false negative caused by `now()` being transaction-scoped, not a trigger bug — re-verified with two separate `psql` invocations and a 1s gap)
+- [x] Cascade: delete a `page` → its `keyword_page_metrics` rows are gone
+- [x] Cascade: delete a `site` → its `keywords`, `site_configs`, and everything beneath cascade away
+- [x] 32,283-row synthetic `keyword_page_metrics` dataset (realistic Phase 1 scale, sparse like real GSC data) + `ANALYZE` → confirmed via `EXPLAIN` that `idx_kpm_site_date`, `idx_kpm_keyword_date`, `idx_kpm_page_date`, and `idx_sync_site_source` are each chosen by the planner (Bitmap/Index Scan, not Seq Scan) for their documented query pattern
+- [x] Full FK inventory (19 foreign keys) and RLS state (`relrowsecurity = t` on all 11 tables, 0 rows in `pg_policies` for all 11) pulled directly from `pg_catalog`
 
 **Success criteria (DoD):**
-- Migration applied to production Supabase project without error
-- Anon-key access to all new tables confirmed blocked
-- Seed row for the site exists and is queryable via service role
-- `ARCHITECTURE.md`'s schema diagram is a byte-for-byte match for the tables included (no silent drift)
+- [x] Migration is idempotent and schema-correct, exhaustively verified locally (see above)
+- [x] Anon/authenticated access to all new tables confirmed blocked; service-role ingestion confirmed working
+- [x] Seed row for the site exists and is queryable via service role
+- [x] `ARCHITECTURE.md`'s schema is matched for the tables included, with documented, reasoned deltas (see "Differences from Architecture" below) — not a silent drift
+- [ ] **Migration applied to the actual production Supabase project.** Not yet done — see the note above. This is the one item carried into "before Milestone 2 starts."
 
 **Risks & rollback:**
-- Risk: schema drift from ARCHITECTURE.md during hand-adaptation. Mitigation: diff the migration's `CREATE TABLE` blocks against the architecture doc before applying.
-- Risk: applying to production Supabase directly (no staging environment exists yet). Mitigation: migration is additive-only (new tables, nothing touches the four existing form tables) — low blast radius. Rollback: `DROP TABLE` in reverse dependency order (documented at the bottom of the migration file as a commented-out rollback block).
+- Risk: schema drift from ARCHITECTURE.md during hand-adaptation. Mitigated by writing every deviation down explicitly (below) rather than letting it happen silently.
+- Risk: applying to production Supabase directly (no staging environment exists yet). Mitigation: migration is additive-only (new tables, nothing touches the four existing form tables) — low blast radius. Rollback: `DROP TABLE` in reverse dependency order — `sync_log, page_metrics_weekly, page_metrics, keyword_page_metrics_weekly, keyword_page_metrics, cluster_keywords, keywords, pages, topic_clusters, site_configs, sites` (children before parents; `pages`/`topic_clusters` before each other doesn't matter since their mutual FK is `ON DELETE SET NULL`, not blocking).
+- **Finding (out of scope for this migration, flagged for a decision):** the pre-existing `20260609000000_initial_schema.sql` is **not** idempotent — its four `CREATE POLICY` statements have no guard and error on re-run (`policy ... already exists`). This didn't block Milestone 1 (my migration runs independently and is itself fully idempotent), but it means "re-run the full migration sequence from scratch" fails at the *first* file if attempted twice against the same database, for reasons unrelated to the SEO platform. I did not touch that file — per `ENGINEERING_STANDARDS.md` §11, applied migrations are append-only. If you'd like this fixed, it would be a small follow-up migration (`DROP POLICY IF EXISTS` + `CREATE POLICY` for the four existing policies) — let me know and I'll do it as its own commit, separate from Milestone 1.
+
+### Validation Methodology
+
+No Supabase credentials are available in this environment, so "verify against a real database" meant standing up an equivalent locally rather than skipping the check. PostgreSQL 16 is installed in this sandbox; I:
+1. Created `anon`, `authenticated`, and `service_role` Postgres roles matching Supabase's actual model — `NOLOGIN NOINHERIT` for the first two, `BYPASSRLS` for `service_role` — and replicated Supabase's default grants (`GRANT ALL ON ALL TABLES ... TO anon, authenticated, service_role`, since in Supabase RLS is the enforcement layer, not table-level `GRANT`s; granting too little would have made the anon-denied tests pass for the wrong reason).
+2. Applied the existing initial migration, then the new one, against a freshly created database.
+3. Ran the full test matrix above using `SET ROLE` to switch between `anon`/`authenticated`/`service_role` within `psql`.
+4. Populated 32K+ rows of realistic synthetic data to get meaningful `EXPLAIN` output (an empty/near-empty table correctly makes the planner prefer a sequential scan — that's not a defect, so I didn't stop at the misleading zero-data result).
+5. Tore down the test database, roles, and stopped the local Postgres service, leaving the sandbox as it was found.
+
+This proves the migration is *correct*. It does not replace applying it to the real Supabase project, since things like the exact Postgres version/extensions Supabase runs, connection pooling behaviour, and the real `service_role` key's actual grants could theoretically differ — low risk given how closely Supabase's documented model was replicated, but worth stating plainly rather than implying "production-verified" when it's "locally-verified against a faithful replica."
+
+### Deliverables
+
+#### ER Diagram
+
+```mermaid
+erDiagram
+    SITES ||--|| SITE_CONFIGS : "1:1 config"
+    SITES ||--o{ TOPIC_CLUSTERS : "has"
+    SITES ||--o{ PAGES : "has"
+    SITES ||--o{ KEYWORDS : "has"
+    SITES ||--o{ KEYWORD_PAGE_METRICS : "has (denormalized)"
+    SITES ||--o{ KEYWORD_PAGE_METRICS_WEEKLY : "has (denormalized)"
+    SITES ||--o{ PAGE_METRICS : "has (denormalized)"
+    SITES ||--o{ PAGE_METRICS_WEEKLY : "has (denormalized)"
+    SITES ||--o{ SYNC_LOG : "has"
+
+    TOPIC_CLUSTERS ||--o{ PAGES : "groups (topic_cluster_id, nullable)"
+    PAGES |o--o| TOPIC_CLUSTERS : "pillar page (nullable, SET NULL)"
+    TOPIC_CLUSTERS ||--o{ CLUSTER_KEYWORDS : "has member"
+    KEYWORDS ||--o{ CLUSTER_KEYWORDS : "belongs to"
+
+    KEYWORDS ||--o{ KEYWORD_PAGE_METRICS : "ranks in"
+    PAGES ||--o{ KEYWORD_PAGE_METRICS : "ranks in"
+    KEYWORDS ||--o{ KEYWORD_PAGE_METRICS_WEEKLY : "ranks in"
+    PAGES ||--o{ KEYWORD_PAGE_METRICS_WEEKLY : "ranks in"
+    PAGES ||--o{ PAGE_METRICS : "measured (GA4)"
+    PAGES ||--o{ PAGE_METRICS_WEEKLY : "measured (GA4)"
+
+    SITES {
+        uuid id PK
+        text domain UK
+        text business_type "CHECK enum"
+    }
+    SITE_CONFIGS {
+        uuid site_id PK_FK
+    }
+    TOPIC_CLUSTERS {
+        uuid id PK
+        uuid site_id FK
+        text name "UNIQUE per site"
+        uuid pillar_page_id FK "nullable"
+    }
+    PAGES {
+        uuid id PK
+        uuid site_id FK
+        text path "UNIQUE per site"
+        uuid topic_cluster_id FK "nullable"
+        text content_type "nullable, CHECK enum"
+    }
+    KEYWORDS {
+        uuid id PK
+        uuid site_id FK
+        text keyword_normalized "UNIQUE per site"
+        text data_source "NOT NULL, CHECK enum"
+    }
+    CLUSTER_KEYWORDS {
+        uuid cluster_id PK_FK
+        uuid keyword_id PK_FK
+        boolean is_primary
+    }
+    KEYWORD_PAGE_METRICS {
+        bigint id PK
+        uuid site_id FK
+        uuid keyword_id FK
+        uuid page_id FK
+        date date
+        real position "nullable, CHECK 1-1000"
+    }
+    KEYWORD_PAGE_METRICS_WEEKLY {
+        bigint id PK
+        uuid keyword_id FK
+        uuid page_id FK
+        date week_start "CHECK is Monday"
+    }
+    PAGE_METRICS {
+        bigint id PK
+        uuid page_id FK
+        date date
+    }
+    PAGE_METRICS_WEEKLY {
+        bigint id PK
+        uuid page_id FK
+        date week_start "CHECK is Monday"
+    }
+    SYNC_LOG {
+        bigint id PK
+        uuid site_id FK
+        text source "CHECK enum"
+        text status "CHECK enum"
+        timestamptz completed_at "nullable, CHECK tied to status"
+    }
+```
+
+#### Final Table List
+
+| Table | Purpose |
+|-------|---------|
+| `sites` | One row per tracked property |
+| `site_configs` | 1:1 scoring weights, conversion events, CTR model per site |
+| `topic_clusters` | Manual keyword groupings (ADR-004) |
+| `pages` | Every known URL on the site |
+| `keywords` | Every known query, GSC-discovered or manually targeted |
+| `cluster_keywords` | Many-to-many: keywords ↔ topic_clusters |
+| `keyword_page_metrics` | Daily GSC fact table (query × page × day) |
+| `keyword_page_metrics_weekly` | Retention-job aggregate, populated Milestone 8 |
+| `page_metrics` | Daily GA4 fact table (page × day) |
+| `page_metrics_weekly` | Retention-job aggregate, populated Milestone 8 |
+| `sync_log` | Every pipeline run — the observability backbone |
+
+11 tables. Matches the Phase 1 scope from the milestone plan exactly; `competitors`, `serp_snapshots`, `internal_links`, `actions`, `action_outcomes`, `api_budgets` remain out of scope (Phase 2/3).
+
+#### Index Summary
+
+| Index | Table | Columns | Query pattern served |
+|-------|-------|---------|----------------------|
+| `idx_topic_clusters_site` | topic_clusters | (site_id) | Topical Authority Score, per-site cluster iteration |
+| `idx_pages_site_cluster` | pages | (site_id, topic_cluster_id) | Topical Authority Score, per-cluster page lookup |
+| `idx_keywords_site_target` | keywords | (site_id, is_target) | Opportunity Score, target vs. discovered keywords |
+| `idx_cluster_keywords_keyword` | cluster_keywords | (keyword_id) | Reverse lookup: clusters for a given keyword |
+| `idx_kpm_site_date` | keyword_page_metrics | (site_id, date) | Cannibalization Score (90d), retention job scan — **confirmed chosen by planner at 32K rows** |
+| `idx_kpm_page_date` | keyword_page_metrics | (page_id, date) | Page ROI Score, 30d per-page scan — **confirmed chosen** |
+| `idx_kpm_keyword_date` | keyword_page_metrics | (keyword_id, date) | Opportunity Score / CTR Model, 7d per-keyword scan — **confirmed chosen** |
+| `idx_pm_site_date` | page_metrics | (site_id, date) | Page ROI Score, per-site scan |
+| `idx_sync_site_source` | sync_log | (site_id, source, started_at DESC) | Observability "last run per source" — **confirmed chosen** |
+
+Plus 11 primary-key indexes and 9 unique-constraint indexes (`sites.domain`, `topic_clusters(site_id, name)`, `pages(site_id, path)`, `keywords(site_id, keyword_normalized)`, `keyword_page_metrics(keyword_id, page_id, date)`, `keyword_page_metrics_weekly(keyword_id, page_id, week_start)`, `page_metrics(page_id, date)`, `page_metrics_weekly(page_id, week_start)`), each doing double duty as both a data-integrity constraint and the index that serves the corresponding upsert's `ON CONFLICT` target.
+
+**Deliberately not indexed:** `keyword_page_metrics_weekly` and `page_metrics_weekly` have no index beyond their unique constraint — no Phase 1 query pattern reads them except the retention job's own upsert. A partial index for `sync_log`'s failed/stale-run queries is deferred to Milestone 7, when the actual observability view is built, rather than guessed at now.
+
+#### Constraint Summary
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| Primary keys | 11 | All tables |
+| Foreign keys | 19 | All `ON DELETE CASCADE` except `pages.topic_cluster_id` and `topic_clusters.pillar_page_id`, both `ON DELETE SET NULL` |
+| Unique constraints | 9 | `sites.domain`, `topic_clusters(site_id, name)`, `pages(site_id, path)`, `keywords(site_id, keyword_normalized)`, 3× metrics `(keyword_id/page_id, date/week_start)` composites |
+| CHECK constraints | 33 | Enum checks (business_type, content_type, search_intent, data_source, source, status), range checks (position 1–1000, ratios 0–1, non-negative counts), JSONB shape checks (`jsonb_typeof`), cross-field checks (`clicks <= impressions`, `week_start` is Monday, `sync_log` status/`completed_at` consistency, `failed` requires `error_message`) |
+| Triggers | 9 | `seo_set_updated_at()` on every mutable table (not `sync_log` — see reasoning below) |
+
+**FK cascade behaviour, by intent:**
+- `ON DELETE CASCADE` (17 of 19 FKs): child data has no meaning without its parent — deleting a site should delete everything under it; deleting a keyword/page should delete its metrics rows. Includes the "denormalized" `site_id` FKs on the metrics tables, which are redundant with the cascade chain through `keyword_id`/`page_id` but kept for referential-integrity consistency.
+- `ON DELETE SET NULL` (2 of 19 FKs): `pages.topic_cluster_id` and `topic_clusters.pillar_page_id` — a page or cluster still means something after losing its cluster/pillar reference, so the relationship is severed rather than the row destroyed.
+
+**CHECK constraints beyond ARCHITECTURE.md's original schema:** all 33 are additions — the architecture document specified column types and a few inline comments describing valid ranges, but did not encode them as SQL constraints. Per this milestone's "prefer explicit constraints over relying on application logic" rule, every range/enum/cross-field rule already documented in ARCHITECTURE.md's prose (§4.1's row validation, §5.x formulas' assumed ranges, the "Monday of the week" comment) is now enforced at the database level as well as the application level (Milestone 5+). This is defense-in-depth, not a design change — nothing here contradicts an documented business rule, it just stops trusting application code alone to uphold it.
+
+#### RLS Summary
+
+- All 11 tables: `ROW LEVEL SECURITY` enabled, **zero policies** for `anon`/`authenticated` (confirmed via `pg_policies` — 0 rows).
+- This is default-deny, not default-allow: Postgres RLS with no policy for a role means that role sees/writes nothing, even though (matching Supabase's actual setup) `anon`/`authenticated` hold full `GRANT`-level table privileges. Confirmed empirically — `anon` `SELECT` returns 0 rows on a table proven non-empty via superuser; `anon` `INSERT` is rejected outright.
+- `service_role` has Postgres `BYPASSRLS` (set automatically by Supabase) and therefore needs no policy — confirmed it can read and write freely.
+- This differs from the four pre-existing public tables (`reservations`, `event_inquiries`, `newsletter_leads`, `contact_messages`), which intentionally have `anon`-insert policies since they're public-facing forms. The SEO tables are server-only by design (ARCHITECTURE.md's RLS note) — no anonymous or client-side access is ever expected.
+
+#### Differences Between Implemented Schema and ARCHITECTURE.md
+
+None of these change any table's purpose, relationship, or the algorithms that read from them — they're schema-hygiene refinements made in direct response to this milestone's explicit "database-first principles" (documented nullability, explicit constraints, timestamps on every table). Listed here per your request, so nothing is silently different from the frozen document:
+
+| Difference | Reasoning |
+|------------|-----------|
+| Every table gets `created_at`; every table with a column that can change post-insert also gets a trigger-maintained `updated_at` | ARCHITECTURE.md's original schema omitted timestamps on several tables (`keyword_page_metrics`, `page_metrics`, `cluster_keywords`, `topic_clusters`, `pages`). This milestone's rules require timestamps "from the outset" on every table |
+| `sync_log` has **no** `updated_at` | Deliberate exception: `completed_at` already captures the row's only mutation (transition to a terminal status). A separate `updated_at` would be redundant and could drift from `completed_at` if unrelated future code touched another field |
+| `keywords.data_source` is `NOT NULL` (was nullable) | Every keyword row is created by a specific sync job that always knows its own provenance at write time — no code path exists that would leave this genuinely unknown. Per this milestone's own rule, a nullable column needs a documented reason; none could be found |
+| `pages.is_indexed` is `NOT NULL DEFAULT true` (was nullable-with-default) | Three-state booleans (true/false/unknown) are a schema smell when "unknown" isn't a real state the application ever produces |
+| `topic_clusters` gets `UNIQUE(site_id, name)` (architecture had no uniqueness rule on cluster names) | Matches the intended business rule — the manual clustering UI (ADR-004) has no use case for two identically-named clusters on one site |
+| 33 `CHECK` constraints added (enum, range, cross-field) | See Constraint Summary above — encodes rules ARCHITECTURE.md already stated in prose but left to application code alone |
+| `sync_log.source` enum includes `'ping'` and `'retention'` | Flagged in the Milestone 0 write-up; these are Milestone 4/8 job names not anticipated by ARCHITECTURE.md's original comment list. `source` was always an unconstrained `TEXT` column, so this is additive, not a change to an existing constraint |
+
+**Nothing here required stopping to discuss per your rule 6/7** — these are constraint tightening and hygiene, not a "significantly better approach" to the data model itself. If you'd rather any of these be loosened back to match ARCHITECTURE.md exactly (e.g., keep `data_source` nullable for future-proofing against a sync path I haven't thought of), say so and I'll revert that specific one — they're each independent, cheap to change.
+
+**Completed:** 2026-07-18, pending only the actual apply to the production Supabase project (see note above).
 
 ---
 
