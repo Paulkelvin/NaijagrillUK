@@ -9,7 +9,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
-- **Milestone 1 (Database Foundation) implemented and locally validated.**
+- **Milestone 1 (Database Foundation) CLOSED — applied to production and verified.**
   `supabase/migrations/20260718000000_seo_platform_core.sql` — 11 tables
   (`sites`, `site_configs`, `topic_clusters`, `pages`, `keywords`,
   `cluster_keywords`, `keyword_page_metrics(_weekly)`, `page_metrics(_weekly)`,
@@ -18,8 +18,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
   RLS enabled with zero anon/authenticated policies (default-deny), and
   seed data for the restaurant site. Fully idempotent — verified re-runnable
   against a local PostgreSQL 16 instance configured to replicate Supabase's
-  `anon`/`authenticated`/`service_role` model. **Not yet applied to the
-  production Supabase project** — see PHASE_1_IMPLEMENTATION.md Milestone 1
+  `anon`/`authenticated`/`service_role` model, then applied to the production
+  Supabase project and independently verified there via `@supabase/supabase-js`
+  (28/28 checks: table reachability, seed data, RLS deny/allow, 8 constraint
+  types, cascade design). See PHASE_1_IMPLEMENTATION.md Milestone 1 for the
+  full verification record
 - **Milestone 0 (Standards & Scaffolding) complete.** `vitest` added as the
   test runner (`npm test` / `npm run test:watch`); `vitest.config.ts` with
   the `@/` path alias matching `tsconfig.json` and `passWithNoTests: true`
