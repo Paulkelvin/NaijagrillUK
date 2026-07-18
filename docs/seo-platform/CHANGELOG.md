@@ -9,6 +9,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- `DATABASE_OPERATIONS.md` — operational runbook: fresh-database setup,
+  running/applying migrations, seeding, dev-database reset, backup/restore
+  (tested end-to-end locally: seed → `pg_dump` → restore → verified intact),
+  rollback strategy, append-only migration discipline, production deployment
+  checklist, environment variable requirements, and troubleshooting
+- `DATABASE_URL` documented as a server-side-only, operational-use-only
+  credential (direct Postgres access for migrations/backups/diagnostics —
+  never an application runtime dependency, never client-exposed)
+
+### Fixed
+- **Milestone 1's documented rollback procedure was wrong**, found while
+  writing `DATABASE_OPERATIONS.md`: `pages` and `topic_clusters` have a
+  circular FK, so the originally-documented drop order fails outright
+  (confirmed by running it). Corrected, tested sequence now lives in
+  `DATABASE_OPERATIONS.md` §7; `PHASE_1_IMPLEMENTATION.md` updated to point
+  there instead of claiming the rollback SQL lives in the migration file
+
 - **Milestone 1 (Database Foundation) CLOSED — applied to production and verified.**
   `supabase/migrations/20260718000000_seo_platform_core.sql` — 11 tables
   (`sites`, `site_configs`, `topic_clusters`, `pages`, `keywords`,
