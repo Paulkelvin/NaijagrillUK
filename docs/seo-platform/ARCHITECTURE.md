@@ -179,6 +179,7 @@ CREATE TABLE sites (
   domain      TEXT NOT NULL UNIQUE,
   -- restaurant | ecommerce | service | blog | beauty
   business_type TEXT NOT NULL DEFAULT 'restaurant',
+  -- Lightweight overrides only (e.g. feature flags). Heavy config lives in site_configs.
   config      JSONB NOT NULL DEFAULT '{}',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -305,7 +306,7 @@ CREATE TABLE keywords (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   site_id             UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   keyword             TEXT NOT NULL,           -- original form
-  keyword_normalized  TEXT NOT NULL,           -- lowercase, trimmed, prepositions stripped
+  keyword_normalized  TEXT NOT NULL,           -- lowercase, trimmed, articles stripped
   search_volume       INTEGER,
   keyword_difficulty  REAL,
   cpc                 REAL,
@@ -399,6 +400,24 @@ CREATE TABLE page_metrics (
 
 CREATE INDEX idx_pm_site_date ON page_metrics(site_id, date);
 
+-- ────────────────────────────────────────────────────────────
+
+-- Aggregated weekly view (populated by retention job)
+CREATE TABLE page_metrics_weekly (
+  id                    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  site_id               UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  page_id               UUID NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+  week_start            DATE NOT NULL,
+  avg_sessions          REAL DEFAULT 0,
+  avg_engaged_sessions  REAL DEFAULT 0,
+  avg_bounce_rate       REAL,
+  avg_engagement_time   REAL,
+  total_conversions     INTEGER DEFAULT 0,
+  total_conversion_value REAL DEFAULT 0,
+
+  UNIQUE(page_id, week_start)
+);
+
 -- ============================================================
 -- COMPETITIVE INTELLIGENCE
 -- ============================================================
@@ -431,7 +450,9 @@ CREATE TABLE serp_snapshots (
   is_own_site   BOOLEAN DEFAULT false,
   -- organic | featured_snippet | paa | local_pack | video | image
   serp_feature  TEXT DEFAULT 'organic',
-  title         TEXT
+  title         TEXT,
+
+  UNIQUE(keyword_id, date, position)
 );
 
 CREATE INDEX idx_serp_site_kw_date ON serp_snapshots(site_id, keyword_id, date);
@@ -538,16 +559,17 @@ CREATE TABLE api_budgets (
 | Table | Daily granularity | Weekly aggregates | Monthly aggregates |
 |-------|------------------|-------------------|-------------------|
 | keyword_page_metrics | 6 months | Indefinite (in `_weekly` table) | — |
-| page_metrics | 6 months | Indefinite (aggregate on read) | — |
+| page_metrics | 6 months | Indefinite (in `page_metrics_weekly` table) | — |
 | serp_snapshots | — | Kept as-is (weekly snapshots) | — |
 | sync_log | 3 months | — | — |
 | actions (completed) | 12 months | — | — |
 
 **Retention job** runs weekly:
-1. Aggregate daily rows older than 6 months into `keyword_page_metrics_weekly`
-2. Delete the aggregated daily rows
-3. Delete sync_log entries older than 3 months
-4. Delete completed/dismissed actions older than 12 months
+1. Aggregate `keyword_page_metrics` daily rows older than 6 months into `keyword_page_metrics_weekly`
+2. Aggregate `page_metrics` daily rows older than 6 months into `page_metrics_weekly`
+3. Delete the aggregated daily rows from both tables
+4. Delete sync_log entries older than 3 months
+5. Delete completed/dismissed actions older than 12 months
 
 ### Keyword Normalisation Rules
 
@@ -660,6 +682,8 @@ Each data source has an independent sync job. Jobs are idempotent — running th
 }
 ```
 
+**Metric mapping:** GA4's `purchaseRevenue` maps to `page_metrics.conversion_value`. For sites without e-commerce transactions (e.g., restaurants), this will be 0 — the meaningful conversion data comes from the conversion breakdown report below, where custom event values are assigned via `site_configs.conversion_events`.
+
 **For conversion breakdown** (if custom events are configured):
 Run a second report with `eventName` as an additional dimension, filtered to configured conversion events.
 
@@ -728,8 +752,33 @@ All upserts use PostgreSQL `ON CONFLICT ... DO UPDATE` with the unique constrain
 - `page_metrics`: unique on (page_id, date)
 - `keywords`: unique on (site_id, keyword_normalized)
 - `pages`: unique on (site_id, path)
+- `serp_snapshots`: unique on (keyword_id, date, position)
 
 Running the same sync twice for the same date overwrites with the latest values. No duplicates.
+
+### Analysis Trigger
+
+After each sync job completes successfully (status = "completed"), the sync function calls the analysis engine inline — a direct function call, not a queue or event bus. The analysis engine is a single async function that runs all scoring algorithms sequentially. If analysis fails, it logs to `sync_log` with source "analysis" and does not block the next sync.
+
+### First Sync (Backfill)
+
+On a fresh install, the first GSC sync should backfill the maximum available history (up to 16 months). This is a one-time operation — subsequent syncs pull only the latest day. At 500 keyword-page pairs per day × 480 days ≈ 240,000 rows of `keyword_page_metrics`. This is well within PostgreSQL's capability but takes longer than a daily sync (expect 5-10 paginated API requests per day of history). Run the backfill as a manual trigger, not the daily cron, and expect 15-30 minutes for completion.
+
+### CTR Position Bucketing
+
+GSC returns fractional positions (e.g., 4.7). For CTR model building, positions are **rounded** to the nearest integer (4.7 → 5). For all other calculations (opportunity score, cannibalization), the raw fractional position is used.
+
+### URL Redirects / Slug Changes
+
+When a page URL changes (slug update in CMS), the `pages` table will contain both the old and new paths. Historical metrics on the old path do not auto-transfer. A future admin UI action ("merge page") can reassign `keyword_page_metrics` and `page_metrics` rows from the old page_id to the new one, then soft-delete or archive the old page record. Until that UI exists, manual SQL is acceptable.
+
+### Database Migrations
+
+Supabase Migrations (SQL files in `supabase/migrations/`) manage schema changes. Each migration is a numbered SQL file applied in order. Supabase CLI (`supabase db push` or `supabase migration up`) runs them against the hosted database. No ORM — raw SQL migrations for full control.
+
+### Row-Level Security (RLS)
+
+SEO platform tables use the `SUPABASE_SERVICE_ROLE_KEY` (server-side only) to bypass RLS. Server Components and API routes connect with the service role client, not the anon client. No RLS policies are defined on SEO tables — access control is handled by HTTP Basic Auth on the `/admin/seo/*` routes.
 
 ---
 
@@ -862,21 +911,21 @@ roi_score = revenue_potential / max(effort_score, 0.05)
 **Purpose:** Detect keywords where multiple pages compete against each other.
 
 **Inputs:**
-- `keyword_page_metrics` for the last 30 days
+- `keyword_page_metrics` — 90-day window for detection, 30-day window for scoring
 - Only keywords with 2+ pages receiving impressions
 
-**Detection query:**
+**Detection query (90-day lookback for reliable detection):**
 
 ```sql
 SELECT keyword_id, count(DISTINCT page_id) as page_count
 FROM keyword_page_metrics
-WHERE date >= current_date - 30
+WHERE date >= current_date - 90
   AND impressions > 0
 GROUP BY keyword_id
 HAVING count(DISTINCT page_id) >= 2
 ```
 
-**Scoring per cannibalised keyword:**
+**Scoring per cannibalised keyword (using last 30 days of data for scoring):**
 
 ```
 pages[] = all pages ranking for this keyword in last 30 days
@@ -911,7 +960,6 @@ For each cannibalised keyword with score > 40:
 - If pages serve different intents: recommend differentiating (change target keyword on one page)
 
 **Limitations:**
-- 30 days may be too short to detect intermittent cannibalization. Consider 90-day lookback for detection, 30-day for scoring
 - Navigational keywords (brand name) often rank with multiple pages legitimately. Exclude keywords matching the site's brand name
 
 ### 5.4 Site-Specific CTR Model
@@ -973,7 +1021,7 @@ Where:
 
 **This metric is impossible for any third-party tool to calculate.** It requires joining GSC keyword data with GA4 conversion data with business-configured conversion values. This is the platform's core competitive advantage.
 
-**Output:** `keyword_monthly_value` stored on a keyword summary view. Used by the Opportunity Score as a potential replacement for `business_value` once conversion data is sufficient.
+**Output:** `keyword_monthly_value` computed on-the-fly by the analysis engine and stored in `actions.supporting_data` (JSONB) for display. Not persisted as a separate column — it depends on the CTR model and conversion rates, which change with each rebuild. Used by the Opportunity Score as a potential replacement for `business_value` once conversion data is sufficient.
 
 ### 5.6 Topical Authority Score
 
@@ -1040,8 +1088,11 @@ For each page with ≥ 30 avg sessions/month:
     decay_pct 15-40    → mid_decay (update needed)
     decay_pct > 40     → critical_decay (rewrite or consolidate)
 
-  recency = how recently the decline started
-    (recent declines are more actionable — the page hasn't yet lost its ranking signals)
+  days_since_peak = days since peak_traffic was recorded
+  recency_factor:
+    days_since_peak ≤ 30  → 1.0   (very recent — act now)
+    days_since_peak 31-90 → 0.7   (still recoverable)
+    days_since_peak > 90  → 0.4   (may have lost ranking signals)
 
   decay_urgency = decay_pct × current_traffic × recency_factor
 ```
@@ -1713,3 +1764,4 @@ SUPABASE_SERVICE_ROLE_KEY=...
 | Date | Change | Author |
 |------|--------|--------|
 | 2026-07-18 | Initial architecture document | Paul Kelvin |
+| 2026-07-18 | Architecture validation pass: fixed keyword normalization comment, added serp_snapshots unique constraint, added page_metrics_weekly table, defined recency_factor, clarified analysis trigger/backfill/CTR bucketing/URL redirects/migrations/RLS/GA4 metric mapping, resolved cannibalization lookback ambiguity (90d detection, 30d scoring). See ADR files in docs/seo-platform/decisions/ | Claude |
