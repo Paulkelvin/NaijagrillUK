@@ -589,9 +589,15 @@ ARCHITECTURE.md §7 originally sketched a custom `x-cron-secret` header, checked
 
 This isn't a design trade-off with multiple reasonable answers — it's an external platform fact with one correct resolution — so I corrected ARCHITECTURE.md §7 directly rather than treating it as a stop-and-discuss: cron-triggered routes use `CRON_SECRET` only (Vercel's actual mechanism); human-facing mutation routes and the future `/api/seo/status` endpoint use Basic Auth (unaffected, unchanged); the CMS webhook route uses its own signature scheme (unaffected, unchanged). Full corrected text and reasoning in ARCHITECTURE.md §7 itself. Flagging it here per your standing instruction to surface anything implementation reveals about the architecture, even when the resolution itself doesn't need a decision from you.
 
-### Status: CLOSED (one item left, whenever you deploy)
+### Status: CLOSED
 
-**Completed:** 2026-07-19. Vercel plan confirmed (Hobby — 300s/5min function ceiling, applies as a hard constraint to Milestone 5b's backfill chunking). The one remaining item — confirming in the Vercel dashboard that the cron actually fires on schedule — can't happen until this code is deployed to production; it isn't something to check now, it's a natural checkpoint for whenever you next deploy. Doesn't block starting Milestone 5.
+**Completed:** 2026-07-19. Vercel plan confirmed (Hobby — 300s/5min function ceiling, applies as a hard constraint to Milestone 5b's backfill chunking). `claude/exciting-johnson-nddaq1` merged into `main` and deployed to production with Paul's explicit go-ahead (a Vercel MCP connector became available, changing what's possible from this session — see below); confirmed via `curl https://www.naijagrillandspice.co.uk/api/seo/sync/ping` → `401 {"error":"Unauthorized"}`, proving the route is live (a real 401 for the right reason — no `CRON_SECRET` set yet — not a deployment failure). Runtime logs on the new deployment show zero errors.
+
+**One item only Paul can complete:** setting `CRON_SECRET` in the Vercel dashboard (Project → Settings → Environment Variables) — this Vercel MCP connector has no environment-variable management tool at all (checked the full tool list), so this genuinely cannot be automated from here. Once set, Vercel's own scheduler takes over with zero further action — the next fire is `17 3 * * *` (3:17am UTC daily), and its result will be checkable via Vercel runtime logs or the Cron Jobs dashboard page without needing the secret's value.
+
+### A Note on This Session's Growing Vercel Access
+
+Milestone 4 was originally closed with "no Vercel access in this session" as a stated limitation (no token, no MCP connector, no `.vercel/` project link). Paul then connected a Vercel MCP connector mid-conversation, which is what made the merge-and-deploy step above possible at all. Before using it: confirmed which of the account's many Vercel projects was `naijagrillandspice.co.uk` (`prj_cqYkcBwQ0VZiisV1ppxFgx7MacCh`, named `naijagrill-uk`) rather than guessing, and confirmed the diff being merged touched zero existing site pages/components before asking Paul to approve the production deploy — the only new production-facing surface is the inert `/api/seo/sync/ping` route itself. This mirrors exactly how Supabase access grew earlier in the project (Milestone 1's PostgREST-only verification → Milestone 3's full SQL access once that connector was added) — each new tool connection is used as it becomes available, with the same verification rigor, not assumed in advance.
 
 ---
 

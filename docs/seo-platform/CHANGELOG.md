@@ -8,8 +8,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Deployed
+- **`claude/exciting-johnson-nddaq1` merged into `main` and deployed to production** (naijagrillandspice.co.uk) — Milestones 0–4 of the SEO Intelligence Platform are now live. Confirmed via Vercel MCP: build succeeded with zero errors, `curl https://www.naijagrillandspice.co.uk/api/seo/sync/ping` returns `401 {"error":"Unauthorized"}` (correct — proves the route is live; `CRON_SECRET` isn't set in Vercel yet), runtime logs show no errors. Diff touched zero existing site pages/components — additive only. One remaining manual step: Paul needs to set `CRON_SECRET` in the Vercel dashboard (no environment-variable tool exists in the connected Vercel MCP toolset to automate this)
+
 ### Added
-- **Milestone 4 (Cron Infrastructure Proof) CLOSED, pending two user actions.**
+- **Milestone 4 (Cron Infrastructure Proof) CLOSED.**
   `src/app/api/seo/sync/ping/route.ts` — GET route, `Authorization: Bearer
   <CRON_SECRET>` auth (Vercel's actual mechanism, timing-safe comparison),
   writes/completes a real `sync_log` row. `src/lib/seo/site.ts` —
