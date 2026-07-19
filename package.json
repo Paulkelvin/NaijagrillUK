@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "RUN_INTEGRATION_TESTS=1 vitest run",
     "sanity:deploy": "sanity deploy",
     "sanity:schema": "sanity schema deploy",
     "sanity:seed": "sanity dataset import sanity/seed.ndjson production --replace",
