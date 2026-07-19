@@ -9,6 +9,46 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 3 (Logger + sync_log Writer) CLOSED.** `src/lib/seo/logger.ts`
+  — structured JSON logger (debug/info/warn/error) with best-effort
+  redaction of credential-shaped field names. `src/lib/seo/sync-log.ts` —
+  `startSyncRun()`/`completeSyncRun()`, the only module permitted to write
+  to `sync_log`. `createSupabaseServiceRoleClient()` added to
+  `src/lib/supabase/server.ts` (service-role-only, throws clearly instead
+  of silently falling back to an anon key that RLS would block on every
+  SEO table). 7 unit tests + 3 integration tests (real production Supabase,
+  gated behind `RUN_INTEGRATION_TESTS=1` / `npm run test:integration`) —
+  20/20 unit, 23/23 total
+- `ADR-009-server-side-timestamps.md` — server-generated timestamps for any
+  column compared against a DB-generated timestamp in a CHECK constraint;
+  general principle for future tables, not just `sync_log`
+- Supabase MCP connector documented as a third database-access path in
+  `DATABASE_OPERATIONS.md`, alongside the SQL editor and `DATABASE_URL`
+
+### Fixed
+- **Real production bug found via integration testing, not a test
+  artifact:** `sync_log_completed_after_started_check` failed under actual
+  app/database clock skew (~150ms of real elapsed time between two
+  separate requests was still enough to trip it). Root cause: `completed_at`
+  was computed client-side and compared against a database-computed
+  `started_at`. Fixed with a `BEFORE UPDATE` trigger
+  (`20260719000000_sync_log_server_side_completed_at.sql`) that forces
+  `completed_at = now()` server-side — both timestamps now always come
+  from the same clock. Verified with a deliberate 10-second backdate
+  (locally, then directly against production via the Supabase MCP
+  connector, then end-to-end through the real integration test suite).
+  Stopped and presented options before implementing, per standing
+  instruction; user selected the recommended fix
+- `function_search_path_mutable` security advisory (Supabase linter, WARN)
+  on both trigger functions (`seo_set_updated_at` from Milestone 1,
+  `seo_set_sync_log_completed_at` from this fix) — pinned
+  `search_path = ''` on both (`20260719193100_harden_trigger_function_search_path.sql`),
+  zero behavioral change, re-verified both triggers still work correctly
+- Milestone 1's index/constraint catalog verification gap (previously only
+  offered as a paste-back SQL query) closed for real — all 28 indexes
+  confirmed present via direct SQL access once the Supabase MCP connector
+  became available
+
 - **Milestone 2 (Configuration & Secrets) complete.** `src/lib/seo/config.ts`
   — Zod-validated `getGscConfig()`/`isGscConfigured()`,
   `getGa4Config()`/`isGa4Configured()`, `getCronSecret()`/`isCronSecretConfigured()`,

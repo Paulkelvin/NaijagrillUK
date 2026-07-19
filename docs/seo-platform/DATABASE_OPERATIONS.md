@@ -10,16 +10,19 @@ This is the runbook for actually operating the SEO platform's database — creat
 
 ## A Note on Environment Access
 
-This project has two ways to reach the database:
+This project has three ways to reach the database:
 
-1. **Supabase REST API (PostgREST)** — via `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Reachable over HTTPS, works from any environment with normal internet access, including this one.
+1. **Supabase REST API (PostgREST)** — via `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Reachable over HTTPS, works from any environment with normal internet access, including this one. No arbitrary SQL — table CRUD and predefined RPC functions only.
 2. **Direct PostgreSQL connection** — via `DATABASE_URL` (added after Milestone 1, server-side only). This is a raw Postgres wire-protocol connection (`postgresql://postgres:...@db.<project-ref>.supabase.co:5432/postgres`), needed for anything PostgREST can't do: `psql`, `pg_dump`/`pg_restore`, direct `pg_catalog` introspection, running migration files with `psql -f`.
+3. **Supabase MCP connector** (added mid-Milestone 3, when the user connected it in this Claude session) — `apply_migration`, `execute_sql`, `list_tables`, `list_migrations`, `get_advisors`, and related tools, operating over the MCP protocol rather than raw TCP. This gave a working substitute for #2's DDL/introspection capability from within this session for the first time — the clock-skew fix and the subsequent `search_path` hardening (both Milestone 3) were applied and directly verified against production this way.
 
-**This specific sandboxed session cannot use #2.** Its network policy proxies HTTPS only; raw-TCP database connections are explicitly and categorically unsupported (confirmed via the proxy's own documentation — this is a stated policy boundary, not a bug to route around, and this runbook does not attempt to). `DATABASE_URL` also resolves to an IPv6-only address by default for Supabase's direct-connection host, which is a second, independent reason a plain `psql` from here would fail even if raw TCP were allowed.
+**This specific sandboxed session cannot use #2** — its network policy proxies HTTPS only; raw-TCP database connections are explicitly and categorically unsupported (confirmed via the proxy's own documentation — a stated policy boundary, not a bug to route around, and this runbook does not attempt to). `DATABASE_URL` also resolves to an IPv6-only address by default for Supabase's direct-connection host, a second, independent reason a plain `psql` from here would fail even if raw TCP were allowed. **#3 does not have this limitation** — it's how Milestone 3's schema fixes were actually applied and verified end-to-end from this session, including a live reproduction of the exact bug being fixed (a deliberately backdated timestamp, overridden by the new trigger) directly against production.
 
-**This is very likely not true for you, your CI, or a real deploy environment** — a normal machine or CI runner has standard outbound TCP and will reach `DATABASE_URL` fine. Every procedure below that needs #2 is written to be run by you (or CI), not by me from this session. Where I needed to validate a procedure's *correctness* without being able to run it against the real database, I ran it against a local PostgreSQL 16 instance instead (same engine version Supabase runs) and say so explicitly.
+Practical implication: whichever of #2/#3 is available in a given session, prefer it over asking the user to paste SQL into the dashboard — but always state plainly which one was used and what was actually verified versus locally validated, per the standard set in Milestone 1.
 
-**Least privilege:** `DATABASE_URL` connects as the `postgres` role — full administrative access. Per your instruction, it is a server-side-only credential: not in `NEXT_PUBLIC_*` vars, never referenced from client code, and used only for the operational tasks in this document (migrations, backups, diagnostics) — never as an application runtime dependency. The app itself continues to use the Supabase client (`src/lib/supabase/server.ts`) with the service-role key for all normal reads/writes.
+**This is very likely not true for you, your CI, or a real deploy environment** — a normal machine or CI runner has standard outbound TCP and will reach `DATABASE_URL` (#2) fine regardless of whether an MCP connector (#3) is also available. Every procedure below written around #2 works equally as a manual fallback if neither Claude tooling option is connected.
+
+**Least privilege:** `DATABASE_URL` connects as the `postgres` role — full administrative access — and the MCP connector operates with equivalent DDL privileges on the connected project. Per your instruction, `DATABASE_URL` is a server-side-only credential: not in `NEXT_PUBLIC_*` vars, never referenced from client code, and used only for the operational tasks in this document (migrations, backups, diagnostics) — never as an application runtime dependency. The MCP connector is scoped to this Claude session's tool access, not embedded in any code. The app itself continues to use the Supabase client (`src/lib/supabase/server.ts`) with the service-role key for all normal reads/writes. **When an MCP connector to Supabase is active, double-check which project it's pointed at before running anything** — this account has more than one Supabase project, and `apply_migration`/`execute_sql` act immediately with no undo beyond a fresh migration or a restore.
 
 ---
 
@@ -66,9 +69,9 @@ Migrations live in `supabase/migrations/`, one `.sql` file per change, named `YY
 
 ### Against production Supabase
 
-Two supported methods:
+Three supported methods:
 
-**A. SQL editor (current practice)** — the method used for both migrations to date. Open the Supabase dashboard's SQL editor, paste the migration file's contents, run it. Simple, visible, no local tooling required. This is what was used to apply `20260718000000_seo_platform_core.sql` to production.
+**A. SQL editor** — the method used to apply `20260718000000_seo_platform_core.sql`, the first migration. Open the Supabase dashboard's SQL editor, paste the migration file's contents, run it. Simple, visible, no local tooling required.
 
 **B. `psql` via `DATABASE_URL`** — for anyone with a normal (non-sandboxed) network:
 
@@ -78,7 +81,9 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/<file>.sql
 
 `ON_ERROR_STOP=1` is not optional — without it, `psql` continues past a failed statement and you can end up with a partially-applied migration that looks like it succeeded.
 
-Both methods are equivalent — same SQL, same database. Pick B when you want migrations scriptable (CI, a setup script) rather than a manual paste.
+**C. Supabase MCP connector's `apply_migration` tool** — when connected in a Claude session (see "A Note on Environment Access" above). This is what was used to apply `20260719000000_sync_log_server_side_completed_at.sql` and `20260719193100_harden_trigger_function_search_path.sql` in Milestone 3, including direct, immediate verification via the same connector's `execute_sql` and `get_advisors` tools — a tighter loop than A/B since apply and verify happen in the same session without a manual round-trip. Confirm the target `project_id` before every call (§ "A Note on Environment Access" — this account has more than one Supabase project).
+
+All three are equivalent — same SQL, same database. Pick B when you want migrations scriptable (CI, a setup script) outside a Claude session; pick C when working inside one with the connector available, since it also enables direct post-apply verification.
 
 ### Applying a new migration — checklist
 
@@ -269,13 +274,16 @@ Check `pg_policies` for the table in question — Milestone 1 confirmed zero row
 The constraint name in the error message maps directly to the Constraint Summary in Milestone 1's write-up — e.g. `keyword_page_metrics_clicks_le_impressions_check` means the ingestion code (or the source data) produced `clicks > impressions`, which per ARCHITECTURE.md §4.1 should have already been filtered out at the application layer before the insert was attempted. Check the sync job's validation logic first; the database constraint firing means the application-layer check either has a bug or was bypassed.
 
 **"I need to inspect indexes/constraints directly and don't have `DATABASE_URL` access from where I'm working."**
-Run this from the Supabase SQL editor (works from any browser, no local tooling needed) and it'll give you the same `pg_catalog` view a local `psql` session would:
+If a Supabase MCP connector is available in the session, its `execute_sql` tool runs this directly (this is how Milestone 1's originally-deferred index verification was eventually closed out, in Milestone 3, once the connector became available). Otherwise, run this from the Supabase SQL editor (works from any browser, no local tooling needed) — same `pg_catalog` view either way:
 
 ```sql
 SELECT tablename, indexname FROM pg_indexes WHERE schemaname = 'public' ORDER BY tablename, indexname;
 SELECT conrelid::regclass AS table_name, conname, contype FROM pg_constraint
   WHERE connamespace = 'public'::regnamespace ORDER BY table_name, conname;
 ```
+
+**"Supabase's own security/performance advisors are flagging something."**
+If an MCP connector is available, `get_advisors` (type `security` or `performance`) surfaces the same linter results the dashboard shows. `rls_enabled_no_policy` on any of the 11 SEO tables is expected (§ RLS Summary in Milestone 1 — default-deny by design, not a gap). `rls_policy_always_true` on the four pre-existing public form tables is also expected (anonymous form submission, pre-dates the SEO platform). `unindexed_foreign_keys`/`unused_index` on `keyword_page_metrics_weekly`, `page_metrics_weekly`, `pages.topic_cluster_id`, or `topic_clusters.pillar_page_id` match Milestone 1's documented, deliberate deferral (no Phase 1 query pattern needs them yet) — not a new problem. `function_search_path_mutable` on a *new* trigger function you add is a real, actionable warning — pin `search_path = ''` via `ALTER FUNCTION`, following `20260719193100_harden_trigger_function_search_path.sql` as the template.
 
 **"`gen_random_uuid()` fails on a fresh local Postgres."**
 It's built into PostgreSQL 13+ core (confirmed on the 16.13 instance used throughout this project's local validation) — if it fails, you're likely on an older Postgres or a stripped-down image missing the function; install/enable the `pgcrypto` extension as a fallback (`CREATE EXTENSION IF NOT EXISTS pgcrypto;`), though this shouldn't be necessary on any currently-supported Postgres version.
