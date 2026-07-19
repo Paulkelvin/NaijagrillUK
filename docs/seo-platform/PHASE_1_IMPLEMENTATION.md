@@ -543,7 +543,7 @@ This also closed a loose end from Milestone 1: the index/constraint catalog dump
 - [x] Implement `src/app/api/seo/sync/ping/route.ts`: checks the cron secret, calls `startSyncRun`/`completeSyncRun` with a fixed 1-second delay, returns JSON
 - [x] Populate `vercel.json` crons block with the ping job (`17 3 * * *` — 3:17am UTC, an off-the-hour minute; deliberately deferred since Milestone 0 since JSON can't hold a "commented-out" stub)
 - [x] Document manual curl trigger — Runbook Appendix, above
-- [x] Confirm Vercel's actual function timeout limits — Runbook Appendix, above. **One thing still needed from you:** which plan (Hobby/Pro) this project's Vercel account is actually on — I have no Vercel account access to check this myself.
+- [x] Confirm Vercel's actual function timeout limits — Runbook Appendix, above. **Confirmed: Hobby plan.** No Vercel account access in this session to check it directly (no token, no MCP connector, no `.vercel/` project link — checked all three) — Paul confirmed it directly.
 
 **Dependencies:** Milestones 1–3.
 
@@ -574,7 +574,7 @@ This also closed a loose end from Milestone 1: the index/constraint catalog dump
 
 **Success criteria (DoD):**
 - [x] A full round trip (route → auth → job → `sync_log`) proven working against real production data, before any GSC/GA4 integration code exists
-- [x] Vercel's timeout limits documented from current official sources — [ ] **which plan applies to this account is still open**, pending your answer
+- [x] Vercel's timeout limits documented from current official sources — **confirmed: Hobby plan**, meaning 300s (5 min) is both the default and the hard ceiling per function, no headroom beyond that
 - [ ] **Post-deploy dashboard confirmation that the cron actually fires on schedule** — cannot be done from this session (no live deployment, no Vercel account access). This is the one item that genuinely requires you to deploy and check, same shape as the Supabase migration applications in Milestones 1 and 3.
 
 **Risks & rollback:**
@@ -589,9 +589,9 @@ ARCHITECTURE.md §7 originally sketched a custom `x-cron-secret` header, checked
 
 This isn't a design trade-off with multiple reasonable answers — it's an external platform fact with one correct resolution — so I corrected ARCHITECTURE.md §7 directly rather than treating it as a stop-and-discuss: cron-triggered routes use `CRON_SECRET` only (Vercel's actual mechanism); human-facing mutation routes and the future `/api/seo/status` endpoint use Basic Auth (unaffected, unchanged); the CMS webhook route uses its own signature scheme (unaffected, unchanged). Full corrected text and reasoning in ARCHITECTURE.md §7 itself. Flagging it here per your standing instruction to surface anything implementation reveals about the architecture, even when the resolution itself doesn't need a decision from you.
 
-### Status: CLOSED (pending two items only you can complete)
+### Status: CLOSED (one item left, whenever you deploy)
 
-**Completed:** 2026-07-19, except: (1) confirming which Vercel plan this account is on, and (2) deploying and confirming the cron fires on schedule in the dashboard. Both flagged above, neither blocks starting Milestone 5 — Milestone 5's own work doesn't depend on either being resolved first, though Milestone 5b's backfill chunking design will want the plan answer before it's finalized.
+**Completed:** 2026-07-19. Vercel plan confirmed (Hobby — 300s/5min function ceiling, applies as a hard constraint to Milestone 5b's backfill chunking). The one remaining item — confirming in the Vercel dashboard that the cron actually fires on schedule — can't happen until this code is deployed to production; it isn't something to check now, it's a natural checkpoint for whenever you next deploy. Doesn't block starting Milestone 5.
 
 ---
 
@@ -789,4 +789,4 @@ Consolidated from each milestone's risk section — see ENGINEERING_STANDARDS.md
     curl -H "Authorization: Bearer $CRON_SECRET" https://<your-deployment>/api/seo/sync/ping
     ```
     Matches exactly what Vercel Cron itself sends (`Authorization: Bearer <CRON_SECRET>`, GET) — see "Vercel Platform Findings" below. A 401 with no/wrong header, 200 with a `runId` and a real `sync_log` row on success.
-- **Vercel plan timeout limits — confirmed from Vercel's current documentation** (fetched during Milestone 4, not assumed from training data, per `AGENTS.md`'s own warning that this environment's platform conventions may have moved): with Fluid Compute (Vercel's current default), **Hobby** allows up to 300s (5 min) per function — this is both the default *and* the maximum, no more headroom available. **Pro** allows 300s default, up to 800s generally available, and up to 1800s (30 min) via an extended-duration beta requiring explicit per-function configuration above 800s. Every Phase 1 job (GSC/GA4 daily sync, weekly retention) fits comfortably within the 5-minute Hobby ceiling. **Still open: which plan this project's actual Vercel account is on** — needed to finalize Milestone 5b's backfill chunking size. Asked directly; not something I can check without Vercel account access.
+- **Vercel plan timeout limits — confirmed from Vercel's current documentation** (fetched during Milestone 4, not assumed from training data, per `AGENTS.md`'s own warning that this environment's platform conventions may have moved) **and this account's actual plan confirmed directly by Paul: Hobby.** With Fluid Compute (Vercel's current default), Hobby allows up to 300s (5 min) per function — this is both the default *and* the maximum, no more headroom available; every Phase 1 job (GSC/GA4 daily sync, weekly retention) fits comfortably within it. Milestone 5b's 16-month GSC backfill must be chunked to fit inside this same 300s ceiling per invocation — a firm constraint now, not a "confirm later" placeholder. Hobby also caps cron jobs at once-per-day scheduling (irrelevant here — every Phase 1 cron job is already daily or less frequent) and only guarantees firing "within the specified hour," not the exact minute.
