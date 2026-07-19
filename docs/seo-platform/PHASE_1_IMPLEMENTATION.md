@@ -606,43 +606,63 @@ Milestone 4 was originally closed with "no Vercel access in this session" as a s
 **Objective:** Pull real Search Console data, normalise it, and upsert it idempotently — the first real data flowing through the pipeline.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/normalize.ts`: keyword normalization (ADR-008 rules) and URL normalization (ARCHITECTURE.md §3 rules) as pure, heavily-tested functions
-- [ ] Implement `src/lib/seo/gsc/client.ts`: JWT service-account auth, `searchanalytics.query` with pagination (25,000-row pages)
-- [ ] Implement `src/lib/seo/gsc/sync.ts`: orchestrates fetch → normalize → validate → upsert `keywords`/`pages`/`keyword_page_metrics` → wraps in `startSyncRun`/`completeSyncRun`
-- [ ] Implement row validation: reject `position < 1 or > 1000`, reject `clicks > impressions`, count rejects into `metadata.rejected_rows`
-- [ ] Implement `src/app/api/seo/sync/gsc/route.ts` (thin adapter over `sync.ts`)
-- [ ] **Milestone 5b:** first-sync backfill variant — pulls up to 16 months of history, chunked to fit the Vercel timeout found in Milestone 4, run manually once
+- [x] Implement `src/lib/seo/normalize.ts`: keyword normalization (ADR-008 rules) and URL normalization (ARCHITECTURE.md §3 rules) as pure, heavily-tested functions
+- [x] Implement `src/lib/seo/gsc/client.ts`: JWT service-account auth, `searchanalytics.query` with pagination (25,000-row pages)
+- [x] Implement `src/lib/seo/gsc/sync.ts`: orchestrates fetch → normalize → validate → upsert `keywords`/`pages`/`keyword_page_metrics` → wraps in `startSyncRun`/`completeSyncRun`
+- [x] Implement row validation: reject `position < 1 or > 1000`, reject `clicks > impressions`, count rejects into `metadata.rejected_rows`
+- [x] Implement `src/app/api/seo/sync/gsc/route.ts` (thin adapter over `sync.ts`)
+- [x] **Milestone 5b:** first-sync backfill variant — `src/lib/seo/gsc/backfill.ts` + `src/app/api/seo/sync/gsc/backfill/route.ts`, chunked to Hobby's confirmed 300s ceiling (Milestone 4), resumable via `nextStartDate`
 
 **Dependencies:** Milestones 1–4.
 
-**Expected outputs:** Real keyword/page/metric rows in the database, sourced from the live GSC property.
+**Expected outputs:** Real keyword/page/metric rows in the database, sourced from the live GSC property. **Not yet achieved** — see "Code Complete, Integration Verification Pending" below.
 
 **Database changes:** None (uses Milestone 1 tables).
 
-**Files to create/modify:**
-- `src/lib/seo/normalize.ts`, `normalize.test.ts`
-- `src/lib/seo/gsc/client.ts`
-- `src/lib/seo/gsc/sync.ts`
-- `src/app/api/seo/sync/gsc/route.ts`
-- `src/lib/seo/retry.ts`, `retry.test.ts` (used here for the first time)
+**Files created:**
+- `src/lib/seo/normalize.ts`, `normalize.test.ts` (26 tests)
+- `src/lib/seo/gsc/client.ts`, `client.test.ts` (11 tests, including real RSA signature verification)
+- `src/lib/seo/gsc/sync.ts`, `sync.test.ts` (9 tests)
+- `src/lib/seo/gsc/backfill.ts`, `backfill.test.ts` (6 tests)
+- `src/app/api/seo/sync/gsc/route.ts`, `route.test.ts` (5 tests)
+- `src/app/api/seo/sync/gsc/backfill/route.ts`, `route.test.ts` (6 tests)
+- `src/lib/seo/retry.ts`, `retry.test.ts` (6 tests, used here for the first time)
 
-**Tests to perform:**
-- Unit: `normalize.ts` — casing, whitespace collapse, leading article stripping, preposition preservation (must NOT strip "in"), trailing slash removal, query param stripping, `www.` stripping, root path edge case
-- Unit: validation rejects out-of-range position and `clicks > impressions` without aborting the batch
-- Integration: run the job twice against the same date → row count unchanged, values match latest fetch (idempotency proof)
-- Integration: real curl trigger against the live GSC property → real rows appear, `sync_log.records_processed` matches
-- Manual: verify pagination triggers correctly if a day ever exceeds 25,000 rows (unlikely at current traffic — documented as untested-at-scale)
+**Tests performed:**
+- [x] Unit: `normalize.ts` — casing, whitespace collapse, leading article stripping, preposition preservation (confirmed "in" is never stripped), trailing slash removal, query param stripping, `www.` stripping, root path edge case, malformed-URL error — all 26 passing
+- [x] Unit: validation rejects out-of-range position and `clicks > impressions` without aborting the batch — confirmed in `sync.test.ts`
+- [x] Unit: `client.ts`'s JWT is cryptographically verified against a real (throwaway, test-only) RSA key pair — not just "looks like a JWT," the signature is actually checked with `crypto.verify()`
+- [x] Unit: pagination (25,000-row page triggers a second request with `startRow=25000`), 429/5xx/network-error retry (via mocked `fetch`), exactly-one-re-auth-then-fail-fast on repeated 401/403, non-retryable 400 fails immediately — all against a mocked `fetch`, no real network calls
+- [x] Unit: `backfill.ts`'s time-budget cutoff — precisely controlled via a mocked clock, confirms it stops mid-range and returns the correct `nextStartDate`, and that a resumed chunk starting from that date continues correctly
+- [x] Unit: one failing day within a backfill range is recorded and skipped, not fatal to the rest of the range
+- **Not performed — genuinely cannot be, no real credentials exist yet:**
+  - Integration: run the job twice against the same date → idempotency proof against a real database
+  - Integration: real curl trigger against the live GSC property → real rows appear
+  - 16-month backfill actually run and cross-checked against GSC's own UI totals
+  - Pagination path exercised against real data >25,000 rows/day (would need to be watched for once real syncs are running, regardless of credentials timing)
 
 **Success criteria (DoD):**
-- Two consecutive runs for the same day produce zero duplicate rows
-- `sync_log` accurately reflects `records_processed`, duration, and any rejected rows
-- 16-month backfill completed at least once, confirmed against GSC's own UI totals for a sanity check
-- `ARCHITECTURE.md`'s "16-month retention" risk is retired — history is captured
+- [ ] Two consecutive runs for the same day produce zero duplicate rows — **logic is upsert-based and unit-tested, but not proven against a real database yet**
+- [ ] `sync_log` accurately reflects `records_processed`, duration, and any rejected rows — **same caveat**
+- [ ] 16-month backfill completed at least once, confirmed against GSC's own UI totals — **blocked entirely on credentials existing**
+- [ ] `ARCHITECTURE.md`'s "16-month retention" risk is retired — **not yet; GSC's 16-month window keeps ticking until a real backfill actually runs**
 
 **Risks & rollback:**
-- Risk (flagged in ARCHITECTURE.md itself): service-account auth setup, budget 2-3 days. Isolated from other work since normalize.ts and retry.ts can be built/tested without live credentials.
-- Risk: backfill duration vs. Vercel timeout. Mitigated by chunking per date range, resumable (idempotent upserts mean a partial backfill can simply be re-run).
-- Rollback: `DELETE FROM keyword_page_metrics WHERE site_id = ...` is safe and non-cascading to other tables; re-run the sync to repopulate.
+- Risk (flagged in ARCHITECTURE.md itself): service-account auth setup, budget 2-3 days. **Materialized in practice** — Paul hit a real, undocumented-by-us blocker (an Organization Policy Administrator/Organization Administrator role split in Google Cloud, plus a project-vs-organization IAM scoping issue, plus a legacy-vs-managed constraint migration) that took multiple screenshot-guided rounds to resolve. Not finished as of this write-up — credentials don't exist yet.
+- Risk: backfill duration vs. Vercel timeout. Mitigated exactly as planned: `runBackfillChunk` processes oldest-first, checks elapsed time before each day, and returns `nextStartDate` for the caller to resume — verified with a precisely controlled fake clock, not just reasoned about.
+- Rollback: `DELETE FROM keyword_page_metrics WHERE site_id = ...` is safe and non-cascading to other tables; re-run the sync to repopulate. Applies equally to backfill data (tagged `metadata.backfill = true` for anyone auditing later which rows came from which path).
+
+### Code Complete, Integration Verification Pending
+
+Per your instruction to proceed without waiting for credentials ("we'll do all the api keys thing later... just do your job"): everything in this milestone that *can* be built and proven without a real GSC service account has been — 100 total unit tests (up from 66 before this milestone), all passing, including genuinely rigorous ones (real cryptographic signature verification on the JWT, a precisely clocked time-budget cutoff test, mocked-`fetch` coverage of every retry/auth-failure path). `npm run lint` and `npm run build` both clean.
+
+**What this milestone is explicitly not claiming:** that any of this has talked to the real Google Search Console API. That's a categorically different kind of verification from unit tests with mocked HTTP responses, and I won't blur that line — same discipline as every other milestone in this project (Milestone 1 was explicit about "locally-verified against a faithful replica" vs. production-verified; this is the same distinction, one level further removed since there's no live credential to test against at all yet).
+
+**Two genuinely new architectural decisions made during this milestone**, neither requiring a stop-and-discuss since both directly implement already-approved designs rather than introducing new trade-offs:
+1. **Direct HTTP + hand-rolled JWT signing, no `googleapis` SDK** — implements ARCHITECTURE.md's own stated Technology Stack choice ("No SDK dependencies where avoidable"). Verified Google's current JWT-bearer OAuth2 flow and `searchanalytics.query` REST contract against their live documentation rather than trusting training data.
+2. **`GscAuthError` as a third error category alongside `RetryableError` and plain `Error`** — `retry.ts`'s generic retry primitive doesn't know about re-auth; `gsc/client.ts` classifies 401/403 separately and handles exactly-one-re-auth-then-fail-fast itself, matching ENGINEERING_STANDARDS.md §6's specific wording for this case.
+
+**When credentials exist:** re-open this milestone (don't silently mark it done) — run the daily sync once via curl, confirm real rows appear and match Search Console's own UI, run it a second time to prove idempotency for real, then run the backfill (expect several chunked invocations for the full 16 months) and cross-check totals. Only then are the DoD boxes above allowed to be checked.
 
 ---
 

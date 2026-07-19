@@ -8,6 +8,29 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+- **Milestone 5 (GSC Sync Job) code-complete, integration verification
+  pending real credentials.** `normalize.ts` (`normalizeKeyword`,
+  `normalizeUrl`/`normalizePath` — 26 tests). `retry.ts`
+  (`withRetry`/`RetryableError`, first real consumer — 6 tests).
+  `gsc/client.ts` — hand-rolled JWT service-account auth (RS256, no SDK,
+  per ARCHITECTURE.md's Technology Stack choice), `searchanalytics.query`
+  with pagination, retry classification (429/5xx/network → retryable,
+  401/403 → one re-auth attempt then fail fast, `GscAuthError`) — 11
+  tests including real cryptographic JWT signature verification.
+  `gsc/sync.ts` — fetch → normalize → validate → bulk upsert
+  keywords/pages/keyword_page_metrics → sync_log — 9 tests. `gsc/backfill.ts`
+  (Milestone 5b) — chunked, resumable 16-month backfill respecting
+  Hobby's 300s ceiling — 6 tests including a precisely clocked
+  time-budget-cutoff test. `/api/seo/sync/gsc` and
+  `/api/seo/sync/gsc/backfill` routes — 11 tests. 100 total unit tests,
+  all passing; zero real GSC API calls made or claimed — see
+  PHASE_1_IMPLEMENTATION.md Milestone 5 for exactly what is and isn't
+  verified
+- Empirically confirmed (against production) that PostgREST's upsert only
+  touches columns present in the payload — `is_target`/DataForSEO fields
+  survive a GSC re-sync's partial upsert untouched
+
 ### Deployed
 - **`claude/exciting-johnson-nddaq1` merged into `main` and deployed to production** (naijagrillandspice.co.uk) — Milestones 0–4 of the SEO Intelligence Platform are now live. Confirmed via Vercel MCP: build succeeded with zero errors, `curl https://www.naijagrillandspice.co.uk/api/seo/sync/ping` returns `401 {"error":"Unauthorized"}` (correct — proves the route is live; `CRON_SECRET` isn't set in Vercel yet), runtime logs show no errors. Diff touched zero existing site pages/components — additive only. One remaining manual step: Paul needs to set `CRON_SECRET` in the Vercel dashboard (no environment-variable tool exists in the connected Vercel MCP toolset to automate this)
 
