@@ -54,10 +54,17 @@ export async function startSyncRun(
 }
 
 /**
- * Updates a sync_log row to a terminal status (completed/failed/partial)
- * and sets completed_at. Matches the DB's own invariant
- * (sync_log_status_completed_at_consistency_check): status is never
- * "started" after this call.
+ * Updates a sync_log row to a terminal status (completed/failed/partial).
+ *
+ * completed_at is deliberately NOT set here — a database trigger
+ * (seo_set_sync_log_completed_at, added in
+ * 20260719000000_sync_log_server_side_completed_at.sql) forces it to the
+ * database's own now() whenever status moves away from "started". Sending
+ * a client-computed timestamp here previously caused
+ * sync_log_completed_after_started_check to fail under real app/DB clock
+ * skew (found during this milestone's integration testing) — started_at
+ * and completed_at must always be compared using the same clock, which is
+ * only guaranteed if the same process (Postgres) sets both.
  */
 export async function completeSyncRun(runId: number, input: CompleteSyncRunInput): Promise<void> {
   const supabase = createSupabaseServiceRoleClient();
@@ -68,7 +75,6 @@ export async function completeSyncRun(runId: number, input: CompleteSyncRunInput
     .from("sync_log")
     .update({
       status: input.status,
-      completed_at: new Date().toISOString(),
       records_processed: input.recordsProcessed ?? 0,
       api_credits_used: input.apiCreditsUsed ?? 0,
       error_message: input.errorMessage ?? null,
