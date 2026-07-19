@@ -9,6 +9,32 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 4 (Cron Infrastructure Proof) CLOSED, pending two user actions.**
+  `src/app/api/seo/sync/ping/route.ts` — GET route, `Authorization: Bearer
+  <CRON_SECRET>` auth (Vercel's actual mechanism, timing-safe comparison),
+  writes/completes a real `sync_log` row. `src/lib/seo/site.ts` —
+  `getPrimarySiteId()`, the Phase 1 single-site resolution (ADR-003).
+  `vercel.json` created (deferred since Milestone 0's JSON-can't-hold-
+  comments finding) with the ping job's daily schedule. 11 unit tests +
+  a full unmocked local-server-to-real-production curl verification (5
+  cases, including the `timingSafeEqual` length-guard branch), production
+  row fetched and confirmed exactly correct, then cleaned up
+- Vercel's current Cron Jobs / function duration documentation fetched and
+  verified rather than assumed from training data (per `AGENTS.md`'s own
+  warning): GET method, best-effort delivery (can double-invoke — validates
+  the existing upsert-based idempotency design), no retry on failure,
+  300s/5min Hobby ceiling and up to 800s/1800s on Pro under Fluid Compute
+  (materially more generous than outdated 10s/60s assumptions)
+
+### Fixed
+- **ARCHITECTURE.md §7 corrected:** the originally-sketched cron auth
+  (`x-cron-secret` custom header, checked alongside Basic Auth on every
+  `/api/seo/*` route) doesn't match Vercel's actual mechanism and would
+  have made cron routes permanently uncallable by Vercel's own cron
+  system. Corrected to: `CRON_SECRET`-only via `Authorization: Bearer` for
+  cron-triggered routes, Basic Auth unchanged for human-facing mutation
+  routes, CMS webhook signature unchanged for the webhook route
+
 - **Milestone 3 (Logger + sync_log Writer) CLOSED.** `src/lib/seo/logger.ts`
   — structured JSON logger (debug/info/warn/error) with best-effort
   redaction of credential-shaped field names. `src/lib/seo/sync-log.ts` —

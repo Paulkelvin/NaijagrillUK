@@ -540,35 +540,58 @@ This also closed a loose end from Milestone 1: the index/constraint catalog dump
 **Objective:** Prove the full path — Vercel Cron → API route → auth → job → `sync_log` — end-to-end with a trivial job, isolating infrastructure risk from GSC/GA4 API complexity before either is built.
 
 **Tasks:**
-- [ ] Implement `src/app/api/seo/sync/ping/route.ts`: checks `CRON_SECRET` header, calls `startSyncRun`/`completeSyncRun` with a fixed 1-second delay, returns JSON
-- [ ] Uncomment and populate `vercel.json` crons block with the ping job (daily, low-traffic hour)
-- [ ] Document manual curl trigger for local/staging testing
-- [ ] Confirm actual Vercel plan's function timeout limits (Hobby vs Pro) and record the finding here
+- [x] Implement `src/app/api/seo/sync/ping/route.ts`: checks the cron secret, calls `startSyncRun`/`completeSyncRun` with a fixed 1-second delay, returns JSON
+- [x] Populate `vercel.json` crons block with the ping job (`17 3 * * *` — 3:17am UTC, an off-the-hour minute; deliberately deferred since Milestone 0 since JSON can't hold a "commented-out" stub)
+- [x] Document manual curl trigger — Runbook Appendix, above
+- [x] Confirm Vercel's actual function timeout limits — Runbook Appendix, above. **One thing still needed from you:** which plan (Hobby/Pro) this project's Vercel account is actually on — I have no Vercel account access to check this myself.
 
 **Dependencies:** Milestones 1–3.
 
-**Expected outputs:** A working, deployed, cron-triggerable endpoint with a proven auth boundary.
+**Expected outputs:** A working, cron-triggerable endpoint with a proven auth boundary, verified locally end-to-end against real production Supabase. **Not yet verified against an actual live Vercel deployment** — that needs you to deploy and confirm the schedule fires (see DoD below).
 
 **Database changes:** None.
 
-**Files to create/modify:**
-- `src/app/api/seo/sync/ping/route.ts`
-- `vercel.json`
+**Files created/modified:**
+- `src/app/api/seo/sync/ping/route.ts`, `route.test.ts` (7 unit tests)
+- `src/lib/seo/site.ts`, `site.test.ts` (4 unit tests) — new, unplanned addition, see "Implementation Decision" below
+- `vercel.json` (created — deferred since Milestone 0)
+- `docs/seo-platform/ARCHITECTURE.md` §7 — corrected (see "A Real Finding: Cron Auth Mechanism" below)
 
-**Tests to perform:**
-- `curl` with no `CRON_SECRET` header → 401
-- `curl` with wrong secret → 401
-- `curl` with correct secret → 200 + new `sync_log` row with `source = 'ping'`, `status = 'completed'`
-- Post-deploy: confirm in the Vercel dashboard that the cron actually fires on schedule (cron only runs on production deployments, not preview — verify this explicitly)
+**Implementation decision — `getPrimarySiteId()`:** neither ARCHITECTURE.md nor this plan specified how a sync job resolves *which* site to operate on. ARCHITECTURE.md's own ADR-003 already settled the relevant question — "Build for one, design for many," Phase 1 targets a single site even though the schema is multi-site-ready — so this is implementing an already-approved decision, not making a new one. Added `src/lib/seo/site.ts`'s `getPrimarySiteId()`: queries `sites`, returns the one row's id, and throws a clear, descriptive error if zero or more than one site exists (a Phase 1 assumption stated in the code, not a hidden TODO — revisit when Phase 4 actually builds multi-site sync).
+
+**Tests performed:**
+- 7 unit tests (`route.test.ts`, mocked I/O): no header → 401, wrong secret → 401, secret configured-but-header-missing → 401, malformed header (no `Bearer` prefix) → 401, correct secret → 200 + calls `startSyncRun`/`completeSyncRun` in order, `completeSyncRun` throwing mid-job → marked failed with the error message, `startSyncRun` itself throwing → 500 without attempting `completeSyncRun`
+- 4 unit tests (`site.test.ts`, mocked Supabase client): one site → returns its id, zero sites → clear error, multiple sites → clear error, query failure → surfaces the underlying error message
+- **Real, unmocked end-to-end verification** (not just unit tests): built the app (`npm run build`), ran it locally (`npm run start`) with a real generated `CRON_SECRET`, and curled it against real production Supabase (via this shell's existing env vars) —
+  - No `Authorization` header → `401 {"error":"Unauthorized"}`
+  - Wrong secret → `401`
+  - Wrong-length secret (exercises the `timingSafeEqual` length guard specifically, not just a value mismatch) → `401`
+  - Header present but missing the `Bearer ` prefix → `401`
+  - Correct secret → `200 {"ok":true,"runId":19}`, and the resulting `sync_log` row was fetched directly via SQL and confirmed exactly correct: `source='ping'`, `endpoint='smoke-test'`, `status='completed'`, `completed_at` ≈1.18s after `started_at` (matching the 1s delay plus real work), `records_processed=0`, `metadata` defaults all correctly filled
+  - Test row deleted afterward; production `sync_log` confirmed back to 0 rows
+- **Final result: 31/31 unit tests** (`npm test`) **+ full manual production round-trip verified**
+- `npm run lint` / `npm run build` — clean (same 2 pre-existing unrelated issues as every prior milestone)
 
 **Success criteria (DoD):**
-- A full round trip (cron → route → auth → job → `sync_log`) is proven working *in production* before a single line of GSC/GA4 integration code is written
-- Vercel plan's timeout limit is documented (feeds into Milestone 5b's backfill design)
+- [x] A full round trip (route → auth → job → `sync_log`) proven working against real production data, before any GSC/GA4 integration code exists
+- [x] Vercel's timeout limits documented from current official sources — [ ] **which plan applies to this account is still open**, pending your answer
+- [ ] **Post-deploy dashboard confirmation that the cron actually fires on schedule** — cannot be done from this session (no live deployment, no Vercel account access). This is the one item that genuinely requires you to deploy and check, same shape as the Supabase migration applications in Milestones 1 and 3.
 
 **Risks & rollback:**
-- Risk: Vercel Cron has plan-dependent limits (Hobby: fewer/less-frequent crons). Confirm against the actual account before relying on it.
-- Risk: Vercel Cron does not retry on failure — confirmed here as a real platform behaviour, reinforcing why retries live inside the job (ENGINEERING_STANDARDS.md §6).
+- Risk: Vercel Cron has plan-dependent limits — confirmed Hobby restricts cron to once-per-day scheduling (irrelevant here, the ping job is already daily) and a 300s/5min function ceiling (Phase 1 jobs all fit).
+- Risk: Vercel Cron does not retry on failure — confirmed directly from Vercel's current documentation (not assumed), reinforcing why retries live inside the job itself (ENGINEERING_STANDARDS.md §6, first built in Milestone 5).
+- **New, confirmed platform fact relevant to Milestone 5/6:** Vercel's cron delivery is explicitly *best-effort* and can invoke the same scheduled run more than once, or (rarely) not at all — their own docs recommend idempotent, reconciliation-based job design. This validates, after the fact, a design choice already made in ARCHITECTURE.md's Deduplication Strategy (`ON CONFLICT DO UPDATE` upserts) — no change needed, just confirms it was the right call for a platform-specific reason not originally cited as the reason.
 - Rollback: delete the route and the `vercel.json` entry; no data dependencies.
+
+### A Real Finding: Cron Auth Mechanism Didn't Match ARCHITECTURE.md
+
+ARCHITECTURE.md §7 originally sketched a custom `x-cron-secret` header, checked *in addition to* the same HTTP Basic Auth used by `/admin`, on every `/api/seo/*` route. Before writing the route, I checked Vercel's current documentation rather than assume this was still accurate — `AGENTS.md` itself warns this environment's platform conventions may have moved past training data, and Vercel Cron specifically has: Vercel never sends a custom header, and Vercel's cron invoker never sends Basic Auth credentials at all. When a `CRON_SECRET` env var is set on the project, Vercel automatically sends it as `Authorization: Bearer <CRON_SECRET>` — a *different* header, and requiring Basic Auth in addition would have made the route permanently uncallable by Vercel's own cron system.
+
+This isn't a design trade-off with multiple reasonable answers — it's an external platform fact with one correct resolution — so I corrected ARCHITECTURE.md §7 directly rather than treating it as a stop-and-discuss: cron-triggered routes use `CRON_SECRET` only (Vercel's actual mechanism); human-facing mutation routes and the future `/api/seo/status` endpoint use Basic Auth (unaffected, unchanged); the CMS webhook route uses its own signature scheme (unaffected, unchanged). Full corrected text and reasoning in ARCHITECTURE.md §7 itself. Flagging it here per your standing instruction to surface anything implementation reveals about the architecture, even when the resolution itself doesn't need a decision from you.
+
+### Status: CLOSED (pending two items only you can complete)
+
+**Completed:** 2026-07-19, except: (1) confirming which Vercel plan this account is on, and (2) deploying and confirming the cron fires on schedule in the dashboard. Both flagged above, neither blocks starting Milestone 5 — Milestone 5's own work doesn't depend on either being resolved first, though Milestone 5b's backfill chunking design will want the plan answer before it's finalized.
 
 ---
 
@@ -759,6 +782,11 @@ Consolidated from each milestone's risk section — see ENGINEERING_STANDARDS.md
 
 ## Runbook Appendix (filled in as milestones complete)
 
-- GSC/GA4 service account creation steps: _TBD in Milestone 2_
-- Manual curl commands for each sync route: _TBD in Milestone 4_
-- Confirmed Vercel plan timeout limits: _TBD in Milestone 4_
+- GSC/GA4 service account creation steps: `DEPLOYMENT.md` §8 (Milestone 2)
+- Manual curl commands for each sync route:
+  - `/api/seo/sync/ping` (Milestone 4):
+    ```bash
+    curl -H "Authorization: Bearer $CRON_SECRET" https://<your-deployment>/api/seo/sync/ping
+    ```
+    Matches exactly what Vercel Cron itself sends (`Authorization: Bearer <CRON_SECRET>`, GET) — see "Vercel Platform Findings" below. A 401 with no/wrong header, 200 with a `runId` and a real `sync_log` row on success.
+- **Vercel plan timeout limits — confirmed from Vercel's current documentation** (fetched during Milestone 4, not assumed from training data, per `AGENTS.md`'s own warning that this environment's platform conventions may have moved): with Fluid Compute (Vercel's current default), **Hobby** allows up to 300s (5 min) per function — this is both the default *and* the maximum, no more headroom available. **Pro** allows 300s default, up to 800s generally available, and up to 1800s (30 min) via an extended-duration beta requiring explicit per-function configuration above 800s. Every Phase 1 job (GSC/GA4 daily sync, weekly retention) fits comfortably within the 5-minute Hobby ceiling. **Still open: which plan this project's actual Vercel account is on** — needed to finalize Milestone 5b's backfill chunking size. Asked directly; not something I can check without Vercel account access.

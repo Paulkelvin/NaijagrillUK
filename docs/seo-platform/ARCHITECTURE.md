@@ -1243,15 +1243,22 @@ POST /api/seo/briefs/generate   Generate content brief for a keyword
 
 ### Authentication
 
-All `/api/seo/*` routes check the same HTTP Basic Auth used by the existing `/admin` route. Cron-triggered routes additionally check a `CRON_SECRET` header to prevent unauthorised triggering.
+Two independent mechanisms, chosen per route by who calls it — never both on the same route. Vercel's cron invoker never presents Basic Auth credentials, and an admin's browser never presents a Bearer token, so requiring both on one route would make it permanently uncallable by its actual caller.
 
-```typescript
-// Cron auth check
-const cronSecret = request.headers.get('x-cron-secret');
-if (cronSecret !== process.env.CRON_SECRET) {
-  return Response.json({ error: 'Unauthorized' }, { status: 401 });
-}
-```
+**Corrected during Milestone 4** (`docs/seo-platform/PHASE_1_IMPLEMENTATION.md`): this section originally sketched a custom `x-cron-secret` header checked in addition to Basic Auth on every `/api/seo/*` route. Verified against Vercel's current documentation instead of assumed from training data (flagged by `AGENTS.md`'s own warning that this environment's platform behaviour may differ from what's expected) — Vercel does not send a custom header. When a `CRON_SECRET` environment variable is set on the project, Vercel automatically sends it as `Authorization: Bearer <CRON_SECRET>` on every cron-triggered request, and never sends Basic Auth credentials at all.
+
+- **Cron-triggered sync jobs** (`/api/seo/sync/*`, `/api/seo/retention/*`) — `CRON_SECRET` only, checked against Vercel's auto-injected `Authorization: Bearer` header:
+
+  ```typescript
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET; // via src/lib/seo/config.ts in practice
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  ```
+
+- **Client-side mutation routes** (`/api/seo/actions/:id`, `/api/seo/clusters`, `/api/seo/settings`) and the observability endpoint (`/api/seo/status`, Milestone 7) — the existing HTTP Basic Auth used by `/admin` (`src/middleware.ts`'s matcher extends to cover these paths once they're built). Called from an authenticated admin's browser, which already carries the Basic Auth session.
+- **CMS webhook** (`/api/seo/webhook/cms`) — validates the CMS's own webhook signature (§4.4), neither of the above.
 
 ### Background Jobs
 
@@ -1265,6 +1272,8 @@ if (cronSecret !== process.env.CRON_SECRET) {
 | Analysis engine (all scores) | After any sync completes | Event-driven | 3 min |
 | Retention/archival | Cron | Weekly Sunday 03:00 UTC | 5 min |
 | CTR model rebuild | Cron | Weekly after GSC sync | 1 min |
+
+**Timeout budgets vs. actual Vercel limits (confirmed Milestone 4, see `PHASE_1_IMPLEMENTATION.md`):** with Fluid Compute (Vercel's current default), Hobby allows up to 300s (5 min) per function, Pro up to 800s generally available (1800s in an extended-duration beta). Every Phase 1 job above (GSC sync, GA4 sync, retention) fits the 5-minute Hobby ceiling as budgeted. The 10-minute SERP snapshots budget (Phase 2, DataForSEO) exceeds Hobby's limit and would need either a Pro plan or chunking when that milestone is built.
 
 ### Webhook Strategy
 
