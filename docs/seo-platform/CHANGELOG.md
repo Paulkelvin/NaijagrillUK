@@ -9,6 +9,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Deployed
+- **Real GSC/GA4 credentials configured and verified in production, 2026-07-20.**
+  The Google Cloud service-account setup finally completed after a long
+  multi-session troubleshooting thread (Organization Policy Administrator
+  role, project-vs-org IAM scoping, two independently-enforced
+  service-account-key-creation constraints, a project-level policy
+  override re-enforcing one of them, a `serviceusage.services.enable`
+  gap for enabling the GA4 Data API). `GSC_CLIENT_EMAIL`,
+  `GSC_PRIVATE_KEY`, `GSC_PROPERTY_URL` (`sc-domain:naijagrillandspice.co.uk`),
+  `GA4_CLIENT_EMAIL`, `GA4_PRIVATE_KEY`, `GA4_PROPERTY_ID`, and
+  `NEXT_PUBLIC_GA_MEASUREMENT_ID` all added to Vercel; redeployed.
+  First real GSC sync: `{"ok":true,"recordsProcessed":25,"rejectedCount":0}`
+  — 25 real keyword/page/metric rows. Second consecutive run reproduced
+  identically, proving idempotency for real (not just unit-tested) — the
+  `UNIQUE(keyword_id, page_id, date)` constraint guarantees an identical
+  `recordsProcessed` with no error means the same rows were updated, not
+  duplicated. GA4 sync also confirmed working end-to-end
+  (`recordsProcessed: 0`, correct — the GA4 property and site tracking
+  tag are brand new, so there's no traffic data yet for the 3-day-old
+  target date the sync defaults to). See PHASE_1_IMPLEMENTATION.md
+  Milestones 5 and 6 for full detail
 - **`claude/exciting-johnson-nddaq1` merged into `main` and deployed to
   production** (naijagrillandspice.co.uk) — Milestones 5–8's code (GSC
   sync, GA4 sync, observability endpoint, retention job) is now live

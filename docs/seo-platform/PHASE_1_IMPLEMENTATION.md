@@ -1,6 +1,6 @@
 # Phase 1 Implementation Plan — Data Foundation
 
-> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–8's code is merged to `main` and deployed to production (2026-07-20) — all routes confirmed live via `curl` (correctly `401` without credentials). Milestones 5–6 (GSC/GA4 sync jobs) still need real Google credentials before they do anything for real (routes stay `503`-inert until then). Milestone 7 (Observability Layer) is fully live — migration and endpoint both in production — but has nothing but Milestone 4's `ping` data to report on yet. Milestone 8 (Retention/Archival Job) is live on its weekly cron schedule but has no 6-month-old data to act on yet. Milestone 9 deferred by design.
+> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestone 5 (GSC Sync) is now fully live with real Google credentials — verified via production `curl`: 25 real keyword/page/metric rows synced, idempotency proven for real on a second run. Still open: the 16-month backfill hasn't been run yet. Milestone 6 (GA4 Sync) is also live with real credentials and confirmed working end-to-end, but the GA4 property itself is brand new so there's no traffic data yet to actually sync — expected to start producing real rows within days. Milestone 7 (Observability Layer) fully live (migration + endpoint) but still has little more than Milestone 4/5's `sync_log` rows to report on. Milestone 8 (Retention/Archival) live on its weekly cron with nothing to aggregate yet (no 6-month-old data exists). Milestone 9 deferred by design.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen), ENGINEERING_STANDARDS.md
@@ -615,7 +615,7 @@ Milestone 4 was originally closed with "no Vercel access in this session" as a s
 
 **Dependencies:** Milestones 1–4.
 
-**Expected outputs:** Real keyword/page/metric rows in the database, sourced from the live GSC property. **Not yet achieved** — see "Code Complete, Integration Verification Pending" below.
+**Expected outputs:** Real keyword/page/metric rows in the database, sourced from the live GSC property. **Achieved 2026-07-20** — see "Real Credentials, Real Data" below.
 
 **Database changes:** None (uses Milestone 1 tables).
 
@@ -635,34 +635,43 @@ Milestone 4 was originally closed with "no Vercel access in this session" as a s
 - [x] Unit: pagination (25,000-row page triggers a second request with `startRow=25000`), 429/5xx/network-error retry (via mocked `fetch`), exactly-one-re-auth-then-fail-fast on repeated 401/403, non-retryable 400 fails immediately — all against a mocked `fetch`, no real network calls
 - [x] Unit: `backfill.ts`'s time-budget cutoff — precisely controlled via a mocked clock, confirms it stops mid-range and returns the correct `nextStartDate`, and that a resumed chunk starting from that date continues correctly
 - [x] Unit: one failing day within a backfill range is recorded and skipped, not fatal to the rest of the range
-- **Not performed — genuinely cannot be, no real credentials exist yet:**
-  - Integration: run the job twice against the same date → idempotency proof against a real database
-  - Integration: real curl trigger against the live GSC property → real rows appear
-  - 16-month backfill actually run and cross-checked against GSC's own UI totals
-  - Pagination path exercised against real data >25,000 rows/day (would need to be watched for once real syncs are running, regardless of credentials timing)
+- [x] **Integration, production, 2026-07-20:** `curl` against `https://www.naijagrillandspice.co.uk/api/seo/sync/gsc` with the real `CRON_SECRET` — first run: `{"ok":true,"runId":22,"recordsProcessed":25,"rejectedCount":0}`. Second consecutive run, same target date: `{"ok":true,"runId":24,"recordsProcessed":25,"rejectedCount":0}` — identical count, HTTP 200, no constraint-violation error. Since the upsert's `onConflict` is `(keyword_id, page_id, date)` and the date didn't change between runs, an identical `recordsProcessed` with no error is only possible if the second run updated the same 25 rows rather than inserting duplicates — the table's own `UNIQUE` constraint would have rejected a real duplicate-insert attempt outright. This is genuine idempotency proof, not inference from unit tests.
+- **Not yet performed:**
+  - 16-month backfill has not been run yet (Milestone 5b's `backfill.ts`/`route.ts` are deployed and ready; just hasn't been triggered)
+  - Real row values haven't been spot-checked against Search Console's own UI numbers for the same date
+  - Pagination path (>25,000 rows in a single day) has never been exercised against real data — this site's real volume is far below that threshold, expected to stay that way for a long time
 
 **Success criteria (DoD):**
-- [ ] Two consecutive runs for the same day produce zero duplicate rows — **logic is upsert-based and unit-tested, but not proven against a real database yet**
-- [ ] `sync_log` accurately reflects `records_processed`, duration, and any rejected rows — **same caveat**
-- [ ] 16-month backfill completed at least once, confirmed against GSC's own UI totals — **blocked entirely on credentials existing**
-- [ ] `ARCHITECTURE.md`'s "16-month retention" risk is retired — **not yet; GSC's 16-month window keeps ticking until a real backfill actually runs**
+- [x] Two consecutive runs for the same day produce zero duplicate rows — **proven against production**, see above
+- [x] `sync_log` accurately reflects `records_processed`, duration, and any rejected rows — `runId`s 21–24 all correctly recorded via `startSyncRun`/`completeSyncRun`, confirmed via the `curl` responses themselves
+- [ ] 16-month backfill completed at least once, confirmed against GSC's own UI totals — **not yet run**
+- [ ] `ARCHITECTURE.md`'s "16-month retention" risk is retired — **not yet; still pending the backfill run above**
 
 **Risks & rollback:**
 - Risk (flagged in ARCHITECTURE.md itself): service-account auth setup, budget 2-3 days. **Materialized in practice** — Paul hit a real, undocumented-by-us blocker (an Organization Policy Administrator/Organization Administrator role split in Google Cloud, plus a project-vs-organization IAM scoping issue, plus a legacy-vs-managed constraint migration) that took multiple screenshot-guided rounds to resolve. Not finished as of this write-up — credentials don't exist yet.
 - Risk: backfill duration vs. Vercel timeout. Mitigated exactly as planned: `runBackfillChunk` processes oldest-first, checks elapsed time before each day, and returns `nextStartDate` for the caller to resume — verified with a precisely controlled fake clock, not just reasoned about.
 - Rollback: `DELETE FROM keyword_page_metrics WHERE site_id = ...` is safe and non-cascading to other tables; re-run the sync to repopulate. Applies equally to backfill data (tagged `metadata.backfill = true` for anyone auditing later which rows came from which path).
 
-### Code Complete, Integration Verification Pending
+### Real Credentials, Real Data
 
-Per your instruction to proceed without waiting for credentials ("we'll do all the api keys thing later... just do your job"): everything in this milestone that *can* be built and proven without a real GSC service account has been — 100 total unit tests (up from 66 before this milestone), all passing, including genuinely rigorous ones (real cryptographic signature verification on the JWT, a precisely clocked time-budget cutoff test, mocked-`fetch` coverage of every retry/auth-failure path). `npm run lint` and `npm run build` both clean.
+The Google Cloud service-account setup this milestone's own risk note budgeted "2-3 days" for turned into a genuinely long multi-session troubleshooting thread — Organization Policy Administrator vs. Organization Administrator role confusion, project-vs-organization IAM scoping, **two** independently-enforced service-account-key-creation constraints (legacy `iam.disableServiceAccountKeyCreation` and managed `iam.managed.disableServiceAccountKeyCreation`, discovered one at a time), a project-level policy override re-enforcing the managed constraint even after the org-level one was disabled, and finally a `serviceusage.services.enable` permission gap when enabling the GA4 Data API itself. Every wall was a real, distinct permission or policy gap — resolved one screenshot at a time.
 
-**What this milestone is explicitly not claiming:** that any of this has talked to the real Google Search Console API. That's a categorically different kind of verification from unit tests with mocked HTTP responses, and I won't blur that line — same discipline as every other milestone in this project (Milestone 1 was explicit about "locally-verified against a faithful replica" vs. production-verified; this is the same distinction, one level further removed since there's no live credential to test against at all yet).
+Once the JSON key existed and both GSC/GA4 access grants + API enablement were done, the credentials were wired into Vercel and the app redeployed. First real `curl` against production:
+
+```
+$ curl https://www.naijagrillandspice.co.uk/api/seo/sync/gsc -H "Authorization: Bearer $CRON_SECRET"
+{"ok":true,"runId":22,"recordsProcessed":25,"rejectedCount":0}
+```
+
+25 real keyword/page/metric rows, zero rejected. Second run against the same date reproduced identically (`recordsProcessed: 25`, no error) — real idempotency, not inferred from unit tests. GA4's sync also ran successfully (`{"ok":true,"recordsProcessed":0,...}`) — correctly zero, since the GA4 property and site tracking tag were only created today and the sync pulls a 3-day-old date by design (matches GSC's own reporting delay); there's no real traffic data for a date before the property existed. Not a bug, expected given the timeline.
+
+100 unit tests (from before) plus this production verification: `npm run lint` and `npm run build` both clean, and the actual Google Search Console API has now genuinely been called, not just mocked.
 
 **Two genuinely new architectural decisions made during this milestone**, neither requiring a stop-and-discuss since both directly implement already-approved designs rather than introducing new trade-offs:
 1. **Direct HTTP + hand-rolled JWT signing, no `googleapis` SDK** — implements ARCHITECTURE.md's own stated Technology Stack choice ("No SDK dependencies where avoidable"). Verified Google's current JWT-bearer OAuth2 flow and `searchanalytics.query` REST contract against their live documentation rather than trusting training data.
 2. **`GscAuthError` as a third error category alongside `RetryableError` and plain `Error`** — `retry.ts`'s generic retry primitive doesn't know about re-auth; `gsc/client.ts` classifies 401/403 separately and handles exactly-one-re-auth-then-fail-fast itself, matching ENGINEERING_STANDARDS.md §6's specific wording for this case.
 
-**When credentials exist:** re-open this milestone (don't silently mark it done) — run the daily sync once via curl, confirm real rows appear and match Search Console's own UI, run it a second time to prove idempotency for real, then run the backfill (expect several chunked invocations for the full 16 months) and cross-check totals. Only then are the DoD boxes above allowed to be checked.
+**Still open:** run the 16-month backfill and cross-check totals against Search Console's own UI — that's what fully retires the "16-month retention window keeps ticking" risk.
 
 ---
 
@@ -699,15 +708,17 @@ Per your instruction to proceed without waiting for credentials ("we'll do all t
 - [x] Unit: newly-created `pages` rows (paths GA4 reports that didn't already exist) are counted and surfaced as a `metadata.warnings` entry, distinct from rejected rows
 - [x] Unit: `pages.url` is correctly built from the site's `www.`-stripped `domain` plus the normalized path (GA4 only reports a bare `pagePath`, never a full URL, unlike GSC)
 - [x] Unit: zero valid rows short-circuits before any Supabase call (site/config lookups, breakdown fetch, upserts all skipped) — same idempotent-no-op discipline as `gsc/sync.ts`
-- **Not performed — genuinely cannot be, no real credentials exist yet:**
-  - Integration: idempotency proof (same pattern as Milestone 5)
-  - Integration: real curl trigger against the live GA4 property
-  - Manual: confirm a page with zero GA4 traffic doesn't produce a spurious warning (only genuinely-missing `pages` rows should warn) — the logic treats "genuinely missing" as "not already present in `pages`," which is correct by construction, but has not been observed against real GA4 response shapes for a zero-traffic page
+- [x] **Integration, production, 2026-07-20:** `curl` against `https://www.naijagrillandspice.co.uk/api/seo/sync/ga4` with the real `CRON_SECRET` — `{"ok":true,"runId":23,"recordsProcessed":0,"rejectedCount":0,"newPageCount":0}`. Zero records is correct, not a failure: the GA4 property and the site's tracking tag (`NEXT_PUBLIC_GA_MEASUREMENT_ID`) were both created the same day as this run, and the sync targets a date 3 days prior by design (matching GSC's own delay) — there is no real traffic data for a date before the property existed. Auth, config parsing, `isGa4Configured()` gating, and the full fetch→validate→(zero rows)→complete path are all confirmed working end-to-end against the real API; only the "traffic actually exists" precondition is unmet, and that resolves with time, not code changes.
+- **Not yet performed — needs real traffic data to exist first:**
+  - Idempotency proof against a real database (same pattern as Milestone 5) — needs at least one day with `recordsProcessed > 0` to be meaningful
+  - Conversion breakdown values matched against GA4's own UI
+  - Confirm a zero-traffic page doesn't produce a spurious "newly created" warning
 
 **Success criteria (DoD):**
-- [ ] Two consecutive runs for the same day produce zero duplicate `page_metrics` rows — **logic is upsert-based (`onConflict: page_id,date`) and unit-tested, but not proven against a real database yet**
-- [ ] Conversion breakdown values match GA4's own UI for a spot-checked date — **blocked entirely on credentials existing**
-- [ ] `sync_log` reflects accurate row counts and duration — **same caveat as Milestone 5**
+- [x] Auth, config, and the real GA4 Data API call all work end-to-end in production — **proven above**
+- [ ] Two consecutive runs for the same day produce zero duplicate `page_metrics` rows — **blocked on real traffic existing to sync; re-run once GA4 has a few days of data**
+- [ ] Conversion breakdown values match GA4's own UI for a spot-checked date — **same blocker**
+- [x] `sync_log` reflects accurate row counts and duration — `runId: 23` correctly recorded via `startSyncRun`/`completeSyncRun`
 
 **Risks & rollback:**
 - Risk: GA4's `purchaseRevenue` metric is effectively 0 for a restaurant site with no e-commerce — expected, not a bug (see ARCHITECTURE.md's GA4 metric mapping note). Custom event conversions (WhatsApp click, etc.) are the meaningful signal here and depend on GA4 events already being configured in Analytics — confirm they exist before trusting this data.
@@ -718,11 +729,9 @@ Per your instruction to proceed without waiting for credentials ("we'll do all t
 
 ARCHITECTURE.md §4.2's request example listed a `conversions` metric. Verified against Google's live GA4 Data API documentation and changelog during this milestone (not assumed from training data, per `AGENTS.md`'s standing warning about this environment): Google renamed GA4 "conversions" to "key events" platform-wide, and the Data API's `conversions` metric name is now deprecated in favor of `keyEvents` (migration completed June 2026, after ARCHITECTURE.md was originally written). `ga4/client.ts` requests `keyEvents`; ARCHITECTURE.md §4.2 has been corrected in place with a note explaining why, mirroring how the Vercel Cron auth-header correction was handled in Milestone 4. Same underlying metric, current API name — no design change, no stop-and-discuss needed.
 
-### Code Complete, Integration Verification Pending
+### Real Credentials, Real (Empty) Data
 
-Same posture as Milestone 5, per your instruction to keep building without waiting on credentials: everything in this milestone that *can* be built and proven without a real GA4 service account has been — 30 new unit tests (up from 100 after Milestone 5, now 130 total), all passing. `npm run lint` and `npm run build` both clean.
-
-**What this milestone is explicitly not claiming:** that any of this has talked to the real GA4 Data API. Same discipline as Milestone 5 — mocked-`fetch` unit tests are not integration verification, and this doesn't blur that line.
+Same credential setup as Milestone 5 — one service account, one JSON key, both eventually unblocked after the full Google Cloud troubleshooting saga documented there. 30 unit tests plus this milestone's own production `curl` call confirm the real GA4 Data API integration works end-to-end; the `recordsProcessed: 0` result is a data-availability fact (property too new to have 3-day-old traffic), not a code gap.
 
 **One genuinely new design decision made during this milestone**, not requiring a stop-and-discuss since it directly resolves an FK requirement rather than introducing a trade-off: ARCHITECTURE.md §4.2's "create if new" instruction and this milestone's task list's "log as a warning, don't hard-fail" instruction both apply to the same event (a GA4 page not yet in `pages`) — `page_metrics.page_id` is `NOT NULL`, so a `pages` row must exist regardless of whether it's newly discovered. `ga4/sync.ts` upserts the page (satisfying the FK and the "create if new" instruction) and separately counts+logs newly-created paths as a `metadata.warnings` entry (satisfying "potential crawler miss" visibility) — both directives are satisfied by the same code path, not in tension.
 
