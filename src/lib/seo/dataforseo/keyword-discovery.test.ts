@@ -78,6 +78,15 @@ describe("extractCandidates", () => {
     expect(result[0].searchIntent).toBeNull();
   });
 
+  it("drops navigational-intent results outright — they're a real business's own name, not a content opportunity", () => {
+    // Regression: a real production run surfaced "empress restaurant birmingham"
+    // (a competitor's actual name) as a navigational-intent related keyword —
+    // structurally un-actionable, since you can't rank content for someone
+    // else's brand search.
+    const result = extractCandidates([relatedItem({ keyword: "empress restaurant birmingham", main_intent: "navigational" })]);
+    expect(result).toEqual([]);
+  });
+
   it("handles a missing keyword_data gracefully", () => {
     expect(extractCandidates([{ keyword_data: null }])).toEqual([]);
   });

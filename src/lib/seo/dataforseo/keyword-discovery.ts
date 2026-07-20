@@ -84,10 +84,20 @@ export interface DiscoveredKeywordCandidate {
 
 /**
  * Filters + normalizes one seed's raw API response into real candidates:
- * long-tail only, real volume at/above the floor, deduped by normalized
- * form. The API's own `filters` param already asks for volume >= the
- * floor — this re-checks defensively rather than trusting it blindly,
- * same discipline as every other DataForSEO response in this codebase.
+ * long-tail only, real volume at/above the floor, no navigational intent,
+ * deduped by normalized form. The API's own `filters` param already asks
+ * for volume >= the floor — this re-checks defensively rather than
+ * trusting it blindly, same discipline as every other DataForSEO
+ * response in this codebase.
+ *
+ * Navigational intent is excluded outright, not just left neutral: found
+ * via a real production run of this module — 2 of its first 17 real
+ * results ("empress restaurant birmingham", "...pershore road") turned
+ * out to be a *competitor's own business name*, surfaced because a
+ * generic niche seed happened to relate to it. That's structurally
+ * un-actionable for this system's purpose (you cannot rank content for
+ * someone else's brand search), unlike informational/commercial/
+ * transactional intent, which are all real content opportunities.
  */
 export function extractCandidates(items: RelatedKeywordItem[]): DiscoveredKeywordCandidate[] {
   const seen = new Set<string>();
@@ -100,6 +110,8 @@ export function extractCandidates(items: RelatedKeywordItem[]): DiscoveredKeywor
 
     const searchVolume = kd.keyword_info?.search_volume ?? null;
     if (searchVolume === null || searchVolume < MIN_SEARCH_VOLUME) continue;
+
+    if (kd.search_intent_info?.main_intent === "navigational") continue;
 
     const keywordNormalized = normalizeKeyword(kd.keyword);
     if (seen.has(keywordNormalized)) continue;
