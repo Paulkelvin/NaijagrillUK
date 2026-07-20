@@ -643,6 +643,51 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 ---
 
+## Milestone 14 — Content Briefs & Real Analytics — ✅ Complete (2026-07-20)
+
+**Objective:** Two more real gaps raised directly by the user after seeing the live action queue: (1) "target this keyword" cards read as generic — no guidance on *why* or *how*; (2) no visibility into real clicks/impressions data at all, despite it being collected daily since Phase 1. Both added post-ship at explicit user request, same as Milestone 13.
+
+**Tasks:**
+- [x] `src/lib/seo/intelligence/content-brief.ts` — real competitor SERP context per keyword-linked action
+- [x] `src/lib/seo/intelligence/analytics-summary.ts` — daily/per-keyword aggregation over `keyword_page_metrics`
+- [x] `src/lib/seo/intelligence/chart-path.ts` — pure SVG path math for the trend chart
+- [x] `src/components/admin/TrendChart.tsx` — the chart itself
+- [x] `/admin/seo/analytics` — new page: 4 summary stat tiles, a clicks/impressions trend chart, a sortable "Top queries" table
+- [x] `/admin/seo` extended — a real "who's ranking above you" section per keyword-linked action card
+
+**Implementation notes:**
+- **Content briefs use real, already-collected data — no new DataForSEO cost.** `content-brief.ts` reads `serp_snapshots` (Milestone 6's weekly SERP sync), grouped per keyword to its single most recent snapshot date, split into "your position" and up to 5 real competitor titles/domains/positions ranking above you.
+- **A real finding while building this: "People Also Ask" data doesn't actually exist anywhere in this system, despite ARCHITECTURE.md §6's plan and `serp.ts`'s own `TYPE_TO_SERP_FEATURE` map both naming it.** Verified against real production data (423 organic rows, 6 local_pack, **0 PAA** — confirmed via direct query, not assumed) and against DataForSEO's actual response shape (fetched their current docs rather than guessed): a `people_also_ask` SERP item nests its real question text one level deeper, inside a `people_also_ask_element[]` array's own `title` field — `serp.ts` reads `title`/`domain`/`url` directly off the top-level item, which is correct for `organic`/`local_pack` but structurally can't reach a PAA question. Separately, `serp_snapshots.domain`/`url`/`position` are all NOT NULL, organic-result-shaped columns that a PAA question (no domain, no URL, no ranking position) can't satisfy anyway. Rather than force a bad fit or silently promise PAA content that isn't real, this is left as a documented, known gap — content briefs use only the real competitor-title data, which is solid on its own. Fixing PAA properly needs a schema change (a differently-shaped, nullable-friendly table) — a migration, out of reach this session (see Milestone 13's ADR-011 for why).
+- **Analytics reuses `keyword_page_metrics` directly — no new sync, no new table.** `loadAnalyticsSummary()` paginates the full window (`FETCH_PAGE_SIZE = 1000`, this codebase's established pattern — confirmed a real >1000-row window is paginated correctly, not silently truncated, via a dedicated test) and aggregates in JS: daily totals for the trend chart, per-keyword totals for the "Top queries" table, impression-weighted average position throughout (same convention `retention/run.ts`'s weekly rollup already established, not reinvented here).
+- **No charting library added.** `chart-path.ts` is ~30 lines of pure SVG path math (scale a series to its own max, build an M/L path string), unit-tested directly; `TrendChart.tsx` is a plain Server-rendered `<svg>`, no client JS. Matches this project's own stated stack principle ("No SDK dependencies where avoidable") for what's fundamentally one time-series chart — pulling in a charting library would have been the heavier, less justified choice at this scale.
+- **Clicks and impressions are scaled independently, not on a shared axis** — impressions routinely run 10-100x clicks (confirmed against real data: 431 impressions vs. 5 clicks for this site's last 90 days), so a shared scale would flatten the clicks line to invisibility. Same choice Search Console's own dashboard makes.
+
+**Dependencies:** `keyword_page_metrics` (Phase 1), `serp_snapshots` (Milestone 6).
+
+**Database changes:** None — pure read/aggregation layer over existing tables.
+
+**Files created:**
+- `src/lib/seo/intelligence/content-brief.ts`, `content-brief.test.ts` (7 tests)
+- `src/lib/seo/intelligence/analytics-summary.ts`, `analytics-summary.test.ts` (10 tests)
+- `src/lib/seo/intelligence/chart-path.ts`, `chart-path.test.ts` (9 tests)
+- `src/components/admin/TrendChart.tsx` — no dedicated test (plain Server-rendered SVG, this project's established "verify in a real browser instead" split for untested Server Components)
+- `src/app/admin/(dashboard)/seo/analytics/page.tsx` — new page, same split
+- `src/app/admin/(dashboard)/seo/page.tsx` extended (competitor brief section) + `AdminNav.tsx` (new "Analytics" link)
+
+**Tests performed:**
+- Unit: 26 new tests across the three logic modules, including a dedicated pagination test proving a >1000-row analytics window isn't silently truncated, and a content-brief test proving only the most recent SERP snapshot date is used per keyword (not stale data mixed in)
+- **Manual, real production data, real browser (local dev server against live Supabase)**: `/admin/seo/analytics` renders real numbers — 5 clicks, 431 impressions, 1.2% CTR, 10.4 avg position over the real last-90-days window, plus a real per-keyword breakdown table (`"naija grill and spice kitchen"`: 4 clicks/177 impressions/2.3% CTR/6.4 avg position, and 5 more real rows), and a real rendered SVG trend chart (3 paths: area fill, impressions line, clicks line). `/admin/seo`'s "Create content" cards now show real competitor context (e.g. tripadvisor.co.uk at #5, squaremeal.co.uk at #6, brindleyplace.com at #7 for one real keyword) instead of a bare keyword label. Zero runtime errors in either page.
+
+**Success criteria (DoD):**
+- A real admin can see actual clicks/impressions trends and per-keyword performance, not just today's snapshot — confirmed against real production data
+- "Create content" actions carry real competitive context, not just a keyword name — confirmed against real production data
+- PAA's absence is a documented, known gap rather than a silently-broken promise
+
+**Risks & rollback:**
+- Pure additive, read-only change — no migration, no write path altered. Reverting means removing the new page, the nav link, and the brief section from `/admin/seo`; nothing to clean up in the database.
+
+---
+
 ## Cross-Cutting Notes
 
 - **Same engineering discipline as Phase 1, no exceptions:** one milestone at a time, tested and documented before moving on, database-first principles for Milestone 0, real integration verification distinguished from mocked unit tests at every step, CHANGELOG.md/this document updated after every milestone.

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { getPrimarySiteId } from "@/lib/seo/site";
 import { ActionControls } from "@/components/admin/ActionControls";
+import { fetchContentBriefs, type KeywordContentBrief } from "@/lib/seo/intelligence/content-brief";
 
 export const metadata: Metadata = {
   title: "SEO Action Queue | NaijaGrill",
@@ -24,28 +25,36 @@ interface ActionRow {
   effort: string | null;
   estimated_impact: string | null;
   created_at: string;
+  keyword_id: string | null;
 }
 
 interface QueueResult {
   rows: ActionRow[];
   error: string | null;
+  briefs: Map<string, KeywordContentBrief>;
 }
 
+// Real content-brief context per keyword-linked action — see
+// content-brief.ts. Batched in one query (not per-card) since this
+// project's real scale is a handful of open actions at a time.
 async function loadOpenActions(): Promise<QueueResult> {
   try {
     const siteId = await getPrimarySiteId();
     const supabase = createSupabaseServiceRoleClient();
     const { data, error } = await supabase
       .from("actions")
-      .select("id, type, priority_score, status, title, description, source_module, effort, estimated_impact, created_at")
+      .select("id, type, priority_score, status, title, description, source_module, effort, estimated_impact, created_at, keyword_id")
       .eq("site_id", siteId)
       .in("status", OPEN_STATUSES)
       .order("priority_score", { ascending: false });
 
-    if (error) return { rows: [], error: error.message };
-    return { rows: (data ?? []) as ActionRow[], error: null };
+    if (error) return { rows: [], error: error.message, briefs: new Map() };
+    const rows = (data ?? []) as ActionRow[];
+    const keywordIds = [...new Set(rows.map((r) => r.keyword_id).filter((id): id is string => id !== null))];
+    const briefs = await fetchContentBriefs(supabase, keywordIds);
+    return { rows, error: null, briefs };
   } catch (err) {
-    return { rows: [], error: err instanceof Error ? err.message : String(err) };
+    return { rows: [], error: err instanceof Error ? err.message : String(err), briefs: new Map() };
   }
 }
 
@@ -143,11 +152,35 @@ function Badge({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ActionCard({ action, rank }: { action: ActionRow; rank: number }) {
+function ContentBriefSection({ brief }: { brief: KeywordContentBrief | undefined }) {
+  if (!brief || brief.competitors.length === 0) return null;
+
+  return (
+    <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-white/40">
+        Who&apos;s ranking above you{brief.ownPosition != null ? ` (you: #${brief.ownPosition})` : ""} — real Google
+        results as of {formatDate(brief.snapshotDate)}
+      </p>
+      <ul className="mt-2.5 space-y-1.5">
+        {brief.competitors.map((c) => (
+          <li key={`${c.domain}-${c.position}`} className="flex items-start gap-2 text-sm text-white/70">
+            <span className="mt-0.5 shrink-0 text-xs text-white/30">#{c.position}</span>
+            <span className="min-w-0">
+              <span className="truncate">{c.title ?? c.domain}</span>{" "}
+              <span className="text-xs text-white/40">({c.domain})</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function ActionCard({ action, rank, brief }: { action: ActionRow; rank: number; brief: KeywordContentBrief | undefined }) {
   return (
     <li className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-amber-300/90">#{rank}</span>
             <h2 className="text-base font-semibold text-white">{action.title}</h2>
@@ -162,6 +195,7 @@ function ActionCard({ action, rank }: { action: ActionRow; rank: number }) {
             {action.status === "in_progress" && <Badge>In progress</Badge>}
             <span className="self-center text-xs text-white/40">since {formatDate(action.created_at)}</span>
           </div>
+          <ContentBriefSection brief={brief} />
         </div>
         <ActionControls actionId={action.id} status={action.status} />
       </div>
@@ -236,7 +270,7 @@ function RecentResults({ rows, error }: RecentResultsResult) {
 }
 
 export default async function SeoActionQueuePage() {
-  const [{ rows, error }, recentResults] = await Promise.all([loadOpenActions(), loadRecentOutcomes()]);
+  const [{ rows, error, briefs }, recentResults] = await Promise.all([loadOpenActions(), loadRecentOutcomes()]);
 
   return (
     <main className="min-h-screen bg-[#0f0c0a] px-5 py-12 text-white md:px-10 md:py-16">
@@ -269,7 +303,7 @@ export default async function SeoActionQueuePage() {
         {rows.length > 0 && (
           <ul className="space-y-4">
             {rows.map((action, index) => (
-              <ActionCard key={action.id} action={action} rank={index + 1} />
+              <ActionCard key={action.id} action={action} rank={index + 1} brief={action.keyword_id ? briefs.get(action.keyword_id) : undefined} />
             ))}
           </ul>
         )}

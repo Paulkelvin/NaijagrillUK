@@ -9,6 +9,40 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 14 (Content Briefs & Real Analytics) — two more
+  gaps closed at explicit user request after seeing the live queue:
+  "target this keyword" cards had no real guidance, and there was no
+  visibility into actual clicks/impressions data at all.**
+  `src/lib/seo/intelligence/content-brief.ts` — real competitor context
+  (titles/domains/positions) per keyword-linked action, pulled from
+  `serp_snapshots` (already collected, zero new DataForSEO cost). Real
+  finding while building this: **"People Also Ask" data doesn't exist
+  anywhere in this system** despite being named in both ARCHITECTURE.md
+  §6 and `serp.ts` itself — confirmed against real production data (423
+  organic rows, 6 local_pack, 0 PAA) and DataForSEO's actual response
+  shape: a PAA question's real text is nested one level deeper
+  (`people_also_ask_element[].title`) than `serp.ts` reads, and
+  `serp_snapshots.domain`/`url`/`position` are NOT NULL columns a PAA
+  question structurally can't satisfy anyway. Documented as a known gap
+  rather than forced or faked — content briefs use only the real,
+  solid competitor-title data. `src/lib/seo/intelligence/analytics-summary.ts`
+  + `chart-path.ts` + `src/components/admin/TrendChart.tsx` — a new
+  `/admin/seo/analytics` page: real clicks/impressions/CTR/position stat
+  tiles and trend chart (last 90 days, paginated correctly past 1000
+  rows — tested), plus a sortable "Top queries" table. No charting
+  library added — a ~30-line pure SVG path module, server-rendered, no
+  client JS; matches this project's own "no SDK dependencies where
+  avoidable" principle for one time-series chart. Clicks and impressions
+  scale independently (not a shared axis), same choice Search Console's
+  own dashboard makes, since impressions run 10-100x clicks. 26 new
+  tests (437 total). Manually verified against real production data in a
+  real browser: real 5 clicks/431 impressions/1.2% CTR/10.4 avg position
+  over 90 days, a real per-keyword table, a real rendered trend chart,
+  and real competitor titles (tripadvisor.co.uk, squaremeal.co.uk,
+  brindleyplace.com, etc.) now showing on action cards instead of a bare
+  keyword label. No schema changes — pure read/aggregation layer. See
+  PHASE_2_IMPLEMENTATION.md Milestone 14
+
 - **Phase 2 Milestone 13 (Action Outcome Tracking) — a new milestone added
   post-ship, at explicit user request, closing a real gap: every other
   feedback loop in this platform improves its inputs (the CTR model
