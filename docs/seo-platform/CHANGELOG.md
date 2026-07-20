@@ -9,6 +9,28 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 7 (Observability Layer) code-complete, locally validated,
+  production apply pending.** New migration
+  `20260720000000_seo_observability_views.sql` — `sync_status_summary`
+  (most recent run per source), `stale_datasets` (last-success vs.
+  `site_configs.refresh_schedules` interval, OR'd with a stuck-`'started'`-
+  row crashed-job signal per ENGINEERING_STANDARDS.md §12), and
+  `sync_failures_recent` (failed runs, last 7 days) — all three
+  `WITH (security_invoker = true)` so RLS applies through the view exactly
+  as it does on the underlying tables (empirically confirmed: `anon` sees 0
+  rows via `SET ROLE anon` against a real local Postgres instance).
+  `src/lib/auth/basic-auth.ts` — Basic Auth check extracted out of
+  `src/middleware.ts` so `/admin` and the new `/api/seo/status` endpoint
+  share one implementation (ARCHITECTURE.md §7). `src/middleware.ts`'s
+  matcher extended to cover `/api/seo/status`; `src/middleware.test.ts`
+  added (no test previously existed for `/admin`'s auth either).
+  `/api/seo/status` route — assembles all three views plus summed
+  retry/warning counts over a 7-day window. 24 new unit tests (154 total).
+  Migration applied and verified end-to-end against a real, throwaway
+  PostgreSQL 16 instance with synthetic completed/failed/stuck sync_log
+  rows (same rigor as Milestone 1); **not yet applied to production** — no
+  Supabase MCP connector is connected this session — see
+  PHASE_1_IMPLEMENTATION.md Milestone 7
 - **Milestone 6 (GA4 Sync Job) code-complete, integration verification
   pending real credentials.** `ga4/client.ts` — hand-rolled JWT
   service-account auth (mirrors `gsc/client.ts`), `runReport` with

@@ -1,6 +1,6 @@
 # Phase 1 Implementation Plan — Data Foundation
 
-> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestones 7–9 not started.
+> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestone 7 (Observability Layer) code-complete and locally validated against a real Postgres instance, pending production migration apply. Milestones 8–9 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen), ENGINEERING_STANDARDS.md
@@ -735,34 +735,54 @@ Same posture as Milestone 5, per your instruction to keep building without waiti
 **Objective:** Make the data pipeline's own health queryable — answer all 8 observability questions from ENGINEERING_STANDARDS.md §9 through one authenticated endpoint, without building a dashboard.
 
 **Tasks:**
-- [ ] Write migration `supabase/migrations/<timestamp>_seo_observability_views.sql`:
+- [x] Write migration `supabase/migrations/20260720000000_seo_observability_views.sql`:
   - `sync_status_summary` view — last run per source: status, `started_at`, duration, `records_processed`, `api_credits_used`
-  - `stale_datasets` view — join `sync_status_summary` against `site_configs.refresh_schedules` to flag sources overdue
+  - `stale_datasets` view — join against `site_configs.refresh_schedules` to flag sources overdue, **plus** a stuck-`'started'`-row signal (ENGINEERING_STANDARDS.md §12's crashed-job mitigation, folded into the same view rather than a fourth one — see below)
   - `sync_failures_recent` view — failed runs, last 7 days
-- [ ] Implement `src/app/api/seo/status/route.ts` — HTTP Basic Auth (same pattern as `/admin`), returns all three views plus retry/warning counts as one JSON payload
+- [x] Implement `src/app/api/seo/status/route.ts` — HTTP Basic Auth (same pattern as `/admin`), returns all three views plus retry/warning counts as one JSON payload
 
 **Dependencies:** Milestones 3, 5, 6 (needs real sync_log data to validate against).
 
-**Expected outputs:** One authenticated JSON endpoint that fully answers "is the pipeline healthy?"
+**Expected outputs:** One authenticated JSON endpoint that fully answers "is the pipeline healthy?" **Endpoint and views built and locally verified; not yet applied to production** — see "Local Validation, Production Apply Pending" below (a different, smaller gap than Milestones 5/6's credential block).
 
-**Database changes:** New migration (views only, no new tables).
+**Database changes:** New migration (views only, no new tables) — **written, locally applied and verified against a real (throwaway) PostgreSQL 16 instance; not yet applied to production Supabase** (no Supabase MCP connector is connected this session — see below).
 
-**Files to create/modify:**
-- `supabase/migrations/<timestamp>_seo_observability_views.sql`
-- `src/app/api/seo/status/route.ts`
+**Files created:**
+- `supabase/migrations/20260720000000_seo_observability_views.sql`
+- `src/lib/auth/basic-auth.ts`, `basic-auth.test.ts` (8 tests) — Basic Auth credential check extracted out of `src/middleware.ts` so `/admin` and `/api/seo/status` share one implementation instead of two (ARCHITECTURE.md §7: "the existing HTTP Basic Auth used by `/admin` ... matcher extends to cover these paths once they're built")
+- `src/middleware.ts` (modified) — now delegates to `isBasicAuthValid()`; `config.matcher` extended to include `/api/seo/status`
+- `src/middleware.test.ts` (new — no test previously existed for `/admin`'s auth either; this milestone's own "unauthenticated → 401" requirement needed one, so both paths are now covered) — 10 tests, parametrized over `/admin` and `/api/seo/status`
+- `src/app/api/seo/status/route.ts`, `route.test.ts` (5 tests) — no auth code in the route itself; enforced entirely by middleware, so route tests focus on query composition and response shape, not 401 (that's `middleware.test.ts`'s job)
 
-**Tests to perform:**
-- Seed a synthetic failed run and a synthetic stale run (started > 2× expected interval ago, never completed) → confirm both surface correctly in the endpoint's output
-- Unauthenticated request → 401 (same as `/admin`)
-- Authenticated request against real data → spot-check every one of the 8 questions in ENGINEERING_STANDARDS.md §9 has a correct, correct-shaped answer
+**Tests performed:**
+- [x] Unit: `isBasicAuthValid()` — correct/incorrect credentials, missing header, wrong scheme, malformed base64 (doesn't throw), missing `:` separator, password containing `:`
+- [x] Unit: `middleware()` — 401 with no header, 401 with wrong password, pass-through with correct credentials, `ADMIN_USER` defaults to `"admin"`, stays locked even with a well-formed header when `ADMIN_PASSWORD` is unset — all parametrized across both `/admin` and `/api/seo/status` to prove the matcher extension actually protects the new path identically
+- [x] Unit: `/api/seo/status` route — assembles all three views' rows plus summed `retry_count`/`warnings` across a 7-day window into one payload; malformed metadata (`warnings` not an array, missing `retry_count`) degrades to 0 rather than throwing; a view-query error surfaces as 500 with the failing view named; `getPrimarySiteId()` failure surfaces as 500
+- [x] **Local integration (against a real, throwaway PostgreSQL 16 instance, all four migrations applied in order — same procedure as `DATABASE_OPERATIONS.md` §1):**
+  - Seeded a synthetic completed `gsc` run (2 hours old, not stale by interval) *and* a separate stuck `'started'` `gsc` row (20 minutes old) → `stale_datasets` correctly showed `is_stale = true` for `gsc` via the stuck-run signal even though its last successful sync was recent — proves the two staleness signals are independently `OR`'d, not just the interval check
+  - Seeded a synthetic completed `ga4` run 5 days old (daily schedule, 2-day grace) → `stale_datasets` correctly flagged `ga4` as stale by interval
+  - Seeded a failed `gsc` run 3 days old and another 10 days old → `sync_failures_recent` returned only the 3-day-old row, confirming the 7-day window boundary
+  - `sync_status_summary`'s `DISTINCT ON (site_id, source)` correctly surfaced the *most recent* row per source regardless of status (the stuck `'started'` row, being more recent than the completed one) — this is deliberate: "most recent activity" is more useful at a glance than "most recent success" (that's what `stale_datasets.last_success_at` is for)
+  - Queried all three views as the `anon` role (`SET ROLE anon`) → `0` rows from every view, confirming `WITH (security_invoker = true)` actually makes the underlying tables' zero-policy RLS apply through the view rather than the view owner's superuser privileges — this is exactly the security property the migration's own comment claims, verified empirically rather than trusted from documentation
+- **Not performed — requires production access this session doesn't have:**
+  - Migration has not been applied to production Supabase (no Supabase MCP connector connected this session, unlike Milestone 3; `DATABASE_URL` direct access is blocked by this environment's proxy policy per `DATABASE_OPERATIONS.md`'s "A Note on Environment Access") — apply via the SQL editor (method A) or once an MCP connector is available
+  - Endpoint has not been hit against real production `sync_log` data (partially blocked on Milestones 5/6's credentials too — until those run for real, production `sync_log` only has Milestone 4's `ping` rows)
 
 **Success criteria (DoD):**
-- All 8 observability questions are answerable from this one endpoint, verified against real pipeline data from Milestones 5–6
-- A deliberately-broken sync (revoke a credential temporarily, trigger a run) shows up correctly as a failure within one request/response cycle
+- [x] All 8 observability questions are answerable from this one endpoint — **verified against local synthetic data** covering every question category (last sync per source, failures, retry counts, duration, rows processed, staleness, warnings; `api_credits_used` column is present and correctly 0 until Phase 2's DataForSEO jobs populate it — not a defect)
+- [ ] Verified against real pipeline data from Milestones 5–6 — **blocked on the same credentials as Milestone 5/6, plus the migration not yet being live in production**
+- [x] A deliberately-broken sync shows up correctly as a failure — **proven locally** (synthetic failed row → correctly listed in `sync_failures_recent`; synthetic stuck `'started'` row → correctly flagged in `stale_datasets`). Not yet proven against a *real* revoked-credential run against production, for the same reason as above.
 
 **Risks & rollback:**
 - Risk: views computed over a growing `sync_log` table could slow down as history accumulates — acceptable at Phase 1 volume (few rows/day); revisit if `sync_log`'s own 3-month retention (Milestone 8) isn't enough.
-- Rollback: `DROP VIEW` — no data loss, views are derived.
+- Risk (found during implementation, not a Phase 1 blocker): `site_configs.refresh_schedules` has two DataForSEO keys (`dataforseo_volume`, `dataforseo_serp`) with no matching `sync_log.source` value (`sync_log` only has one `'dataforseo'` source). `stale_datasets` will always show these two as stale/never-synced until Phase 2 reconciles the two independently-specified enums — documented in the view's own `COMMENT`, truthful today (DataForSEO isn't built yet), zero impact on any Phase 1 deliverable.
+- Rollback: `DROP VIEW public.sync_status_summary, public.stale_datasets, public.sync_failures_recent;` — no data loss, views are derived. `src/middleware.ts`'s matcher change reverts independently (remove `/api/seo/status` from the array) if the endpoint itself needs to be pulled without touching `/admin`.
+
+### Local Validation, Production Apply Pending
+
+Unlike Milestones 5/6, this milestone's gap is not a missing external credential — it's that no Supabase MCP connector is connected in this session (it was connected and used for Milestone 3's fixes, then disconnected; see prior milestone notes) and this environment's proxy policy blocks direct `DATABASE_URL` access (documented in `DATABASE_OPERATIONS.md`). So the honest state is: **the migration is written and has been validated as thoroughly as Milestone 1's was locally** — applied cleanly to a real, throwaway PostgreSQL 16 instance seeded with production-equivalent schema and role model, exercised with synthetic data covering every documented scenario (recent success, stale-by-interval, stuck-crashed-run, in-window and out-of-window failures), and the RLS security property was checked empirically, not assumed. What's missing is the same "touch the real production database" step every migration in this project needs — either paste it into the Supabase SQL editor, or reconnect the Supabase MCP connector and ask me to apply and verify it directly, the same two options documented in `DATABASE_OPERATIONS.md` §2.
+
+**When the migration is live in production and Milestones 5/6 have real credentials:** re-open this milestone (don't silently mark it done) — hit `/api/seo/status` for real, spot-check all 8 questions against actual GSC/GA4 sync history, and deliberately break a credential to confirm a real failure surfaces correctly end-to-end. Only then are the remaining DoD boxes above allowed to be checked.
 
 ---
 
