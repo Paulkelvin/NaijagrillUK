@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getPrimarySiteId } from "@/lib/seo/site";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { loadAnalyticsSummary, DEFAULT_TREND_WINDOW_DAYS, type AnalyticsSummary } from "@/lib/seo/intelligence/analytics-summary";
+import { suggestContentFormat } from "@/lib/seo/intelligence/content-format";
 import { TrendChart } from "@/components/admin/TrendChart";
 
 export const metadata: Metadata = {
@@ -106,6 +107,18 @@ const INTENT_LABEL: Record<string, string> = {
   navigational: "Navigational",
 };
 
+// A starting suggestion, not gospel — see content-format.ts. Semantic
+// color coding (separate from the site's amber accent) so the format
+// reads at a glance: warm amber for "build a real page" (highest
+// commitment), cool blue for "write an article", neutral for "just an
+// FAQ line", muted red for "use your own judgment here".
+const FORMAT_BADGE_CLASS: Record<string, string> = {
+  "Dedicated page": "border-amber-300/30 bg-amber-300/10 text-amber-200",
+  Article: "border-sky-400/30 bg-sky-400/10 text-sky-200",
+  "FAQ answer": "border-white/10 bg-white/[0.06] text-white/60",
+  "Review manually": "border-red-400/30 bg-red-400/10 text-red-200",
+};
+
 export default async function SeoAnalyticsPage() {
   const { data, error } = await loadPageData();
 
@@ -186,6 +199,7 @@ export default async function SeoAnalyticsPage() {
               <h2 className="text-sm font-semibold uppercase tracking-wide text-white/50">Discovered keywords</h2>
               <p className="mt-1 text-xs text-white/40">
                 Real long-tail keywords found around your niche, not just ones already in the action queue.
+                &ldquo;Suggested format&rdquo; is a starting point based on intent and volume, not a strict rule.
               </p>
               {data.discoveredKeywords.length === 0 ? (
                 <p className="mt-3 text-sm text-white/40">
@@ -200,25 +214,32 @@ export default async function SeoAnalyticsPage() {
                         <th className="px-4 py-3 text-right font-medium">Volume/mo</th>
                         <th className="px-4 py-3 text-right font-medium">Difficulty</th>
                         <th className="px-4 py-3 font-medium">Intent</th>
+                        <th className="px-4 py-3 font-medium">Suggested format</th>
                         <th className="px-4 py-3 font-medium">Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data.discoveredKeywords.map((k) => (
-                        <tr key={k.id} className="border-b border-white/5 last:border-0">
-                          <td className="max-w-[16rem] truncate px-4 py-3 text-white/80">{k.keyword}</td>
-                          <td className="px-4 py-3 text-right tabular-nums text-white/70">{k.search_volume?.toLocaleString() ?? "—"}</td>
-                          <td className="px-4 py-3 text-right tabular-nums text-white/70">{k.keyword_difficulty ?? "—"}</td>
-                          <td className="px-4 py-3 text-white/70">{k.search_intent ? (INTENT_LABEL[k.search_intent] ?? k.search_intent) : "—"}</td>
-                          <td className="px-4 py-3">
-                            {k.hasAction ? (
-                              <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-0.5 text-xs text-amber-200">In queue</span>
-                            ) : (
-                              <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-0.5 text-xs text-white/50">Not actioned</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
+                      {data.discoveredKeywords.map((k) => {
+                        const format = suggestContentFormat(k.search_intent, k.search_volume);
+                        return (
+                          <tr key={k.id} className="border-b border-white/5 last:border-0">
+                            <td className="max-w-[16rem] truncate px-4 py-3 text-white/80">{k.keyword}</td>
+                            <td className="px-4 py-3 text-right tabular-nums text-white/70">{k.search_volume?.toLocaleString() ?? "—"}</td>
+                            <td className="px-4 py-3 text-right tabular-nums text-white/70">{k.keyword_difficulty ?? "—"}</td>
+                            <td className="px-4 py-3 text-white/70">{k.search_intent ? (INTENT_LABEL[k.search_intent] ?? k.search_intent) : "—"}</td>
+                            <td className="px-4 py-3">
+                              <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${FORMAT_BADGE_CLASS[format]}`}>{format}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              {k.hasAction ? (
+                                <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-0.5 text-xs text-amber-200">In queue</span>
+                              ) : (
+                                <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-0.5 text-xs text-white/50">Not actioned</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -151,26 +151,42 @@ interface ActionRow {
   id: string;
   keyword_id: string | null;
   page_id: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supporting_data: Record<string, any>;
-  completed_at: string;
+  baseline_metrics: unknown;
+}
+
+interface MeasureMockCapture {
+  notCalls: Array<[string, string]>;
+  isCalls: Array<[string, string]>;
 }
 
 function makeMeasureMock(actions: ActionRow[]) {
-  const updateCalls: Array<{ id: string; supporting_data: unknown }> = [];
+  const updateCalls: Array<{ id: string; values: Record<string, unknown> }> = [];
+  const capture: MeasureMockCapture = { notCalls: [], isCalls: [] };
   const from = vi.fn((table: string) => {
     if (table === "actions") {
       return {
+        // The "has a baseline, no outcome yet" filter is now expressed in
+        // the query itself (idx_actions_pending_outcome) rather than
+        // filtered in application code — these mocks just record that the
+        // right filter calls were made, since a mock can't actually filter.
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             eq: vi.fn(() => ({
-              lte: vi.fn().mockResolvedValue({ data: actions, error: null }),
+              not: vi.fn((col: string, op: string) => {
+                capture.notCalls.push([col, op]);
+                return {
+                  is: vi.fn((col2: string, val: string) => {
+                    capture.isCalls.push([col2, val]);
+                    return { lte: vi.fn().mockResolvedValue({ data: actions, error: null }) };
+                  }),
+                };
+              }),
             })),
           })),
         })),
-        update: vi.fn((values: { supporting_data: unknown }) => ({
+        update: vi.fn((values: Record<string, unknown>) => ({
           eq: vi.fn((_col: string, id: string) => {
-            updateCalls.push({ id, supporting_data: values.supporting_data });
+            updateCalls.push({ id, values });
             return Promise.resolve({ error: null });
           }),
         })),
@@ -179,7 +195,7 @@ function makeMeasureMock(actions: ActionRow[]) {
     // keyword_page_metrics / page_metrics — no history needed for these tests
     return { select: vi.fn(() => queryBuilder({ data: [], error: null })) };
   });
-  return { from, updateCalls };
+  return { from, updateCalls, capture };
 }
 
 beforeEach(() => {
@@ -187,64 +203,28 @@ beforeEach(() => {
 });
 
 describe("measureActionOutcomes", () => {
-  it("skips actions with no baseline captured (completed before this feature existed)", async () => {
-    const { from, updateCalls } = makeMeasureMock([
-      { id: "a1", keyword_id: "kw-1", page_id: null, supporting_data: {}, completed_at: "2026-01-01" },
-    ]);
+  it("queries with the real pending-outcome filter (has a baseline, no outcome yet)", async () => {
+    const { from, capture } = makeMeasureMock([]);
     mockSupabase = { from };
 
-    const result = await measureActionOutcomes("site-1");
-    expect(result.measured).toBe(0);
-    expect(updateCalls).toHaveLength(0);
+    await measureActionOutcomes("site-1");
+    expect(capture.notCalls).toContainEqual(["baseline_metrics", "is"]);
+    expect(capture.isCalls).toContainEqual(["outcome", null]);
   });
 
-  it("skips actions whose outcome was already measured", async () => {
+  it("measures a real pending action, writing outcome_metrics/outcome/outcome_measured_at as real columns", async () => {
     const { from, updateCalls } = makeMeasureMock([
-      {
-        id: "a1",
-        keyword_id: "kw-1",
-        page_id: null,
-        supporting_data: {
-          outcomeTracking: {
-            baselineMetrics: { window: "keyword", capturedAt: "t0", avgPosition: 10, clicks: 5, impressions: 100 },
-            outcome: "improved",
-            outcomeMeasuredAt: "2026-02-01",
-          },
-        },
-        completed_at: "2026-01-01",
-      },
-    ]);
-    mockSupabase = { from };
-
-    const result = await measureActionOutcomes("site-1");
-    expect(result.measured).toBe(0);
-    expect(updateCalls).toHaveLength(0);
-  });
-
-  it("measures an action with a baseline and no prior outcome, writing outcome + outcomeMetrics into supporting_data", async () => {
-    const { from, updateCalls } = makeMeasureMock([
-      {
-        id: "a1",
-        keyword_id: "kw-1",
-        page_id: null,
-        supporting_data: {
-          opportunityScore: 55, // pre-existing module data must survive the merge
-          outcomeTracking: {
-            baselineMetrics: { window: "keyword", capturedAt: "t0", avgPosition: 10, clicks: 5, impressions: 100 },
-          },
-        },
-        completed_at: "2026-01-01",
-      },
+      { id: "a1", keyword_id: "kw-1", page_id: null, baseline_metrics: { window: "keyword", capturedAt: "t0", avgPosition: 10, clicks: 5, impressions: 100 } },
     ]);
     mockSupabase = { from };
 
     const result = await measureActionOutcomes("site-1");
     expect(result.measured).toBe(1);
     expect(updateCalls).toHaveLength(1);
-    const written = updateCalls[0].supporting_data as { opportunityScore: number; outcomeTracking: { outcome: string; outcomeMeasuredAt: string } };
-    expect(written.opportunityScore).toBe(55);
-    expect(written.outcomeTracking.outcome).toBeDefined();
-    expect(written.outcomeTracking.outcomeMeasuredAt).toBeDefined();
+    expect(updateCalls[0].id).toBe("a1");
+    expect(updateCalls[0].values.outcome).toBeDefined();
+    expect(updateCalls[0].values.outcome_measured_at).toBeDefined();
+    expect(updateCalls[0].values.outcome_metrics).toBeDefined();
   });
 
   it(`queries with a completed_at cutoff of ${OUTCOME_WINDOW_DAYS} days`, async () => {
@@ -255,10 +235,14 @@ describe("measureActionOutcomes", () => {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               eq: vi.fn(() => ({
-                lte: vi.fn((_col: string, cutoff: string) => {
-                  capturedCutoff = cutoff;
-                  return Promise.resolve({ data: [], error: null });
-                }),
+                not: vi.fn(() => ({
+                  is: vi.fn(() => ({
+                    lte: vi.fn((_col: string, cutoff: string) => {
+                      capturedCutoff = cutoff;
+                      return Promise.resolve({ data: [], error: null });
+                    }),
+                  })),
+                })),
               })),
             })),
           })),

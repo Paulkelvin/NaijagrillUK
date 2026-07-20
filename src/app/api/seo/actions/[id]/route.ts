@@ -49,7 +49,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (status === "completed") {
       const { data: existing, error: fetchError } = await supabase
         .from("actions")
-        .select("status, keyword_id, page_id, supporting_data")
+        .select("status, keyword_id, page_id")
         .eq("id", id)
         .maybeSingle();
       if (fetchError) throw new Error(fetchError.message);
@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       if (existing && existing.status !== "completed") {
         const baselineMetrics = await captureActionMetrics(supabase, { keywordId: existing.keyword_id, pageId: existing.page_id });
         if (baselineMetrics) {
-          updates.supporting_data = { ...(existing.supporting_data ?? {}), outcomeTracking: { baselineMetrics } };
+          updates.baseline_metrics = baselineMetrics;
         }
       }
     }

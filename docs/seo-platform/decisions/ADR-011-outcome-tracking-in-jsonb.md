@@ -1,6 +1,6 @@
 # ADR-011: Action Outcome Tracking Stored in `supporting_data`, Not New Columns
 
-**Status:** Accepted
+**Status:** Superseded by Milestone 16 (2026-07-20, same day) — a migration path became available (the user ran a real SQL migration via Supabase's SQL editor) and this was promoted to real columns exactly as the Trade-offs section below anticipated. This ADR is kept as the historical record of why the JSONB workaround was the right call at the time, not deleted.
 **Date:** 2026-07-20
 **Author:** Claude, on behalf of Paul Kelvin (Milestone 13 implementation)
 

@@ -8,6 +8,36 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+- **Phase 2 Milestone 16 (Real PAA Capture, Outcome Columns, Suggested
+  Content Format) — three gaps closed together, all raised directly by
+  the user in one conversation.** A real migration path opened up (the
+  user offered to run SQL via Supabase's SQL editor), which unlocked two
+  things at once: `src/lib/seo/dataforseo/serp.ts` now correctly captures
+  real "People Also Ask" questions — at **zero extra DataForSEO cost**,
+  since the weekly SERP call already includes this data, it was just
+  being discarded (a `people_also_ask` item nests its real question text
+  one level deeper than the code was reading). New `paa_questions` table
+  (not `serp_snapshots`, which structurally can't hold a question — no
+  domain/url/position). `src/lib/seo/intelligence/content-brief.ts` now
+  surfaces real PAA questions on action cards alongside competitor
+  context. Separately, Milestone 13's outcome tracking — living in a
+  JSONB workaround since no migration path existed yet (ADR-011) — is
+  promoted to real columns (`baseline_metrics`/`outcome_metrics`/
+  `outcome`/`outcome_measured_at`) with real CHECK constraints and a
+  partial index; `measureActionOutcomes()`'s "pending measurement" filter
+  is now pushed into the query itself instead of fetched-then-filtered in
+  JS. And `src/lib/seo/intelligence/content-format.ts` answers "how do I
+  know what to build — article, FAQ, or a page?" with a real, calibrated
+  heuristic (transactional/commercial + decent volume → dedicated page;
+  informational → article; ≤50/month → FAQ answer regardless of intent),
+  shown as a new "Suggested format" column on `/admin/seo/analytics`'s
+  Discovered Keywords table. Migration validated against a real local
+  PostgreSQL 16 instance — every new constraint and the partial index
+  deliberately triggered and confirmed working — before being handed to
+  the user to run in production. 15 new/updated tests (476 total). See
+  PHASE_2_IMPLEMENTATION.md Milestone 16.
+
 ### Fixed
 - **Keyword discovery's "long-tail" filter was word-count-only — the
   user pushed back directly asking what actually made a result

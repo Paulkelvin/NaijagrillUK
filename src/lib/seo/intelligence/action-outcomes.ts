@@ -10,23 +10,15 @@ import { logger } from "@/lib/seo/logger";
 // performance at the moment an action is marked "completed", then again
 // OUTCOME_WINDOW_DAYS later, and classifies the change.
 //
-// No schema migration: this environment has no path to apply DDL against
-// production right now (direct Postgres is network-blocked here — the
-// same finding from Milestone 7 — and no Supabase Management API token is
-// available this session to reach it over HTTPS instead, the workaround
-// used earlier in Phase 2). Rather than block a real, requested
-// improvement on an unrelated infrastructure gap, this stores its data in
-// `actions.supporting_data` (JSONB, NOT NULL, already the designed
-// extensibility point every action type uses for its own module-specific
-// context — see run-analysis.ts) under an `outcomeTracking` key, instead
-// of new dedicated columns. Trade-off, stated plainly: no DB-level CHECK
-// constraint on `outcome`'s enum values (validated in this module only)
-// and no partial index for "completed actions pending measurement" (the
-// measurement job instead reads every completed action for the site,
-// fine at this project's real scale — dozens of rows, not thousands).
-// If/when a migration path is available again, promoting this to real
-// columns + a partial index is a small, low-risk follow-up — the JSON
-// shape below is designed to map onto that directly.
+// Originally shipped storing this in actions.supporting_data.outcomeTracking
+// (JSONB) because no migration path was available yet — see ADR-011,
+// which flagged promoting this to real columns as "a small, low-risk
+// follow-up once a migration path is available again." Promoted here
+// (Milestone 16): baseline_metrics/outcome_metrics/outcome/outcome_measured_at
+// are now real columns with real CHECK constraints and a partial index,
+// confirmed zero production actions had captured a baseline yet before
+// this ran (checked directly), so this was a pure additive schema change,
+// not a data migration.
 
 export const OUTCOME_WINDOW_DAYS = 30;
 const METRICS_WINDOW_DAYS = 30;
@@ -59,13 +51,6 @@ export interface PageMetricsSnapshot {
 }
 
 export type MetricsSnapshot = KeywordMetricsSnapshot | PageMetricsSnapshot;
-
-export interface OutcomeTracking {
-  baselineMetrics: MetricsSnapshot;
-  outcomeMetrics?: MetricsSnapshot;
-  outcome?: ActionOutcome;
-  outcomeMeasuredAt?: string;
-}
 
 function toIsoDate(daysAgo: number): string {
   const d = new Date();
@@ -210,10 +195,14 @@ export interface MeasureActionOutcomesResult {
  * Finds every completed action whose baseline was captured but whose
  * outcome hasn't been measured yet and is now at least OUTCOME_WINDOW_DAYS
  * past completion, captures a fresh snapshot, and classifies the change.
- * Actions completed before this feature existed have no baselineMetrics
- * (nothing to compare against) and are silently skipped, not retroactively
- * guessed at — they'll simply never get an outcome, which is honest given
- * there's no real "before" data for them.
+ * The "has a baseline, no outcome yet" filter is now pushed into the
+ * query itself (idx_actions_pending_outcome exists for exactly this),
+ * rather than fetching every completed action and filtering in
+ * application code the way the JSONB-workaround version had to.
+ * Actions completed before this feature existed have no baseline_metrics
+ * (nothing to compare against) and are naturally excluded by that same
+ * filter — not retroactively guessed at, they simply never get an
+ * outcome, which is honest given there's no real "before" data for them.
  */
 export async function measureActionOutcomes(siteId: string): Promise<MeasureActionOutcomesResult> {
   const supabase = createSupabaseServiceRoleClient();
@@ -221,9 +210,11 @@ export async function measureActionOutcomes(siteId: string): Promise<MeasureActi
   const cutoff = new Date(Date.now() - OUTCOME_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await supabase
     .from("actions")
-    .select("id, keyword_id, page_id, supporting_data, completed_at")
+    .select("id, keyword_id, page_id, baseline_metrics")
     .eq("site_id", siteId)
     .eq("status", "completed")
+    .not("baseline_metrics", "is", null)
+    .is("outcome", null)
     .lte("completed_at", cutoff);
   if (error) throw new Error(`Failed to fetch completed actions: ${error.message}`);
 
@@ -231,24 +222,18 @@ export async function measureActionOutcomes(siteId: string): Promise<MeasureActi
   let pending = 0;
 
   for (const action of data ?? []) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supportingData = (action.supporting_data ?? {}) as Record<string, any>;
-    const tracking: OutcomeTracking | undefined = supportingData.outcomeTracking;
-    if (!tracking?.baselineMetrics || tracking.outcome) continue; // no baseline to compare, or already measured
-
+    const baselineMetrics = action.baseline_metrics as MetricsSnapshot;
     const current = await captureActionMetrics(supabase, { keywordId: action.keyword_id, pageId: action.page_id });
     if (!current) {
       pending++;
       continue;
     }
 
-    const outcome = classifyOutcome(tracking.baselineMetrics, current);
-    const updatedSupportingData = {
-      ...supportingData,
-      outcomeTracking: { ...tracking, outcomeMetrics: current, outcome, outcomeMeasuredAt: new Date().toISOString() },
-    };
-
-    const { error: updateError } = await supabase.from("actions").update({ supporting_data: updatedSupportingData }).eq("id", action.id);
+    const outcome = classifyOutcome(baselineMetrics, current);
+    const { error: updateError } = await supabase
+      .from("actions")
+      .update({ outcome_metrics: current, outcome, outcome_measured_at: new Date().toISOString() })
+      .eq("id", action.id);
     if (updateError) {
       logger.warn("action_outcome_write_failed", { siteId, actionId: action.id, error: updateError.message });
       pending++;

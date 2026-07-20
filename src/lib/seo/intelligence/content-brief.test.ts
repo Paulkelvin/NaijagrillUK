@@ -1,17 +1,31 @@
 import { describe, expect, it } from "vitest";
 import { fetchContentBriefs } from "./content-brief";
 
-function makeSupabaseMock(rows: unknown[]) {
+function makeSupabaseMock(serpRows: unknown[], paaRows: unknown[] = []) {
   return {
-    from: () => ({
-      select: () => ({
-        in: () => ({
-          eq: () => ({
-            order: () => Promise.resolve({ data: rows, error: null }),
+    from: (table: string) => {
+      if (table === "serp_snapshots") {
+        return {
+          select: () => ({
+            in: () => ({
+              eq: () => ({
+                order: () => Promise.resolve({ data: serpRows, error: null }),
+              }),
+            }),
           }),
-        }),
-      }),
-    }),
+        };
+      }
+      if (table === "paa_questions") {
+        return {
+          select: () => ({
+            in: () => ({
+              order: () => Promise.resolve({ data: paaRows, error: null }),
+            }),
+          }),
+        };
+      }
+      throw new Error(`Unexpected table in test: ${table}`);
+    },
   };
 }
 
@@ -76,9 +90,61 @@ describe("fetchContentBriefs", () => {
     expect(result.get("kw-2")!.competitors[0].domain).toBe("b.com");
   });
 
-  it("returns an empty map when no keyword has any snapshot yet", async () => {
+  it("returns an empty map when no keyword has any snapshot or PAA data yet", async () => {
     const supabase = makeSupabaseMock([]);
     const result = await fetchContentBriefs(supabase, ["kw-1"]);
     expect(result.size).toBe(0);
+  });
+
+  it("includes real PAA questions alongside competitors for the same keyword", async () => {
+    const supabase = makeSupabaseMock(
+      [{ keyword_id: "kw-1", date: "2026-07-20", domain: "competitor.com", title: "T", position: 1, is_own_site: false }],
+      [
+        { keyword_id: "kw-1", date: "2026-07-20", question: "What is jollof rice made of?" },
+        { keyword_id: "kw-1", date: "2026-07-20", question: "Is jollof rice Nigerian or Ghanaian?" },
+      ],
+    );
+    const result = await fetchContentBriefs(supabase, ["kw-1"]);
+    expect(result.get("kw-1")!.paaQuestions).toEqual(["What is jollof rice made of?", "Is jollof rice Nigerian or Ghanaian?"]);
+  });
+
+  it("uses only the most recent PAA date per keyword, same rule as competitors", async () => {
+    const supabase = makeSupabaseMock(
+      [],
+      [
+        { keyword_id: "kw-1", date: "2026-07-20", question: "Newer question" },
+        { keyword_id: "kw-1", date: "2026-07-13", question: "Stale question" },
+      ],
+    );
+    const result = await fetchContentBriefs(supabase, ["kw-1"]);
+    expect(result.get("kw-1")!.paaQuestions).toEqual(["Newer question"]);
+  });
+
+  it("caps PAA questions at 6", async () => {
+    const paaRows = Array.from({ length: 10 }, (_, i) => ({ keyword_id: "kw-1", date: "2026-07-20", question: `Question ${i}` }));
+    const supabase = makeSupabaseMock([], paaRows);
+    const result = await fetchContentBriefs(supabase, ["kw-1"]);
+    expect(result.get("kw-1")!.paaQuestions).toHaveLength(6);
+  });
+
+  it("produces a brief for a keyword that has PAA questions but no competitor snapshot yet", async () => {
+    const supabase = makeSupabaseMock([], [{ keyword_id: "kw-1", date: "2026-07-20", question: "Real question" }]);
+    const result = await fetchContentBriefs(supabase, ["kw-1"]);
+    const brief = result.get("kw-1")!;
+    expect(brief.competitors).toEqual([]);
+    expect(brief.ownPosition).toBeNull();
+    expect(brief.paaQuestions).toEqual(["Real question"]);
+    expect(brief.snapshotDate).toBe("2026-07-20");
+  });
+
+  it("throws a clear error when the paa_questions fetch fails", async () => {
+    const supabase = {
+      from: (table: string) => {
+        if (table === "serp_snapshots") return { select: () => ({ in: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) }) };
+        if (table === "paa_questions") return { select: () => ({ in: () => ({ order: () => Promise.resolve({ data: null, error: { message: "connection reset" } }) }) }) };
+        throw new Error(`Unexpected table: ${table}`);
+      },
+    };
+    await expect(fetchContentBriefs(supabase, ["kw-1"])).rejects.toThrow(/connection reset/);
   });
 });

@@ -25,10 +25,12 @@ interface MockConfig {
   topKeywords?: Array<{ id: string; keyword: string }>;
   recentSnapshotKeywordIds?: string[];
   upsertError?: { message: string } | null;
+  paaUpsertError?: { message: string } | null;
 }
 
 function makeSupabaseMock(config: MockConfig = {}) {
   const upsertCalls: Array<Record<string, unknown>[]> = [];
+  const paaUpsertCalls: Array<Record<string, unknown>[]> = [];
   const from = vi.fn((table: string) => {
     if (table === "sites") {
       return { select: vi.fn(() => ({ eq: vi.fn(() => ({ single: vi.fn().mockResolvedValue({ data: { domain: config.domain ?? "naijagrillandspice.co.uk" }, error: null }) })) })) };
@@ -59,9 +61,17 @@ function makeSupabaseMock(config: MockConfig = {}) {
         }),
       };
     }
+    if (table === "paa_questions") {
+      return {
+        upsert: vi.fn((rows: Record<string, unknown>[]) => {
+          paaUpsertCalls.push(rows);
+          return Promise.resolve({ error: config.paaUpsertError ?? null });
+        }),
+      };
+    }
     throw new Error(`Unexpected table in test: ${table}`);
   });
-  return { from, upsertCalls };
+  return { from, upsertCalls, paaUpsertCalls };
 }
 
 function serpResponse(overrides: Partial<Record<string, unknown>> = {}) {
@@ -106,7 +116,7 @@ describe("syncSerpSnapshots", () => {
     mockSupabase = { from };
 
     const result = await syncSerpSnapshots("site-1", 280_000);
-    expect(result).toEqual({ keywordsEligible: 0, keywordsSynced: 0, keywordsRemaining: 0, snapshotsWritten: 0, budgetExceeded: false, cost: 0 });
+    expect(result).toEqual({ keywordsEligible: 0, keywordsSynced: 0, keywordsRemaining: 0, snapshotsWritten: 0, paaQuestionsWritten: 0, budgetExceeded: false, cost: 0 });
     expect(mockCallDataForSeoApi).not.toHaveBeenCalled();
   });
 
@@ -145,6 +155,127 @@ describe("syncSerpSnapshots", () => {
     const localPack = rows.find((r) => r.serp_feature === "local_pack")!;
     expect(localPack.is_own_site).toBe(true);
     expect(localPack.position).toBe(2);
+  });
+
+  it("captures real PAA questions from the nested people_also_ask_element array, at zero extra cost", async () => {
+    const { from, upsertCalls, paaUpsertCalls } = makeSupabaseMock({ topKeywords: [{ id: "kw-1", keyword: "jollof rice birmingham" }] });
+    mockSupabase = { from };
+    mockCallDataForSeoApi.mockResolvedValue(
+      serpResponse({
+        tasks: [
+          {
+            id: "t1",
+            status_code: 20000,
+            status_message: "Ok.",
+            cost: 0.003,
+            result: [
+              {
+                keyword: "jollof rice birmingham",
+                items: [
+                  { type: "organic", rank_absolute: 1, domain: "competitor.com", url: "https://competitor.com", title: "Best Jollof" },
+                  {
+                    type: "people_also_ask",
+                    rank_absolute: null,
+                    domain: null,
+                    url: null,
+                    title: null,
+                    items: [
+                      { type: "people_also_ask_element", title: "What is jollof rice made of?" },
+                      { type: "people_also_ask_element", title: "Is jollof rice Nigerian or Ghanaian?" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const result = await syncSerpSnapshots("site-1", 280_000);
+    expect(result.paaQuestionsWritten).toBe(2);
+    expect(paaUpsertCalls[0]).toEqual([
+      { site_id: "site-1", keyword_id: "kw-1", date: expect.any(String), question: "What is jollof rice made of?" },
+      { site_id: "site-1", keyword_id: "kw-1", date: expect.any(String), question: "Is jollof rice Nigerian or Ghanaian?" },
+    ]);
+    // The PAA item itself never reaches serp_snapshots — it has no
+    // domain/url/position to write there in the first place.
+    expect(upsertCalls[0]).toHaveLength(1);
+    expect(upsertCalls[0][0].domain).toBe("competitor.com");
+  });
+
+  it("dedupes identical PAA questions within one keyword and skips a blank/whitespace-only title", async () => {
+    const { from, paaUpsertCalls } = makeSupabaseMock({ topKeywords: [{ id: "kw-1", keyword: "suya" }] });
+    mockSupabase = { from };
+    mockCallDataForSeoApi.mockResolvedValue(
+      serpResponse({
+        tasks: [
+          {
+            id: "t1",
+            status_code: 20000,
+            status_message: "Ok.",
+            cost: 0.003,
+            result: [
+              {
+                keyword: "suya",
+                items: [
+                  {
+                    type: "people_also_ask",
+                    rank_absolute: null,
+                    domain: null,
+                    url: null,
+                    title: null,
+                    items: [
+                      { type: "people_also_ask_element", title: "What is suya?" },
+                      { type: "people_also_ask_element", title: "What is suya?" },
+                      { type: "people_also_ask_element", title: "   " },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const result = await syncSerpSnapshots("site-1", 280_000);
+    expect(result.paaQuestionsWritten).toBe(1);
+    expect(paaUpsertCalls[0]).toHaveLength(1);
+  });
+
+  it("logs and skips a keyword whose paa_questions write fails, without losing the serp_snapshots write or the run's spend", async () => {
+    const { from, upsertCalls } = makeSupabaseMock({
+      topKeywords: [{ id: "kw-1", keyword: "jollof rice birmingham" }],
+      paaUpsertError: { message: "connection reset" },
+    });
+    mockSupabase = { from };
+    mockCallDataForSeoApi.mockResolvedValue(
+      serpResponse({
+        tasks: [
+          {
+            id: "t1",
+            status_code: 20000,
+            status_message: "Ok.",
+            cost: 0.003,
+            result: [
+              {
+                keyword: "jollof rice birmingham",
+                items: [
+                  { type: "organic", rank_absolute: 1, domain: "competitor.com", url: "https://competitor.com", title: "Best Jollof" },
+                  { type: "people_also_ask", rank_absolute: null, domain: null, url: null, title: null, items: [{ type: "people_also_ask_element", title: "What is jollof rice?" }] },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const result = await syncSerpSnapshots("site-1", 280_000);
+    expect(result.paaQuestionsWritten).toBe(0);
+    expect(upsertCalls[0]).toHaveLength(1); // the organic write still succeeded
+    expect(mockRecordSpend).toHaveBeenCalledWith(mockSupabase, "site-1", "dataforseo", 0.003);
   });
 
   it("stops before starting a new keyword once the time budget has elapsed", async () => {

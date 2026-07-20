@@ -732,6 +732,52 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 ---
 
+## Milestone 16 — Real PAA Capture, Outcome Columns, Suggested Content Format — ✅ Complete (2026-07-20)
+
+**Objective:** Three gaps closed together, all raised directly by the user in one conversation: (1) "anything about PAA in my system?" — still nothing, a known gap since Milestone 14; (2) "how do I know what to build around them, article, FAQ, and so on" — no guidance existed connecting a keyword's real data to a content format; (3) a migration path became available (the user offered to run SQL via Supabase's SQL editor), unlocking the "small, low-risk follow-up" ADR-011 had explicitly deferred.
+
+**Tasks:**
+- [x] `supabase/migrations/20260720213000_paa_questions_and_outcome_columns.sql` — new `paa_questions` table + `actions.baseline_metrics`/`outcome_metrics`/`outcome`/`outcome_measured_at` columns
+- [x] `src/lib/seo/dataforseo/serp.ts` — capture real PAA questions from the SERP response already being paid for
+- [x] `src/lib/seo/intelligence/content-brief.ts` — surface real PAA questions alongside competitor context
+- [x] `src/lib/seo/intelligence/action-outcomes.ts`, `src/app/api/seo/actions/[id]/route.ts`, `/admin/seo` — promoted from `supporting_data.outcomeTracking` to real columns
+- [x] `src/lib/seo/intelligence/content-format.ts` — `suggestContentFormat()`, wired into `/admin/seo/analytics`'s Discovered Keywords table
+
+**Implementation notes:**
+- **Real PAA capture costs zero extra DataForSEO spend.** The weekly SERP sync's response already includes PAA data — it was just being discarded (Milestone 14's finding). Fixed the actual bug: a `people_also_ask` top-level SERP item nests its real question text one level deeper, in a `people_also_ask_element[].title` array, not on the item itself — `serp.ts` now reads that correctly and writes to the new `paa_questions` table (not `serp_snapshots`, which structurally can't hold a question — no domain/url/position).
+- **Migration validated locally before being handed to the user**, same discipline as every schema change since Milestone 0: applied the full migration set against a real local PostgreSQL 16 instance (all 7 migrations, in order, zero errors), then deliberately triggered every new constraint (blank PAA question rejected, idempotent duplicate-question upsert, outcome-without-measured-at rejected, invalid outcome enum rejected, non-object `baseline_metrics` rejected, the real valid combination succeeds) and confirmed the query planner actually uses `idx_actions_pending_outcome` for the measurement job's real query shape (`EXPLAIN`, not assumed).
+- **Zero data migration needed for the outcome-columns promotion** — confirmed via a direct query that no production action had captured a baseline yet before writing the migration, so this was a pure additive schema change.
+- **`measureActionOutcomes()` got measurably simpler and more correct** from the promotion: the "has a baseline, no outcome yet" filter that used to be fetched-then-filtered in JavaScript (Milestone 13's JSONB-workaround limitation) is now pushed directly into the query via the new partial index — real database filtering instead of an application-layer approximation.
+- **`suggestContentFormat()` is a deliberately simple, stated-as-such heuristic**, not a claim of certainty: transactional/commercial intent above a volume floor → a dedicated page (someone ready to visit/order wants "yes we serve this," not a blog post); informational intent above the floor → an article (builds topical authority, wrong format for a hard sell); anything at or below a 50/month floor → an FAQ answer regardless of intent (not worth a dedicated URL). The 50/month floor was calibrated against this site's own real discoveries, not picked arbitrarily — "small chops near me" (110/mo, transactional) clearly deserved a real page; "jollof rice pronunciation" (30/mo) and "small chops price list uk" (20/mo) clearly didn't.
+
+**Dependencies:** Milestone 6 (SERP sync), Milestone 13 (outcome tracking, ADR-011), Milestone 14 (content briefs), Milestone 15 (keyword discovery, whose output the Discovered Keywords table already displayed).
+
+**Database changes:** `paa_questions` table (new); `actions.baseline_metrics`/`outcome_metrics`/`outcome`/`outcome_measured_at` columns + 4 CHECK constraints + 1 partial index (new). Applied by the user via Supabase's SQL editor (no Management API token or direct Postgres access was available this session — same constraint as every migration since Milestone 7).
+
+**Files created:**
+- `supabase/migrations/20260720213000_paa_questions_and_outcome_columns.sql`
+- `src/lib/seo/intelligence/content-format.ts`, `content-format.test.ts` (7 tests)
+- `src/lib/seo/dataforseo/serp.ts`, `serp.test.ts` extended (3 new PAA tests)
+- `src/lib/seo/intelligence/content-brief.ts`, `content-brief.test.ts` extended (5 new PAA tests)
+- `src/lib/seo/intelligence/action-outcomes.ts`, `action-outcomes.test.ts` updated for real columns
+- `src/app/api/seo/actions/[id]/route.ts`, `route.test.ts` updated for real columns
+- `src/app/admin/(dashboard)/seo/page.tsx`, `src/app/admin/(dashboard)/seo/analytics/page.tsx` updated
+
+**Tests performed:**
+- Unit: 15 new/updated tests across serp.ts (PAA extraction, dedup, blank-title skip, write-failure isolation), content-brief.ts (PAA batching, most-recent-date rule, PAA-only briefs), content-format.ts (every intent/volume boundary), action-outcomes.ts (real-column query shape, real-column write). Full suite: 476 tests passing, lint clean, build clean.
+- **Real migration verification against a local PostgreSQL 16 instance** (see Implementation notes) — every constraint and the partial index deliberately triggered and confirmed working before being handed to the user to run in production.
+- Not yet verified against real production PAA data — the SERP sync needs to run again (next scheduled or manually triggered) to populate `paa_questions` for the first time now that the capture bug is fixed; the fix itself is proven correct via the local Postgres verification and full unit coverage.
+
+**Success criteria (DoD):**
+- Real PAA questions can be captured and stored at zero extra cost — confirmed via unit tests and local schema verification; real production data pending the next SERP sync run
+- Outcome tracking lives in real, constrained columns instead of a JSONB workaround — confirmed via local schema verification
+- Every discovered keyword shows a real, reasoned suggested content format — confirmed via unit tests and manual review against this site's own real discovered keywords
+
+**Risks & rollback:**
+- The `paa_questions` table and `actions` outcome columns are purely additive — dropping them (`DROP TABLE paa_questions;` / the 4 `ALTER TABLE ... DROP COLUMN` statements) would only lose PAA/outcome data, not break any other table. `serp_snapshots`/`actions.supporting_data` are both untouched by this migration.
+
+---
+
 ## Cross-Cutting Notes
 
 - **Same engineering discipline as Phase 1, no exceptions:** one milestone at a time, tested and documented before moving on, database-first principles for Milestone 0, real integration verification distinguished from mocked unit tests at every step, CHANGELOG.md/this document updated after every milestone.

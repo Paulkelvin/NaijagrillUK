@@ -59,15 +59,12 @@ async function loadOpenActions(): Promise<QueueResult> {
 }
 
 // The feedback-loop surface: did completing an action actually work? See
-// src/lib/seo/intelligence/action-outcomes.ts for how baselineMetrics/
-// outcome get written. Read-only — no schema migration was available in
-// the build environment when this shipped, so outcome data lives in
-// supporting_data rather than a dedicated column/index (documented in
-// full in action-outcomes.ts). At this project's real scale (a handful of
-// completed actions), fetching every completed action for the site and
-// filtering in JS is simpler and just as fast as a JSONB path filter.
+// src/lib/seo/intelligence/action-outcomes.ts for how baseline_metrics/
+// outcome get written. Read-only. Originally lived in supporting_data
+// (no migration path yet); now real columns (Milestone 16, see ADR-011),
+// so the "has an outcome" filter is pushed into the query itself instead
+// of fetched-then-filtered in JS.
 const RECENT_RESULTS_LIMIT = 10;
-const RECENT_RESULTS_FETCH_LIMIT = 50;
 
 interface MetricsSnapshot {
   window: "keyword" | "page";
@@ -77,20 +74,15 @@ interface MetricsSnapshot {
   conversionValue?: number;
 }
 
-interface OutcomeTracking {
-  baselineMetrics: MetricsSnapshot;
-  outcomeMetrics?: MetricsSnapshot;
-  outcome?: "improved" | "unchanged" | "declined";
-  outcomeMeasuredAt?: string;
-}
-
 interface CompletedActionRow {
   id: string;
   type: string;
   title: string;
   source_module: string;
   completed_at: string;
-  supporting_data: { outcomeTracking?: OutcomeTracking } | null;
+  baseline_metrics: MetricsSnapshot;
+  outcome_metrics: MetricsSnapshot | null;
+  outcome: "improved" | "unchanged" | "declined";
 }
 
 interface RecentResultsResult {
@@ -104,17 +96,15 @@ async function loadRecentOutcomes(): Promise<RecentResultsResult> {
     const supabase = createSupabaseServiceRoleClient();
     const { data, error } = await supabase
       .from("actions")
-      .select("id, type, title, source_module, completed_at, supporting_data")
+      .select("id, type, title, source_module, completed_at, baseline_metrics, outcome_metrics, outcome")
       .eq("site_id", siteId)
       .eq("status", "completed")
-      .order("completed_at", { ascending: false })
-      .limit(RECENT_RESULTS_FETCH_LIMIT);
+      .not("outcome", "is", null)
+      .order("outcome_measured_at", { ascending: false })
+      .limit(RECENT_RESULTS_LIMIT);
 
     if (error) return { rows: [], error: error.message };
-    const withOutcome = ((data ?? []) as CompletedActionRow[])
-      .filter((row) => row.supporting_data?.outcomeTracking?.outcome)
-      .slice(0, RECENT_RESULTS_LIMIT);
-    return { rows: withOutcome, error: null };
+    return { rows: (data ?? []) as CompletedActionRow[], error: null };
   } catch (err) {
     return { rows: [], error: err instanceof Error ? err.message : String(err) };
   }
@@ -153,31 +143,50 @@ function Badge({ children }: { children: React.ReactNode }) {
 }
 
 function ContentBriefSection({ brief }: { brief: KeywordContentBrief | undefined }) {
-  if (!brief || brief.competitors.length === 0) return null;
+  if (!brief || (brief.competitors.length === 0 && brief.paaQuestions.length === 0)) return null;
 
   return (
-    <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-white/40">
-        Who&apos;s ranking above you{brief.ownPosition != null ? ` (you: #${brief.ownPosition})` : ""} — real Google
-        results as of {formatDate(brief.snapshotDate)}
-      </p>
-      <ul className="mt-2.5 space-y-1.5">
-        {brief.competitors.map((c) => (
-          <li key={`${c.domain}-${c.position}`} className="flex items-start gap-2 text-sm text-white/70">
-            <span className="mt-0.5 shrink-0 text-xs text-white/30">#{c.position}</span>
-            {/* min-w-0 only constrains a flex item's own box — it does nothing
-                on the inline <span> that used to sit here, since inline
-                elements ignore width/min-width entirely. A block-level element
-                (div/p) is what actually lets `truncate` clip long competitor
-                titles instead of forcing the whole page into horizontal
-                scroll on mobile (real bug, reported with a screenshot). */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate">{c.title ?? c.domain}</p>
-              <p className="truncate text-xs text-white/40">{c.domain}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <div className="mt-4 space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+      {brief.competitors.length > 0 && (
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-white/40">
+            Who&apos;s ranking above you{brief.ownPosition != null ? ` (you: #${brief.ownPosition})` : ""} — real Google
+            results as of {formatDate(brief.snapshotDate)}
+          </p>
+          <ul className="mt-2.5 space-y-1.5">
+            {brief.competitors.map((c) => (
+              <li key={`${c.domain}-${c.position}`} className="flex items-start gap-2 text-sm text-white/70">
+                <span className="mt-0.5 shrink-0 text-xs text-white/30">#{c.position}</span>
+                {/* min-w-0 only constrains a flex item's own box — it does nothing
+                    on the inline <span> that used to sit here, since inline
+                    elements ignore width/min-width entirely. A block-level element
+                    (div/p) is what actually lets `truncate` clip long competitor
+                    titles instead of forcing the whole page into horizontal
+                    scroll on mobile (real bug, reported with a screenshot). */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate">{c.title ?? c.domain}</p>
+                  <p className="truncate text-xs text-white/40">{c.domain}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {brief.paaQuestions.length > 0 && (
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-white/40">
+            People also ask — real questions Google shows for this search
+          </p>
+          <ul className="mt-2.5 space-y-1">
+            {brief.paaQuestions.map((q) => (
+              <li key={q} className="text-sm text-white/70">
+                {q}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -252,9 +261,7 @@ function RecentResults({ rows, error }: RecentResultsResult) {
       </p>
       <ul className="mt-4 space-y-3">
         {rows.map((row) => {
-          const tracking = row.supporting_data?.outcomeTracking;
-          if (!tracking?.outcome) return null;
-          const change = tracking.outcomeMetrics ? formatMetricsChange(tracking.baselineMetrics, tracking.outcomeMetrics) : null;
+          const change = row.outcome_metrics ? formatMetricsChange(row.baseline_metrics, row.outcome_metrics) : null;
           return (
             <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
               <div className="min-w-0">
@@ -263,8 +270,8 @@ function RecentResults({ rows, error }: RecentResultsResult) {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-white/30">{formatCompletedDate(row.completed_at)}</span>
-                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${OUTCOME_BADGE_CLASS[tracking.outcome]}`}>
-                  {OUTCOME_LABEL[tracking.outcome]}
+                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${OUTCOME_BADGE_CLASS[row.outcome]}`}>
+                  {OUTCOME_LABEL[row.outcome]}
                 </span>
               </div>
             </li>

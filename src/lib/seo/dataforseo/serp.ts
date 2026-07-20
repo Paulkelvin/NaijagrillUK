@@ -40,14 +40,28 @@ const PROVIDER = "dataforseo" as const;
 // news, events, shopping, related_searches, etc.) is skipped — this
 // schema only tracks organic-ish/feature types relevant to an SEO
 // platform, not paid ads or rich-result chrome.
+//
+// "people_also_ask" is deliberately NOT in this map — real PAA questions
+// are extracted separately below, into paa_questions, not serp_snapshots.
+// A PAA item has no domain/url/position (it's a question, not a ranked
+// result), so it could never pass this table's NOT NULL columns anyway;
+// routing it through this map was the original mistake (found via a real
+// production check: 423 organic rows, 0 PAA rows, ever).
 const TYPE_TO_SERP_FEATURE: Record<string, string> = {
   organic: "organic",
   featured_snippet: "featured_snippet",
-  people_also_ask: "paa",
   local_pack: "local_pack",
   video: "video",
   images: "image",
 };
+
+// A "people_also_ask" top-level item's real question text is nested one
+// level deeper, in its own `items[]` array of these — confirmed against
+// DataForSEO's live docs while fixing the original gap, not assumed.
+interface PeopleAlsoAskElement {
+  type: string;
+  title: string;
+}
 
 interface SerpItem {
   type: string;
@@ -55,6 +69,8 @@ interface SerpItem {
   domain: string | null;
   url: string | null;
   title: string | null;
+  // Present (and populated) only on a "people_also_ask" item.
+  items?: PeopleAlsoAskElement[] | null;
 }
 
 interface SerpApiResult {
@@ -109,6 +125,7 @@ export interface SyncSerpSnapshotsResult {
   keywordsSynced: number;
   keywordsRemaining: number;
   snapshotsWritten: number;
+  paaQuestionsWritten: number;
   budgetExceeded: boolean;
   cost: number;
 }
@@ -137,12 +154,13 @@ export async function syncSerpSnapshots(siteId: string, timeBudgetMs: number): P
 
   const keywords = await fetchTopStaleKeywords(supabase, siteId);
   if (keywords.length === 0) {
-    return { keywordsEligible: 0, keywordsSynced: 0, keywordsRemaining: 0, snapshotsWritten: 0, budgetExceeded: false, cost: 0 };
+    return { keywordsEligible: 0, keywordsSynced: 0, keywordsRemaining: 0, snapshotsWritten: 0, paaQuestionsWritten: 0, budgetExceeded: false, cost: 0 };
   }
 
   const today = new Date().toISOString().slice(0, 10);
   let totalCost = 0;
   let snapshotsWritten = 0;
+  let paaQuestionsWritten = 0;
   let syncedCount = 0;
   let budgetExceeded = false;
 
@@ -175,7 +193,9 @@ export async function syncSerpSnapshots(siteId: string, timeBudgetMs: number): P
         continue;
       }
 
-      const items = (task.result?.[0]?.items ?? []).filter(
+      const allItems = task.result?.[0]?.items ?? [];
+
+      const items = allItems.filter(
         (item): item is SerpItem & { rank_absolute: number; domain: string; url: string } =>
           item.rank_absolute !== null && !!item.domain && !!item.url && Boolean(TYPE_TO_SERP_FEATURE[item.type]),
       );
@@ -210,6 +230,29 @@ export async function syncSerpSnapshots(siteId: string, timeBudgetMs: number): P
         }
       }
 
+      // Real PAA questions, at zero extra cost — this SERP call already
+      // includes them, they were just never read correctly before. See
+      // the TYPE_TO_SERP_FEATURE comment above for why they don't belong
+      // in serp_snapshots.
+      const paaQuestions = [
+        ...new Set(
+          allItems
+            .filter((item) => item.type === "people_also_ask")
+            .flatMap((item) => item.items ?? [])
+            .map((el) => el.title?.trim())
+            .filter((title): title is string => Boolean(title)),
+        ),
+      ];
+      if (paaQuestions.length > 0) {
+        const paaRows = paaQuestions.map((question) => ({ site_id: siteId, keyword_id: keyword.id, date: today, question }));
+        const { error: paaError } = await supabase.from("paa_questions").upsert(paaRows, { onConflict: "keyword_id,date,question", ignoreDuplicates: true });
+        if (paaError) {
+          logger.warn("dataforseo_paa_write_failed", { siteId, keyword: keyword.keyword, error: paaError.message });
+        } else {
+          paaQuestionsWritten += paaRows.length;
+        }
+      }
+
       syncedCount += 1;
     }
   } finally {
@@ -223,6 +266,7 @@ export async function syncSerpSnapshots(siteId: string, timeBudgetMs: number): P
     keywordsSynced: syncedCount,
     keywordsRemaining: keywords.length - syncedCount,
     snapshotsWritten,
+    paaQuestionsWritten,
     budgetExceeded,
     cost: totalCost,
   };
