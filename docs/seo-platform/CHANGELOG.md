@@ -9,6 +9,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 9 (Conversion-Weighted Keyword Value) code-complete.**
+  `src/lib/seo/intelligence/keyword-value.ts` — `search_volume ×
+  expected_ctr × conversion_rate × avg_conversion_value` per
+  ARCHITECTURE.md §5.5, computed on-the-fly per (keyword, page) pair,
+  never persisted (matches §5.5's own Output note — storing a chosen
+  result into `actions.supporting_data` is Milestone 10's job).
+  Deliberately reuses Milestone 8's `pageConversionRate` (same
+  documented 50-session fallback threshold) and `avgConversionValue`
+  (same conversion_events-then-CPC chain, called with a single-element
+  CPC array so it degrades to "this keyword's own CPC" per §5.5's exact
+  wording) rather than re-deriving equivalent logic. Same caveat as
+  Milestone 8: `search_volume` has no producer until Milestone 5
+  (DataForSEO), so `monthlyValue` is currently 0 for every real pair.
+  11 new unit tests (270 total). Not merged to `main` — no route yet
+  (Milestone 10's job). See PHASE_2_IMPLEMENTATION.md Milestone 9
 - **Phase 2 Milestone 8 (Page ROI Score) code-complete.**
   `src/lib/seo/intelligence/page-roi-score.ts` — per-keyword click-gain
   projection (`traffic_potential`) using Milestone 1's CTR model,

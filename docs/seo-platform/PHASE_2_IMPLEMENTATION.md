@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization), 3 (content decay), 7 (opportunity score), and 8 (page ROI score) — 7 and 8 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision — are all code-complete and unit-tested (259 tests passing total). None has a route/deploy yet, since none is its own background job (all feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet); opportunity score is genuinely runnable against real data right now, just not wired to anything yet; page ROI score is currently 0 for every page (needs Milestone 5's search_volume — see its own section for the full finding). Milestones 4–6, 9–12 not started.
+> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization), 3 (content decay), 7 (opportunity score), 8 (page ROI score), and 9 (keyword value) — 7, 8, 9 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision — are all code-complete and unit-tested (270 tests passing total). None has a route/deploy yet, since none is its own background job (all feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet); opportunity score is genuinely runnable against real data right now, just not wired to anything yet; page ROI score and keyword value are both currently 0 for every page/keyword (both need Milestone 5's search_volume — see their own sections for the full findings). Milestones 4–6, 10–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -412,33 +412,40 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 ---
 
-## Milestone 9 — Conversion-Weighted Keyword Value (§5.5)
+## Milestone 9 — Conversion-Weighted Keyword Value (§5.5) — ✅ Code complete (2026-07-20)
 
 **Objective:** The platform's stated core competitive advantage — monthly revenue value per keyword, something no third-party tool can compute (requires joining GSC + GA4 + business-configured conversion values, all three of which only this platform has together).
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/intelligence/keyword-value.ts`: `search_volume × expected_ctr × conversion_rate × avg_conversion_value`, using Milestone 1's CTR model, page-level conversion rate with site-wide fallback, `site_configs.conversion_events` for value (CPC fallback if unconfigured)
-- [ ] Computed on-the-fly, stored in `actions.supporting_data` per ARCHITECTURE.md §5.5 — explicitly not a persisted column
+- [x] Implement `src/lib/seo/intelligence/keyword-value.ts`: `search_volume × expected_ctr × conversion_rate × avg_conversion_value`, using Milestone 1's CTR model, page-level conversion rate with site-wide fallback, `site_configs.conversion_events` for value (CPC fallback if unconfigured)
+- [x] Computed on-the-fly, returned by `computeKeywordValues(siteId)` — not persisted anywhere by this module. Storing a chosen result into `actions.supporting_data` (per ARCHITECTURE.md §5.5's Output note) is Milestone 10's job, once it decides which values are worth attaching to an action
 
-**Dependencies:** Milestone 1 (CTR model). No DataForSEO dependency beyond the CPC fallback (degrades gracefully, matching Milestones 7–8's pattern).
+**Implementation notes:**
+- Deliberately reuses Milestone 8's `pageConversionRate` (identical 50-session fallback threshold — §5.2 states that number explicitly, §5.5 only says "site-wide average" without repeating it, so this reuses the documented threshold rather than inventing a second one) and `avgConversionValue` (same conversion_events-then-CPC chain, called with a single-element CPC array so it degrades to "this keyword's own CPC as proxy" per §5.5's exact wording, distinct from §5.2's CPC-weighted average across a page's multiple keywords)
+- `expected_ctr` reuses the same round-and-clamp-to-1-20 CTR-model lookup convention already established in `cannibalization.ts`/`page-roi-score.ts`; the function accepts either a current or projected position (§5.5: "or target_position for projections"), the choice is the caller's
+- Same as Milestone 8: `search_volume` is null for every real keyword until Milestone 5 (DataForSEO) runs, so `monthlyValue` is currently 0 for every (keyword, page) pair in production — code-complete and null-safe, not yet meaningful
 
-**Expected outputs:** Real per-keyword monthly value estimates as soon as any page has both keyword and conversion data — immediately testable against production.
+**Dependencies:** Milestone 1 (CTR model, live), Milestone 8 (reuses two of its exported functions). No DataForSEO dependency beyond the CPC fallback.
+
+**Expected outputs:** Code-complete, null-safe, fully unit-tested. Real, differentiated values once Milestone 5 lands.
 
 **Database changes:** None.
 
-**Files to create:**
-- `src/lib/seo/intelligence/keyword-value.ts`, `keyword-value.test.ts`
+**Files created:**
+- `src/lib/seo/intelligence/keyword-value.ts`, `keyword-value.test.ts` (11 tests)
 
-**Tests to perform:**
-- Unit: formula hand-calculated against synthetic keyword/page/conversion data
-- Unit: CPC fallback triggers correctly when `site_configs.conversion_events` is empty (Milestone 1's default seed state)
+**Tests performed:**
+- Unit: `expectedCtrAtPosition` rounding/clamping (including the 1 and 20 boundary clamps) and null-position → 0
+- Unit: `computeKeywordMonthlyValue` formula hand-calculated, including the null-search_volume → 0 case
+- Unit: orchestrator's conversion_events-over-CPC precedence, CPC fallback when events are empty, site-wide conversion-rate fallback below 50 sessions, and null-position pairs handled correctly
+- Full suite: 270/270 passing (11 new), lint clean (same pre-existing unrelated issues), build clean
 
 **Success criteria (DoD):**
-- Formula matches ARCHITECTURE.md §5.5 exactly; correctly not persisted as its own column
+- Formula matches ARCHITECTURE.md §5.5 exactly; correctly not persisted as its own column — done
 
 **Risks & rollback:**
-- Risk: meaningless until real conversion data exists at volume — same "correct but not yet meaningful" caveat as Content Decay (Milestone 3)
-- Rollback: nothing to roll back — computed on-the-fly, never persisted independently
+- Risk: meaningless until real conversion data exists at volume — same "correct but not yet meaningful" caveat as Content Decay (Milestone 3); currently 0 for every pair pending Milestone 5, same caveat as Page ROI Score (Milestone 8)
+- Rollback: nothing to roll back — computed on-the-fly, never persisted independently; not merged to `main`
 
 ---
 
