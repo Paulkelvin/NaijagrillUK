@@ -34,8 +34,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
   milestone has no credential dependency and no new migration — not yet
   merged/deployed, same posture as Milestones 5–7 (destructive job,
   warrants an explicit go-ahead)
-- **Milestone 7 (Observability Layer) code-complete, locally validated,
-  production apply pending.** New migration
+- **Milestone 7 (Observability Layer) code-complete, migration live in
+  production.** New migration
   `20260720000000_seo_observability_views.sql` — `sync_status_summary`
   (most recent run per source), `stale_datasets` (last-success vs.
   `site_configs.refresh_schedules` interval, OR'd with a stuck-`'started'`-
@@ -53,9 +53,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
   retry/warning counts over a 7-day window. 24 new unit tests (154 total).
   Migration applied and verified end-to-end against a real, throwaway
   PostgreSQL 16 instance with synthetic completed/failed/stuck sync_log
-  rows (same rigor as Milestone 1); **not yet applied to production** — no
-  Supabase MCP connector is connected this session — see
-  PHASE_1_IMPLEMENTATION.md Milestone 7
+  rows (same rigor as Milestone 1). **Applied to production Supabase via
+  the SQL editor** (no Supabase MCP connector was reachable this
+  session, and this environment's network policy blocks direct
+  Postgres connections outright — confirmed by testing the direct host
+  and 12 pooler regions, all timing out despite working DNS/HTTPS);
+  confirmed live via `pg_views`, all three views present. The
+  `/api/seo/status` route itself is still only on the feature branch —
+  see PHASE_1_IMPLEMENTATION.md Milestone 7
 - **Milestone 6 (GA4 Sync Job) code-complete, integration verification
   pending real credentials.** `ga4/client.ts` — hand-rolled JWT
   service-account auth (mirrors `gsc/client.ts`), `runReport` with

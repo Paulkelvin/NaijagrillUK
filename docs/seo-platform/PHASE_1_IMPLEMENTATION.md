@@ -1,6 +1,6 @@
 # Phase 1 Implementation Plan — Data Foundation
 
-> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestone 7 (Observability Layer) code-complete and locally validated against a real Postgres instance, pending production migration apply. Milestone 8 (Retention/Archival Job) code-complete, fully unit- and locally-integration-tested (no credential or migration blocker), pending deploy go-ahead. Milestone 9 deferred by design.
+> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestone 7 (Observability Layer) code-complete, locally validated, and its migration is now live in production (applied 2026-07-20); the `/api/seo/status` route itself is still only on the feature branch. Milestone 8 (Retention/Archival Job) code-complete, fully unit- and locally-integration-tested (no credential or migration blocker), pending deploy go-ahead. Milestone 9 deferred by design.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen), ENGINEERING_STANDARDS.md
@@ -743,9 +743,9 @@ Same posture as Milestone 5, per your instruction to keep building without waiti
 
 **Dependencies:** Milestones 3, 5, 6 (needs real sync_log data to validate against).
 
-**Expected outputs:** One authenticated JSON endpoint that fully answers "is the pipeline healthy?" **Endpoint and views built and locally verified; not yet applied to production** — see "Local Validation, Production Apply Pending" below (a different, smaller gap than Milestones 5/6's credential block).
+**Expected outputs:** One authenticated JSON endpoint that fully answers "is the pipeline healthy?" **Views are live in production; the endpoint itself is not yet deployed** — see "Migration Applied to Production" below.
 
-**Database changes:** New migration (views only, no new tables) — **written, locally applied and verified against a real (throwaway) PostgreSQL 16 instance; not yet applied to production Supabase** (no Supabase MCP connector is connected this session — see below).
+**Database changes:** New migration (views only, no new tables) — **written, locally applied and verified against a real (throwaway) PostgreSQL 16 instance, then applied directly to production Supabase by Paul via the SQL editor** (no Supabase MCP connector was available this session — see below). Confirmed live: `SELECT viewname FROM pg_views WHERE schemaname = 'public' AND viewname IN ('sync_status_summary','stale_datasets','sync_failures_recent')` returned all three.
 
 **Files created:**
 - `supabase/migrations/20260720000000_seo_observability_views.sql`
@@ -764,13 +764,14 @@ Same posture as Milestone 5, per your instruction to keep building without waiti
   - Seeded a failed `gsc` run 3 days old and another 10 days old → `sync_failures_recent` returned only the 3-day-old row, confirming the 7-day window boundary
   - `sync_status_summary`'s `DISTINCT ON (site_id, source)` correctly surfaced the *most recent* row per source regardless of status (the stuck `'started'` row, being more recent than the completed one) — this is deliberate: "most recent activity" is more useful at a glance than "most recent success" (that's what `stale_datasets.last_success_at` is for)
   - Queried all three views as the `anon` role (`SET ROLE anon`) → `0` rows from every view, confirming `WITH (security_invoker = true)` actually makes the underlying tables' zero-policy RLS apply through the view rather than the view owner's superuser privileges — this is exactly the security property the migration's own comment claims, verified empirically rather than trusted from documentation
-- **Not performed — requires production access this session doesn't have:**
-  - Migration has not been applied to production Supabase (no Supabase MCP connector connected this session, unlike Milestone 3; `DATABASE_URL` direct access is blocked by this environment's proxy policy per `DATABASE_OPERATIONS.md`'s "A Note on Environment Access") — apply via the SQL editor (method A) or once an MCP connector is available
-  - Endpoint has not been hit against real production `sync_log` data (partially blocked on Milestones 5/6's credentials too — until those run for real, production `sync_log` only has Milestone 4's `ping` rows)
+- [x] **Production (Supabase SQL editor, applied by Paul, 2026-07-20):** the migration was pasted into the Supabase SQL editor and run directly against the production project. Verified live via `SELECT viewname FROM pg_views WHERE schemaname = 'public' AND viewname IN (...)` returning `stale_datasets`, `sync_failures_recent`, `sync_status_summary` — all three present.
+- **Not performed — the endpoint itself isn't deployed yet, and no real GSC/GA4 data exists to query:**
+  - `/api/seo/status` has not been hit against real production `sync_log` data — it lives on the feature branch, not merged; and even once deployed, production `sync_log` only has Milestone 4's `ping` rows until Milestones 5/6 run for real
+  - `security_invoker`'s RLS behavior was verified locally (`anon` sees 0 rows), not re-checked against the production views directly — same mechanism, same Postgres version family (17 vs. local 16), low risk but not independently re-proven in production
 
 **Success criteria (DoD):**
 - [x] All 8 observability questions are answerable from this one endpoint — **verified against local synthetic data** covering every question category (last sync per source, failures, retry counts, duration, rows processed, staleness, warnings; `api_credits_used` column is present and correctly 0 until Phase 2's DataForSEO jobs populate it — not a defect)
-- [ ] Verified against real pipeline data from Milestones 5–6 — **blocked on the same credentials as Milestone 5/6, plus the migration not yet being live in production**
+- [ ] Verified against real pipeline data from Milestones 5–6 — **blocked on the same credentials as Milestone 5/6** (views are live in production now; only real GSC/GA4 data is still missing)
 - [x] A deliberately-broken sync shows up correctly as a failure — **proven locally** (synthetic failed row → correctly listed in `sync_failures_recent`; synthetic stuck `'started'` row → correctly flagged in `stale_datasets`). Not yet proven against a *real* revoked-credential run against production, for the same reason as above.
 
 **Risks & rollback:**
@@ -778,11 +779,15 @@ Same posture as Milestone 5, per your instruction to keep building without waiti
 - Risk (found during implementation, not a Phase 1 blocker): `site_configs.refresh_schedules` has two DataForSEO keys (`dataforseo_volume`, `dataforseo_serp`) with no matching `sync_log.source` value (`sync_log` only has one `'dataforseo'` source). `stale_datasets` will always show these two as stale/never-synced until Phase 2 reconciles the two independently-specified enums — documented in the view's own `COMMENT`, truthful today (DataForSEO isn't built yet), zero impact on any Phase 1 deliverable.
 - Rollback: `DROP VIEW public.sync_status_summary, public.stale_datasets, public.sync_failures_recent;` — no data loss, views are derived. `src/middleware.ts`'s matcher change reverts independently (remove `/api/seo/status` from the array) if the endpoint itself needs to be pulled without touching `/admin`.
 
-### Local Validation, Production Apply Pending
+### Migration Applied to Production
 
-Unlike Milestones 5/6, this milestone's gap is not a missing external credential — it's that no Supabase MCP connector is connected in this session (it was connected and used for Milestone 3's fixes, then disconnected; see prior milestone notes) and this environment's proxy policy blocks direct `DATABASE_URL` access (documented in `DATABASE_OPERATIONS.md`). So the honest state is: **the migration is written and has been validated as thoroughly as Milestone 1's was locally** — applied cleanly to a real, throwaway PostgreSQL 16 instance seeded with production-equivalent schema and role model, exercised with synthetic data covering every documented scenario (recent success, stale-by-interval, stuck-crashed-run, in-window and out-of-window failures), and the RLS security property was checked empirically, not assumed. What's missing is the same "touch the real production database" step every migration in this project needs — either paste it into the Supabase SQL editor, or reconnect the Supabase MCP connector and ask me to apply and verify it directly, the same two options documented in `DATABASE_OPERATIONS.md` §2.
+No Supabase MCP connector was reachable from this session (toggled on in the claude.ai UI per Paul, but never actually surfaced in this session's tool list across repeated checks — a client-side sync gap, not a permissions issue) and this environment's network policy only permits outbound HTTPS, which rules out direct `DATABASE_URL`/`psql` access entirely (confirmed empirically: DNS resolution and HTTPS both work, but every raw Postgres connection attempt — the direct host and 12 different pooler regions, including the actual correct one with a freshly-reset password — timed out identically). So method A from `DATABASE_OPERATIONS.md` §2 (the Supabase SQL editor) was used instead: the migration's full contents were handed to Paul, who pasted and ran it directly against production.
 
-**When the migration is live in production and Milestones 5/6 have real credentials:** re-open this milestone (don't silently mark it done) — hit `/api/seo/status` for real, spot-check all 8 questions against actual GSC/GA4 sync history, and deliberately break a credential to confirm a real failure surfaces correctly end-to-end. Only then are the remaining DoD boxes above allowed to be checked.
+**Verified live**, 2026-07-20: `SELECT viewname FROM pg_views WHERE schemaname = 'public' AND viewname IN ('sync_status_summary','stale_datasets','sync_failures_recent')` returned all three view names. Combined with the local PostgreSQL validation above (same DDL, byte-identical), this closes the database-changes side of this milestone to the same standard Milestone 1's production apply was held to.
+
+**Still open:** the `/api/seo/status` route itself is only on the feature branch — the views existing in production doesn't mean the endpoint is reachable yet. That, plus real GSC/GA4 data flowing through `sync_log`, are what's left before this milestone's full DoD (spot-checking all 8 questions against real pipeline data) can be checked off. Re-open this milestone when both exist — don't silently mark it done.
+
+As a housekeeping note: the production database password was shared in this chat twice while diagnosing the connection path (once as the existing direct-connection value, once freshly reset). Paul was advised to reset it again since nothing in the deployed app depends on it.
 
 ---
 
