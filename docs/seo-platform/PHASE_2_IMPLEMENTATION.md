@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestone 0 (schema) written and validated against a real local PostgreSQL instance — every constraint, the unique key, and both `updated_at` triggers confirmed working, RLS default-deny confirmed via `SET ROLE anon`. Milestone 1 (CTR model) code-complete and unit-tested. Neither is deployed to production yet. In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — every real sync so far happened via manual `curl`. Milestones 2–12 not started.
+> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -128,7 +128,7 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 
 **Dependencies:** Phase 1 Milestone 1 (`keyword_page_metrics`, `site_configs.ctr_model` column, already live).
 
-**Expected outputs:** A real, site-specific CTR curve. Code-complete and locally verified; **not yet deployed** (this session's established posture — code doesn't reach production without an explicit go-ahead, same as every Phase 1 milestone past #4). Given Phase 1's current click volume (day one of real syncing), this will very likely stay on `industry_default` for a while once it is live — expected, not a bug, matches the ≥1,000-click gate's own design intent.
+**Expected outputs:** A real, site-specific CTR curve. **Deployed to production 2026-07-20**, confirmed live via `curl` — `{"ok":true,"rebuilt":false,"source":"industry_default","sampleSize":5,...}`. `rebuilt: false` is correct: only 5 real clicks exist so far, far below the 1,000-click floor, so it correctly stayed on `industry_default` rather than being deployed and immediately overwriting the model with 5 clicks' worth of noise.
 
 **Database changes:** None (uses existing `site_configs.ctr_model` column and `keyword_page_metrics`).
 
@@ -146,12 +146,13 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 - [x] Unit: total clicks below 1,000 across the whole model skips the rebuild entirely — confirmed `site_configs` is never even queried in that path, not just that the write is skipped
 - [x] Unit: a real rebuild (≥1,000 clicks) writes the exact `{source, positions, sample_size}` shape to `site_configs.ctr_model`
 - [x] Unit: fetch and update errors both propagate with a clear message rather than failing silently
-- **Not yet performed:** integration against real production data — blocked on this code being deployed, which hasn't happened yet this milestone (see Expected outputs above)
+- [x] **Integration, production, 2026-07-20:** `curl` against `/api/seo/analysis/ctr-model` with the real `CRON_SECRET` correctly identified the site has only 5 real clicks and skipped the rebuild, leaving the industry-default model in place — proves the minimum-data gate works against real data, not just synthetic test fixtures. Also confirmed all five `vercel.json` cron entries (including the two GSC/GA4 fixes) registered correctly via the Vercel API (`crons.enabledAt` set, all five `path`/`schedule` pairs present).
+- **Not yet performed:** a real `site_data` rebuild (needs ≥1,000 real clicks, which don't exist yet) — re-run this once GSC click volume crosses that threshold and confirm the resulting model looks plausible
 
 **Success criteria (DoD):**
 - [x] Model rebuild is deterministic and idempotent (same input data → same output every time) — pure-function `computeCtrBuckets` guarantees this by construction, verified via unit tests
-- [x] `source`/`sample_size` correctly distinguish a real vs. default model at a glance — confirmed in both the skip and rebuild paths
-- [ ] Verified against real production data — pending deployment
+- [x] `source`/`sample_size` correctly distinguish a real vs. default model at a glance — confirmed in both the skip and rebuild paths, including against real production data
+- [x] Verified against real production data — confirmed above; the real-`site_data`-model path specifically still needs real click volume to exist
 
 **Risks & rollback:**
 - Risk: a site with genuinely low traffic (this restaurant, realistically, for months) may never cross 1,000 clicks and stay on industry defaults indefinitely — explicitly anticipated in ARCHITECTURE.md's own Phase 2 risk note, not a design flaw

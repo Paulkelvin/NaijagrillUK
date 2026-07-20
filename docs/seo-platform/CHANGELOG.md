@@ -8,6 +8,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Deployed
+- **Phase 2 Milestones 0–1 merged to `main` and deployed to production,
+  2026-07-20.** Verified via `curl`: `/api/seo/analysis/ctr-model`
+  correctly identifies only 5 real clicks exist and skips the rebuild
+  rather than overwriting the model with noise. Confirmed all five
+  `vercel.json` cron entries registered on Vercel's side (`GSC` daily
+  06:00 UTC, `GA4` daily 06:30 UTC, `CTR model` Monday 06:15 UTC,
+  `retention` Sunday 03:00 UTC, `ping`) — the pipeline now runs itself
+  end to end, no more manual `curl` triggering needed
+
 ### Fixed
 - **`/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never added to
   `vercel.json`'s cron schedule** — found while adding Phase 2
