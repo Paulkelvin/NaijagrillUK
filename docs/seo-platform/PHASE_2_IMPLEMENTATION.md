@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestone 2 (cannibalization) is code-complete and unit-tested — no route/deploy yet, since it's not its own background job (feeds into Milestone 10's combined analysis engine instead). Milestones 3–12 not started.
+> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization) and 3 (content decay) are both code-complete and unit-tested — neither has a route/deploy yet, since neither is its own background job (both feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet). Milestones 4–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -201,31 +201,33 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 **Objective:** Detect pages losing organic traffic before the drop becomes critical — pure GA4 data, no DataForSEO dependency.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/intelligence/content-decay.ts`: linear regression slope over 90-day `page_metrics.sessions`, `decay_pct` vs. peak, decay-stage bucketing (`stable`/`early_decay`/`mid_decay`/`critical_decay`), `recency_factor`, `decay_urgency`
-- [ ] Minimum-data gate: only flag pages with ≥30 avg sessions/month; skip entirely if fewer than 60 days of history exist (ARCHITECTURE.md §5.7 Limitations — this analysis is explicitly "unavailable until the pipeline has run for 3 months")
-- [ ] Seasonality cross-reference against `keywords.monthly_volumes` (DataForSEO field) — degrades gracefully to "not checked" when that field is null, per the same null-safe principle as Milestones 7–9
+- [x] Implement `src/lib/seo/intelligence/content-decay.ts`: linear regression slope over 90-day `page_metrics.sessions`, `decay_pct` vs. peak (a 30-day rolling average slid across the 90-day window — 61 possible positions, computed exhaustively rather than approximated), decay-stage bucketing (`stable`/`early_decay`/`mid_decay`/`critical_decay`), `recency_factor`, `decay_urgency`
+- [x] Minimum-data gate: only flag pages with ≥30 avg sessions/month (over the ~3-month window); skip entirely if fewer than 60 real data rows exist for that page (ARCHITECTURE.md §5.7 Limitations — this analysis is explicitly "unavailable until the pipeline has run for 3 months")
+- [x] Seasonality cross-reference against the page's primary keyword's `monthly_volumes` (DataForSEO field, identified as the keyword with the most clicks for that page over the window) — resolved as `seasonalityChecked: boolean` (true only when that data exists) with `seasonal` always `false` for now, deliberately not guessing at a pattern-matching algorithm ARCHITECTURE.md doesn't fully specify and that has no real data yet to validate against (same principle as Page ROI Score's `missing_paa` being forced to 0 pre-DataForSEO)
 
 **Dependencies:** None beyond Phase 1's `page_metrics` (live). Seasonality check improves once Milestone 5 (DataForSEO volume) exists but isn't required to ship this milestone.
 
-**Expected outputs:** Code-complete and unit-tested against synthetic data immediately; **genuinely cannot produce real output** until ~60–90 days of real GA4 traffic history exist (this is an explicit ARCHITECTURE.md constraint, not a shortcut) — same honest "not yet possible" framing Phase 1 used for the GSC 16-month backfill before credentials existed, just gated by elapsed time instead of a credential.
+**Expected outputs:** Code-complete and unit-tested against synthetic data; **genuinely cannot produce real output** until ~60–90 days of real GA4 traffic history exist (this is an explicit ARCHITECTURE.md constraint, not a shortcut) — same honest "not yet possible" framing Phase 1 used for the GSC 16-month backfill before credentials existed, just gated by elapsed time instead of a credential. GA4 itself only went live today, so this is genuinely months away from producing anything.
 
-**Database changes:** None (reads `page_metrics`, writes to `actions`).
+**Database changes:** None (reads `page_metrics`/`keyword_page_metrics`/`keywords`; writes nothing — Milestone 10's orchestrator will write to `actions`).
 
-**Files to create:**
-- `src/lib/seo/intelligence/content-decay.ts`, `content-decay.test.ts`
+**Files created:**
+- `src/lib/seo/intelligence/content-decay.ts`, `content-decay.test.ts` (16 tests)
 
-**Tests to perform:**
-- Unit: hand-calculated `decay_pct`/decay-stage boundaries/`recency_factor`/`decay_urgency` against synthetic 90-day session data with a known, deliberate downward trend
-- Unit: a page below the 30-session/month floor is correctly skipped, not flagged
-- Unit: fewer than 60 days of history correctly skips the page entirely rather than computing a misleading score off a short window
-- Unit: seasonality cross-reference correctly no-ops when `monthly_volumes` is null
+**Tests performed:**
+- [x] Unit: `computeLinearRegressionSlope` — exact slope for a perfectly increasing/decreasing/flat line, `0` for fewer than 2 points
+- [x] Unit: `computeRollingPeakAndCurrent` — peak window and current window correctly identified against a hand-constructed step function; a tie between two equal-average windows correctly resolves to the more recent one
+- [x] Unit: `computeDecay` — `decay_pct`/`recency_factor`/`decay_urgency` hand-calculated against a known peak-then-decline pattern; `decay_pct` correctly returns `0` (not `NaN`) when peak traffic is `0`; every decay-stage boundary (4/5/14/40/41 `decay_pct`) and every `recency_factor` boundary (30/31/60 `daysSincePeak`) individually verified against ARCHITECTURE.md's exact thresholds, including the "exactly 40 is still mid_decay, not critical" edge case the ">40" wording implies
+- [x] Unit: `detectContentDecay` orchestration (mocked Supabase) — a page with <60 real data rows is excluded entirely; a page with enough history but <30 avg sessions/month is excluded; a qualifying page returns correct fields with `seasonalityChecked: false` when no keyword volume data exists; `seasonalityChecked: true` when the correctly-identified highest-click primary keyword has `monthly_volumes` data; multiple pages are handled independently, only qualifying ones returned
+- **Not yet performed:** any real output — genuinely impossible right now, GA4 has been live for hours, not the 60+ days this algorithm requires
 
 **Success criteria (DoD):**
-- All four decay-stage boundaries and the `recency_factor` bucketing match ARCHITECTURE.md §5.7 exactly
-- Synthetic-data test suite passes deterministically (same bar as Milestone 8's retention aggregation tests)
+- [x] All four decay-stage boundaries and the `recency_factor` bucketing match ARCHITECTURE.md §5.7 exactly — individually unit-verified, not just spot-checked
+- [x] Synthetic-data test suite passes deterministically (same bar as Milestone 8's retention aggregation tests)
+- [ ] Real-data verification — blocked on elapsed time, tracked as a follow-up once GA4 has ~90 days of history
 
 **Risks & rollback:**
-- Risk: real validation is blocked on elapsed time (60–90 days), not anything buildable faster — flag this plainly when the milestone is closed, don't imply it's more verified than it is
+- Risk: real validation is blocked on elapsed time (60–90 days), not anything buildable faster — flagged plainly here rather than implying this is more verified than it is
 - Rollback: pure read + `actions` write, same as Milestone 2
 
 ---

@@ -9,6 +9,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 3 (Content Decay Score) code-complete.**
+  `src/lib/seo/intelligence/content-decay.ts` — linear regression slope
+  and a 30-day rolling average (slid exhaustively across the 90-day
+  window, all 61 positions) to find peak vs. current traffic, decay-stage
+  bucketing, `recency_factor`, `decay_urgency`. Only flags pages with
+  ≥30 avg sessions/month and ≥60 real data rows. Seasonality
+  cross-reference against the page's primary keyword's `monthly_volumes`
+  resolved as `seasonalityChecked: boolean` with `seasonal` always
+  `false` for now — deliberately not guessing at a pattern-matching
+  algorithm with no real DataForSEO data yet to validate it against. 16
+  new unit tests (220 total), including every decay-stage and
+  recency-factor boundary individually verified. Genuinely cannot
+  produce real output for months — GA4 only went live today, this
+  algorithm needs 60–90 days of history. See
+  PHASE_2_IMPLEMENTATION.md Milestone 3
 - **Phase 2 Milestone 2 (Cannibalization Detection & Scoring)
   code-complete.** `src/lib/seo/intelligence/cannibalization.ts` —
   detects keywords with impressions from 2+ distinct pages over a
