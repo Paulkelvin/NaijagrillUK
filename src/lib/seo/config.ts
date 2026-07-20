@@ -90,6 +90,37 @@ export function getGa4Config(): Ga4Config {
   return result.data;
 }
 
+// DataForSEO uses HTTP Basic Auth — login (the account's email address) and
+// an auto-generated API password, distinct from the account's own login
+// password (verified against DataForSEO's current docs at
+// docs.dataforseo.com/v3/auth/ during Phase 2 Milestone 4, not assumed —
+// same discipline Phase 1 applied to GSC/GA4/Vercel).
+const dataForSeoConfigSchema = z.object({
+  login: z.string().email("DATAFORSEO_LOGIN must be a valid email address"),
+  password: z.string().min(1, "DATAFORSEO_PASSWORD is required"),
+});
+
+export type DataForSeoConfig = z.infer<typeof dataForSeoConfigSchema>;
+
+function readDataForSeoEnv() {
+  return {
+    login: process.env.DATAFORSEO_LOGIN,
+    password: process.env.DATAFORSEO_PASSWORD,
+  };
+}
+
+export function isDataForSeoConfigured(): boolean {
+  return dataForSeoConfigSchema.safeParse(readDataForSeoEnv()).success;
+}
+
+export function getDataForSeoConfig(): DataForSeoConfig {
+  const result = dataForSeoConfigSchema.safeParse(readDataForSeoEnv());
+  if (!result.success) {
+    throw new Error(`Invalid DataForSEO configuration: ${formatIssues(result.error)}`);
+  }
+  return result.data;
+}
+
 /**
  * Authenticates cron-triggered API routes (ARCHITECTURE.md §7). Not a
  * secret used by an external API, so no Zod schema beyond non-empty-string

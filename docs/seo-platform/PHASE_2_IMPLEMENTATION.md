@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** Every milestone that doesn't need a DataForSEO account is now complete (0–3, 7–12). Milestones 0, 1, 2, 3, 7, 8, 9, 10 are merged to `main` and deployed to production (2026-07-20) — 7, 8, 9 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision. In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule. Milestone 0's migration was applied to production via a newly-discovered path: Supabase's Management API over plain HTTPS, which sidesteps this sandbox's raw-Postgres network block — see Milestone 0's section. **Ran the real Milestone 10 analysis engine against production ahead of its cron** — 14 real actions created (9 content opportunities, 5 cannibalization fixes, including one surfacing a real known gap: the brand name itself is unflagged in `brand_terms`) — the action queue is genuinely populated now, not just empty-and-correct. **Milestones 11 (Action Queue UI) and 12 (Site Configuration UI) are code-complete and manually verified end-to-end against real production data** (not yet merged to `main`) — both ran real browser sessions against the live database, including one round-trip write-then-revert on `site_configs` confirmed byte-identical afterward; see their sections for the full writeups. 311 tests passing total; lint/build clean. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); page ROI score and keyword value are both currently 0 for every page/keyword (need Milestone 5's search_volume). Only Milestones 4–6 (DataForSEO client, search volume sync, SERP snapshots) remain, blocked on the user setting up a DataForSEO account.
+> **Status:** Milestones 0–3 and 7–12 are complete, merged to `main`, and deployed to production (2026-07-20). Milestone 4 (DataForSEO client + budget controls) is also code-complete, verified against DataForSEO's real live docs (not assumed) — pending only a real DataForSEO account for Milestones 5–6 to actually use it. 336 tests passing total; lint/build clean. The analysis engine has been run for real against production (ahead of its cron): the action queue holds 13 genuine actions (9 content opportunities, 4 cannibalization fixes). `sites.config.brand_terms` is now configured with the real brand name/variants, fixing a real false positive the first run surfaced (the site's own name was flagging as cannibalized) — the stale action from before the fix was dismissed via the app's own `/api/seo/actions/[id]` route. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); page ROI score and keyword value are both currently 0 for every page/keyword (need Milestone 5's `search_volume`). Only Milestones 5–6 (search volume sync, SERP snapshots) remain, blocked on the user setting up a DataForSEO account and adding its credentials to Vercel.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -232,37 +232,43 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 
 ---
 
-## Milestone 4 — DataForSEO Client Foundation + Budget Controls (§6)
+## Milestone 4 — DataForSEO Client Foundation + Budget Controls (§6) — ✅ Code complete (2026-07-20)
 
 **Objective:** One authenticated, budget-aware DataForSEO client that Milestones 5–6 both build on — mirrors how Milestone 2 (Config & Secrets) preceded Milestone 5/6's actual sync jobs in Phase 1.
 
 **Tasks:**
-- [ ] Verify DataForSEO's actual current auth mechanism via their live API docs before writing any code (per this project's standing discipline — Phase 1 caught real drift doing exactly this for GSC/GA4/Vercel; DataForSEO is reported to use HTTP Basic Auth with a login/password pair rather than OAuth2/JWT, distinct enough from the Google APIs that this needs independent verification, not an assumption carried over)
-- [ ] `src/lib/seo/config.ts`: add `getDataForSeoConfig()`/`isDataForSeoConfigured()` following the exact existing pattern (Zod schema, fail-fast on missing/malformed)
-- [ ] `src/lib/seo/dataforseo/client.ts`: authenticated request wrapper, reusing `retry.ts`'s `withRetry`/`RetryableError`
-- [ ] `src/lib/seo/dataforseo/budget.ts`: implements §6 Budget Controls exactly — check `api_budgets.current_spend < monthly_limit` before every call, log a warning at `alert_threshold` (default 0.8), skip the call and log `sync_log` status `"budget_exceeded"` at 100%, default monthly limit $10/site (matches `site_configs`-adjacent config, not yet modeled — decide during implementation whether this is a new `site_configs` field or lives directly in `api_budgets` as ARCHITECTURE.md's schema already implies via `monthly_limit`)
+- [x] Verified DataForSEO's actual current auth mechanism via live docs before writing any code (`docs.dataforseo.com/v3/auth/`, fetched directly, not assumed): confirmed HTTP Basic Auth, `Authorization: Basic base64(login:password)`, base URL `https://api.dataforseo.com`, login = account email, password = a separate auto-generated API password (not the account's own login password). No token exchange/refresh flow — Basic Auth is static, unlike GSC/GA4's OAuth2 JWT bearer flow. Also confirmed the response envelope shape (`status_code`/`status_message`/`cost`/`tasks_count`/`tasks_error`/`tasks[]`, success = `20000 <= status_code <= 29999`) needed to design the client wrapper's error handling.
+- [x] `src/lib/seo/config.ts`: added `getDataForSeoConfig()`/`isDataForSeoConfigured()` following the exact existing pattern (Zod: `login` must be a valid email, `password` non-empty)
+- [x] `src/lib/seo/dataforseo/client.ts`: `callDataForSeoApi<T>(endpointPath, payload)` — authenticated POST wrapper, reuses `retry.ts`'s `withRetry`/`RetryableError` (retries network errors/429/5xx, fails fast on 401/403 via a new `DataForSeoAuthError`, throws on an out-of-range top-level `status_code` even on HTTP 200)
+- [x] `src/lib/seo/dataforseo/budget.ts`: implements §6 Budget Controls exactly — `checkBudget()` reads `api_budgets.current_spend`/`monthly_limit`/`alert_threshold` for the current month, denies once spend meets/exceeds the limit, warns (via `logger.warn`) once it crosses the alert threshold; `recordSpend()` writes the real cost after a successful paid call, creating the period's row at the $10 default if none exists yet. **Resolved the open "where does $10 live" question:** `api_budgets.monthly_limit` has no DB-level `DEFAULT` (Milestone 0's migration: `NOT NULL` with no default) — so `$10` is an application-level constant (`DEFAULT_MONTHLY_LIMIT_USD`) applied only when `recordSpend()` creates a new period's row on the first paid call of the month. No new `site_configs` field needed; a month rolls over naturally since `period_start` is part of the composite PK.
+
+**Implementation notes:**
+- `checkBudget()`/`recordSpend()` deliberately don't touch `sync_log` — logging a `"budget_exceeded"` sync entry when a call is denied is each sync job's own responsibility (Milestones 5/6), matching how every other cross-cutting concern (retry counts, warnings) already gets folded into `sync_log` by the job that experienced it, not by a shared helper.
+- Added `DATAFORSEO_LOGIN`/`DATAFORSEO_PASSWORD` to `.env.example`, matching the existing GSC/GA4 section's format and "leave unset until ready" convention.
 
 **Dependencies:** Milestone 0 (`api_budgets` table).
 
-**Expected outputs:** A working, unit-tested client — **code-complete pending a real DataForSEO account**, same "code-complete, integration verification pending" posture as Phase 1 Milestones 5/6 before Google credentials existed. Requires Paul to sign up for a DataForSEO account and add its credentials to Vercel when ready — a new external-account dependency, flagged now rather than discovered mid-milestone.
+**Expected outputs:** A working, fully unit-tested client and budget gate — **code-complete pending a real DataForSEO account**, same "code-complete, integration verification pending" posture as Phase 1 Milestones 5/6 before Google credentials existed. Requires signing up for a DataForSEO account (app.dataforseo.com) and adding `DATAFORSEO_LOGIN`/`DATAFORSEO_PASSWORD` to Vercel when ready.
 
 **Database changes:** None (uses Milestone 0's `api_budgets`).
 
-**Files to create:**
-- `src/lib/seo/dataforseo/client.ts`, `client.test.ts`
-- `src/lib/seo/dataforseo/budget.ts`, `budget.test.ts`
-- `src/lib/seo/config.ts` (modified)
+**Files created:**
+- `src/lib/seo/dataforseo/client.ts`, `client.test.ts` (9 tests)
+- `src/lib/seo/dataforseo/budget.ts`, `budget.test.ts` (12 tests)
+- `src/lib/seo/config.ts`, `config.test.ts` (modified, 4 new tests)
+- `.env.example` (modified)
 
-**Tests to perform:**
-- Unit: budget check correctly allows calls under the limit, warns at the alert threshold, skips and logs at/over the limit — all against a mocked Supabase client, same pattern as every Phase 1 sync job's tests
-- Unit: retry/auth-failure classification, mirroring the rigor of `gsc/client.test.ts`/`ga4/client.test.ts` (real signature verification if the auth scheme turns out to need one; DataForSEO's actual mechanism determines this — see Tasks note)
+**Tests performed:**
+- Unit: budget check allows under the limit (with/without an existing row), warns at/above the alert threshold, denies at/over the monthly limit, respects a row's own custom limit/threshold
+- Unit: `recordSpend` creates a new row at the $10 default vs. increments an existing one; propagates DB errors clearly
+- Unit: client — correct Basic Auth header construction, successful parse, `DataForSeoAuthError` on 401/403 with no retry, retry-then-succeed on 429 (honoring `Retry-After`)/5xx/network error, non-retryable 4xx, and the out-of-range `status_code`-despite-HTTP-200 case
+- Full suite: 336/336 passing (25 new), lint clean (pre-existing unrelated issues only), build clean
 
 **Success criteria (DoD):**
-- Budget gate is provably correct against all three states (under/at-threshold/over-limit) via unit tests
-- `npm run lint`/`npm run build` clean, matching every prior milestone's bar
+- Budget gate is provably correct against all three states (under/at-threshold/over-limit) via unit tests — done
+- `npm run lint`/`npm run build` clean, matching every prior milestone's bar — done
 
 **Risks & rollback:**
-- Risk: DataForSEO's real auth/response format may differ from what's assumed here — resolve via live docs when this milestone actually starts, same discipline applied throughout Phase 1
 - Rollback: inert until Milestones 5/6 call it; no data written by this milestone alone
 
 ---

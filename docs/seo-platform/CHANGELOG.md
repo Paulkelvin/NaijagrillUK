@@ -8,6 +8,40 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+- **Phase 2 Milestone 4 (DataForSEO Client Foundation + Budget Controls) code-complete.**
+  Verified DataForSEO's real current auth mechanism via their live docs
+  before writing any code (HTTP Basic Auth, `login:password` base64 in
+  the `Authorization` header, base URL `https://api.dataforseo.com`,
+  response envelope with a top-level `status_code` where success is
+  `20000-29999` even on HTTP 200) — not assumed, same discipline Phase 1
+  applied to GSC/GA4/Vercel. `src/lib/seo/config.ts`:
+  `getDataForSeoConfig()`/`isDataForSeoConfigured()`.
+  `src/lib/seo/dataforseo/client.ts`: `callDataForSeoApi()`, reusing
+  `retry.ts`, with a new `DataForSeoAuthError` for 401/403 (Basic Auth is
+  static — no refresh-and-retry the way GSC's OAuth2 flow gets one).
+  `src/lib/seo/dataforseo/budget.ts`: implements ARCHITECTURE.md §6
+  exactly (deny at/over the monthly limit, warn at the alert threshold).
+  Resolved an open question from the plan doc: the $10 default limit is
+  an application-level constant applied only when a new month's
+  `api_budgets` row is first created, not a new `site_configs` field —
+  `monthly_limit` has no DB-level default. 25 new unit tests (336
+  total). Code-complete pending a real DataForSEO account for
+  Milestones 5-6 to actually call it. See PHASE_2_IMPLEMENTATION.md
+  Milestone 4
+
+### Fixed
+- **Cannibalization false positive: the site's own brand name.** The
+  first real production run of the analysis engine flagged
+  `"naija grill and spice kitchen"` as cannibalized — correct given
+  `sites.config.brand_terms` had never actually been configured (an
+  open item since Milestone 2). Set `brand_terms` to the real brand
+  name and its known variants/misspellings; re-ran the analysis engine
+  and confirmed the keyword is no longer generated as a candidate.
+  Dismissed the one stale action left over from before the fix via the
+  app's own `/api/seo/actions/[id]` mutation route (the same path a
+  real admin would use) rather than deleting it directly.
+
 ### Verified
 - **Ran the real Milestone 10 analysis engine against production ahead of its
   07:00 UTC cron** (`runAnalysis(siteId)` invoked directly via `tsx` with

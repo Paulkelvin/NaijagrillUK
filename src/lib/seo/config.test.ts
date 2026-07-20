@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   getCronSecret,
+  getDataForSeoConfig,
   getGa4Config,
   getGscConfig,
   isCronSecretConfigured,
+  isDataForSeoConfigured,
   isGa4Configured,
   isGscConfigured,
   normalizePrivateKey,
@@ -17,6 +19,8 @@ const ENV_KEYS = [
   "GA4_PRIVATE_KEY",
   "GA4_PROPERTY_ID",
   "CRON_SECRET",
+  "DATAFORSEO_LOGIN",
+  "DATAFORSEO_PASSWORD",
 ] as const;
 
 const VALID_PEM_ESCAPED =
@@ -114,6 +118,40 @@ describe("GA4 config", () => {
     process.env.GA4_PROPERTY_ID = "123456789";
 
     expect(() => getGa4Config()).toThrow(/privateKey.*PEM private key/);
+  });
+});
+
+describe("DataForSEO config", () => {
+  it("parses a valid full config correctly", () => {
+    process.env.DATAFORSEO_LOGIN = "owner@naijagrillandspice.co.uk";
+    process.env.DATAFORSEO_PASSWORD = "auto-generated-api-password";
+
+    expect(isDataForSeoConfigured()).toBe(true);
+    const config = getDataForSeoConfig();
+    expect(config.login).toBe("owner@naijagrillandspice.co.uk");
+    expect(config.password).toBe("auto-generated-api-password");
+  });
+
+  it("isDataForSeoConfigured() returns false without throwing when a required var is missing", () => {
+    process.env.DATAFORSEO_LOGIN = "owner@naijagrillandspice.co.uk";
+    // DATAFORSEO_PASSWORD intentionally left unset
+
+    expect(() => isDataForSeoConfigured()).not.toThrow();
+    expect(isDataForSeoConfigured()).toBe(false);
+  });
+
+  it("getDataForSeoConfig() throws a clear error when the login is not a valid email", () => {
+    process.env.DATAFORSEO_LOGIN = "not-an-email";
+    process.env.DATAFORSEO_PASSWORD = "auto-generated-api-password";
+
+    expect(() => getDataForSeoConfig()).toThrow(/login/);
+  });
+
+  it("getDataForSeoConfig() throws when the password is an empty string", () => {
+    process.env.DATAFORSEO_LOGIN = "owner@naijagrillandspice.co.uk";
+    process.env.DATAFORSEO_PASSWORD = "";
+
+    expect(() => getDataForSeoConfig()).toThrow(/password/);
   });
 });
 
