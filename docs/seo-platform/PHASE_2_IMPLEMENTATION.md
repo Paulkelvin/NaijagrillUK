@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** Milestones 0–3 and 7–12 are complete, merged to `main`, and deployed to production (2026-07-20). Milestone 4 (DataForSEO client + budget controls) is also code-complete, verified against DataForSEO's real live docs (not assumed) — pending only a real DataForSEO account for Milestones 5–6 to actually use it. 336 tests passing total; lint/build clean. The analysis engine has been run for real against production (ahead of its cron): the action queue holds 13 genuine actions (9 content opportunities, 4 cannibalization fixes). `sites.config.brand_terms` is now configured with the real brand name/variants, fixing a real false positive the first run surfaced (the site's own name was flagging as cannibalized) — the stale action from before the fix was dismissed via the app's own `/api/seo/actions/[id]` route. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); page ROI score and keyword value are both currently 0 for every page/keyword (need Milestone 5's `search_volume`). Only Milestones 5–6 (search volume sync, SERP snapshots) remain, blocked on the user setting up a DataForSEO account and adding its credentials to Vercel.
+> **Status:** Milestones 0–5 and 7–12 are complete. The user set up a real DataForSEO account mid-session — Milestone 5 (search volume sync) has been run for real against production, not just tested: 81/81 keywords updated with real search volume/CPC/monthly trend data, $0.09 real spend correctly recorded in `api_budgets`. Re-running the analysis engine afterward confirmed Opportunity Score's null-safe design worked exactly as promised — scores went from a flat 50.0 to a real 40.5–56.7 range with zero code changes. A real bug was found and fixed running Milestone 5 for real (a partial-column `upsert()` failed on a NOT NULL constraint Postgres validates before conflict resolution even applies — switched to plain `UPDATE`; corrected the same over-general reasoning in Milestone 10's comment too, though that one was safe in practice). Milestone 4 was verified against DataForSEO's real live docs throughout, not assumed. 351 tests passing total; lint/build clean. `sites.config.brand_terms` is configured, fixing a real cannibalization false positive (the site's own name) the first analysis-engine run surfaced. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); Page ROI Score/Keyword Value still show 0 pending real GA4 conversion volume (their formulas now have real `search_volume` to work with, but revenue-side inputs still need traffic to accumulate). Only Milestone 6 (SERP snapshots) remains — its Vercel Hobby 300s-vs-10-minute-budget risk is resolved as a plan (reuse the GSC backfill's proven time-budgeted-chunk pattern, confirmed with the user), not yet implemented.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -273,37 +273,42 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 
 ---
 
-## Milestone 5 — DataForSEO Search Volume Sync
+## Milestone 5 — DataForSEO Search Volume Sync — ✅ Complete, verified against real DataForSEO + real production (2026-07-20)
 
 **Objective:** Populate `keywords.search_volume`/`keyword_difficulty`/`cpc`/`monthly_volumes` for real — the first Phase 2 data that actually needs the new external account.
 
+**Real finding (corrects this milestone's own task description above):** DataForSEO's live Search Volume endpoint response (confirmed against `docs.dataforseo.com/v3/keywords_data-google_ads-search_volume-live/`, and against the account's own real response) has no keyword-difficulty field — only `search_volume`, `cpc`, `monthly_searches`, and Google-Ads-specific PPC fields (`competition`, `competition_index`, bid ranges). A real SEO difficulty score needs DataForSEO Labs' separate Bulk Keyword Difficulty endpoint, which isn't one of ARCHITECTURE.md §6's five approved endpoints (and isn't in its own $4-5/month cost estimate). **Resolved:** `keyword_difficulty` is deliberately left null by this module rather than silently adding a new paid endpoint beyond the frozen spec — every consumer (Opportunity Score's `difficultyScore()`) is already null-safe for this, defaulting to a neutral 0.5.
+
 **Tasks:**
-- [ ] Implement `src/lib/seo/dataforseo/search-volume.ts`: fetch via Keywords Data > Google > Search Volume, cache 30 days (`keywords.last_volume_refresh`), update the four fields above
-- [ ] `src/app/api/seo/sync/dataforseo/route.ts`, cron entry (1st of month per ARCHITECTURE.md §7)
+- [x] Implemented `src/lib/seo/dataforseo/search-volume.ts`: fetches via Keywords Data > Google Ads > Search Volume (verified live, UK location_code `2826` confirmed directly against DataForSEO's own `/v3/keywords_data/google_ads/locations` endpoint — not assumed, and deliberately country-level rather than Birmingham's own city-level code, since Google Ads' city-level volume data is sparse/unreliable), caches 30 days via `keywords.last_volume_refresh`, updates `search_volume`/`cpc`/`monthly_volumes` (not `keyword_difficulty` — see above)
+- [x] `src/app/api/seo/sync/dataforseo/route.ts`, cron entry `0 8 1 * *` (1st of month, 08:00 UTC — after every other daily/weekly cron's slot) per ARCHITECTURE.md §7
+
+**A real bug found and fixed by running this against real production (not just mocked tests):** the first implementation used `supabase.from("keywords").upsert(updates, {onConflict:"id"})` with a partial payload (only `id`/`search_volume`/`cpc`/`monthly_volumes`/`last_volume_refresh`), on the same (incorrect) assumption used for Milestone 10's `actions` upsert — that PostgREST's merge-duplicates upsert leaves omitted columns untouched. That's only half true: the `DO UPDATE SET` clause does only touch listed columns, but Postgres validates NOT NULL columns while constructing the row to (possibly) insert *before* it even checks for a conflict — so omitting `site_id` (NOT NULL, no DB default) failed outright with a constraint violation, regardless of the row already existing. Milestone 10's `actions` upsert happens to be safe (it always includes every NOT-NULL-without-default column), but the *reasoning* documented for it was wrong in its generality — corrected in both files. Fixed here by switching to a plain per-row `UPDATE ... WHERE id = ...`, which has no such row-construction step and correctly only touches the columns in its `SET` clause.
+
+**Real production run (2026-07-20):** ran `syncSearchVolume(siteId)` directly against the real DataForSEO API and real production Supabase, using credentials the user provided in chat. 81/81 keywords updated, real cost **$0.09** (recorded in `api_budgets`, which didn't exist yet for this site — correctly created at the $10 default). Spot-checked results are plausible (e.g. `"restaurants near me"` at 9,140,000/month UK-wide, `"restaurant"` at 7,480,000). Re-ran the Milestone 10 analysis engine immediately after: Opportunity Score's actions correctly stopped being a flat 50.0 across the board and now range 40.5–56.7, purely from real `search_volume`/`business_value` flowing in — confirming the "null-safe from day one, improves automatically, zero rework" design promise held in practice, not just in theory.
 
 **Dependencies:** Milestone 4.
 
-**Expected outputs:** Real search volume/difficulty/CPC data — blocked entirely on the DataForSEO account existing, same shape of blocker Phase 1 had with Google Cloud.
-
 **Database changes:** None (uses Milestone 1's already-provisioned `keywords` columns).
 
-**Files to create:**
-- `src/lib/seo/dataforseo/search-volume.ts`, `search-volume.test.ts`
-- `src/app/api/seo/sync/dataforseo/route.ts`, `route.test.ts`
-- `vercel.json` (modified)
+**Files created:**
+- `src/lib/seo/dataforseo/search-volume.ts`, `search-volume.test.ts` (13 tests)
+- `src/app/api/seo/sync/dataforseo/route.ts`, `route.test.ts` (5 tests)
+- `vercel.json` (modified: new cron entry)
 
-**Tests to perform:**
-- Unit: response parsing against DataForSEO's actual (verified, not assumed) response shape
-- Unit: 30-day cache correctly skips keywords refreshed within the window
-- Unit: budget gate (Milestone 4) correctly short-circuits when the monthly limit is hit mid-run
+**Tests performed:**
+- Unit: `monthlySearchesToVolumesByMonth` — keyed by month number, most-recent-year wins on overlap, null/empty handling
+- Unit: staleness (null vs. >30 days vs. <30 days), budget-exceeded short-circuit (no DataForSEO call made), a keyword DataForSEO returns no result for is left unupdated, real cost recorded via `recordSpend` (and skipped when cost is 0), a failed DataForSEO task throws clearly
+- Route: auth (401), 503 when not configured, success/error passthrough — same pattern as every other cron route
+- **Real integration, not mocked:** the full production run described above — genuinely the strongest verification level used anywhere in this project so far, since it exercises the real external API, real budget-table creation, real partial-update semantics, and real downstream score recalculation in one pass
+- Full suite: 351/351 passing (18 new), lint clean (pre-existing unrelated issues only), build clean
 
 **Success criteria (DoD):**
-- Same idempotency bar as every Phase 1 sync job: two consecutive runs produce no duplicate/conflicting state
-- Once real credentials exist: real volume data confirmed present and plausible for a spot-checked keyword
+- Same idempotency bar as every Phase 1 sync job — a second real run only re-checks keywords whose `last_volume_refresh` has aged past 30 days, confirmed by the staleness logic and its own unit tests
+- Real volume data confirmed present and plausible for spot-checked keywords — done, against real production data, not just "once real credentials exist"
 
 **Risks & rollback:**
-- Risk: DataForSEO response parsing complexity, flagged in ARCHITECTURE.md's own Phase 2 risk note — budget real time for this specifically
-- Rollback: `UPDATE keywords SET search_volume = NULL, keyword_difficulty = NULL, cpc = NULL, monthly_volumes = NULL WHERE ...` — safe, every downstream algorithm already treats these as nullable
+- Rollback: `UPDATE keywords SET search_volume = NULL, cpc = NULL, monthly_volumes = NULL WHERE site_id = ...` — safe, every downstream algorithm already treats these as nullable
 
 ---
 
@@ -333,7 +338,7 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 - Same idempotency and budget-gate bar as Milestone 5
 
 **Risks & rollback:**
-- **Real, already-flagged risk (ARCHITECTURE.md §7):** this job's documented 10-minute timeout budget exceeds Hobby's confirmed 300s ceiling (Phase 1 Milestone 4). This needs an actual decision when this milestone starts — chunk it the same way Phase 1's GSC backfill was chunked (`nextStartDate`-style resumable batches), or this specific job requires a Pro-plan upgrade. **Not resolved by this plan — flagged for a stop-and-discuss at milestone start**, per this project's standing rule about presenting options rather than silently picking one for a genuine trade-off.
+- **Real, already-flagged risk (ARCHITECTURE.md §7), now resolved as a plan (confirmed with the user, not yet implemented):** this job's documented 10-minute timeout budget exceeds Hobby's confirmed 300s ceiling (Phase 1 Milestone 4). **Decision: reuse Phase 1's GSC backfill pattern** — `runBackfillChunk`-style time-budgeted chunks with a resumable cursor, splitting the weekly 100-keyword refresh across several smaller cron runs (e.g. 25 keywords/day across 4 days) rather than one atomic 100-keyword Monday run. Since SERP snapshots are already cached 7 days (ARCHITECTURE.md §6), spreading the refresh across a few days instead of one atomic run doesn't meaningfully hurt freshness. Chosen over a Vercel Pro upgrade (which would also work, 800s comfortably covers the 10-minute budget) since it's free and reuses an already-proven pattern in this codebase.
 - Rollback: `DELETE FROM serp_snapshots WHERE site_id = ...` — safe, no cascading dependents yet (Phase 3's competitor tracking is the first thing that would read this data cross-referentially)
 
 ---

@@ -9,6 +9,41 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 5 (DataForSEO Search Volume Sync) complete — run for
+  real against production, not just tested.** The user set up a real
+  DataForSEO account mid-session. `src/lib/seo/dataforseo/search-volume.ts`
+  + `src/app/api/seo/sync/dataforseo/route.ts` + a new monthly cron
+  (`0 8 1 * *`). Real finding: DataForSEO's live Search Volume response
+  has no keyword-difficulty field at all (confirmed against the real API,
+  not assumed) — a real difficulty score needs a separate DataForSEO Labs
+  endpoint outside ARCHITECTURE.md §6's approved 5-endpoint list, so
+  `keyword_difficulty` is deliberately left null rather than silently
+  adding a new paid endpoint. UK location code (`2826`) confirmed
+  directly against DataForSEO's own locations endpoint, country-level by
+  design (city-level Google Ads volume data is too sparse). Real
+  production run: 81/81 keywords updated, $0.09 real spend correctly
+  recorded in `api_budgets` (created fresh at the $10 default). Re-ran
+  the analysis engine afterward: Opportunity Score actions went from a
+  flat 50.0 to a real 40.5-56.7 range purely from real data landing —
+  the null-safe design's "improves automatically, zero rework" promise
+  held in practice. 18 new tests (351 total). See
+  PHASE_2_IMPLEMENTATION.md Milestone 5
+
+### Fixed
+- **A real `upsert()` bug, found and fixed by running Milestone 5 against
+  real production instead of only mocked tests.** A partial-column
+  `upsert(rows, {onConflict:"id"})` (omitting `keywords.site_id`, NOT
+  NULL with no default) failed outright — Postgres validates NOT NULL
+  columns while constructing the row to insert *before* it even checks
+  for a conflict, so the `DO UPDATE SET` clause's "only touches listed
+  columns" behavior never gets a chance to apply. Fixed by switching to
+  a plain per-row `UPDATE ... WHERE id = ...`, which has no such
+  row-construction step. Milestone 10's `actions` upsert happens to be
+  safe (it always includes every NOT-NULL-without-default column), but
+  the reasoning documented for it was wrong in its generality — corrected
+  the comment there too.
+
+### Added
 - **Phase 2 Milestone 4 (DataForSEO Client Foundation + Budget Controls) code-complete.**
   Verified DataForSEO's real current auth mechanism via their live docs
   before writing any code (HTTP Basic Auth, `login:password` base64 in

@@ -387,6 +387,15 @@ export async function runAnalysis(siteId: string): Promise<RunAnalysisResult> {
     if (error) throw new Error(`Failed to insert actions: ${error.message}`);
   }
   if (toUpdate.length > 0) {
+    // upsert()'s DO UPDATE SET clause only touches the columns present in
+    // `row` (status/completed_at/created_at correctly stay untouched on a
+    // real conflict) — but every NOT-NULL-without-a-DB-default column
+    // (site_id/type/priority_score/title/source_module) still has to be
+    // in the payload regardless, since Postgres validates row construction
+    // before it even checks for a conflict. `row` above includes all of
+    // them, so this is safe — see search-volume.ts's syncSearchVolume for
+    // the failure mode when a NOT NULL column is left out (caught running
+    // that module for real against production, not from docs alone).
     const { error } = await supabase.from("actions").upsert(toUpdate, { onConflict: "id" });
     if (error) throw new Error(`Failed to update actions: ${error.message}`);
   }
