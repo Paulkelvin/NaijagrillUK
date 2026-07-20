@@ -9,6 +9,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 0 (Database Schema) — locally validated, not yet
+  in production.** New migration
+  `20260720120000_seo_phase2_intelligence.sql` — `actions` (the action
+  queue), `api_budgets` (DataForSEO spend tracking), `serp_snapshots`
+  (weekly SERP data), matching ARCHITECTURE.md §3 with the same
+  constraint-hardening discipline Milestone 1 applied (enum CHECKs,
+  an `actions` status/`completed_at` consistency check mirroring
+  `sync_log`'s own rule, an `api_budgets` period-start-is-1st-of-month
+  check mirroring `keyword_page_metrics_weekly`'s week-start check).
+  Every constraint, the `serp_snapshots` unique key, and both
+  `updated_at` triggers verified against a real local PostgreSQL 16
+  instance by deliberately triggering each one; RLS default-deny
+  confirmed via `SET ROLE anon`. See PHASE_2_IMPLEMENTATION.md
+  Milestone 0
 - **`PHASE_2_IMPLEMENTATION.md` — Phase 2 (Intelligence Layer) planning
   document, 13 milestones (0–12) covering the schema additions
   (`actions`, `api_budgets`, `serp_snapshots`), all six Phase 2 scoring

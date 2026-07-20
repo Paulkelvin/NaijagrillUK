@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** Planning complete, execution not started.
+> **Status:** In progress. Milestone 0 (schema) written and validated against a real local PostgreSQL instance — every constraint, the unique key, and both `updated_at` triggers confirmed working, RLS default-deny confirmed via `SET ROLE anon`. Not yet applied to production (same DB-access constraints Phase 1 hit repeatedly this session). Milestones 1–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -74,28 +74,39 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 **Objective:** Add the three new tables Phase 2 needs, holding to the same database-first discipline as Phase 1 Milestone 1 (every table gets full constraints/timestamps/RLS from the outset, every index justified by a named query pattern).
 
 **Tasks:**
-- [ ] New migration `supabase/migrations/<timestamp>_seo_phase2_intelligence.sql`:
-  - `actions` — the action queue itself (ARCHITECTURE.md §3, `type`/`status`/`source_module` enums enforced via CHECK, not just comments — same treatment Milestone 1 gave every enum-like column)
-  - `api_budgets` — DataForSEO (and future provider) spend tracking, composite PK `(site_id, provider, period_start)`
-  - `serp_snapshots` — weekly SERP position data, `UNIQUE(keyword_id, date, position)`
-- [ ] RLS: enabled, zero anon/authenticated policies — same default-deny posture as every existing SEO table
-- [ ] Diff the migration's `CREATE TABLE` blocks against ARCHITECTURE.md §3 before committing — same check Milestone 1 applied
+- [x] New migration `supabase/migrations/20260720120000_seo_phase2_intelligence.sql`:
+  - `actions` — the action queue itself (ARCHITECTURE.md §3, `type`/`status`/`source_module` enums enforced via CHECK, not just comments — same treatment Milestone 1 gave every enum-like column). Added one constraint beyond ARCHITECTURE.md's literal schema: `actions_completed_at_consistency_check`, mirroring `sync_log`'s own status/`completed_at` consistency rule (ADR-009's general principle applied here for the first time outside `sync_log`).
+  - `api_budgets` — DataForSEO (and future provider) spend tracking, composite PK `(site_id, provider, period_start)`. Added `period_start`-is-1st-of-month CHECK, same pattern as `keyword_page_metrics_weekly`'s week-start-is-Monday check.
+  - `serp_snapshots` — weekly SERP position data, `UNIQUE(keyword_id, date, position)`. Added `created_at` (immutable rows, no `updated_at` needed — per Milestone 1's own "only add `updated_at` where a column can change post-insert" rule) and a `position >= 1` floor (no fabricated upper bound — unlike GSC's documented 1-1000 range, DataForSEO's SERP endpoint has no similarly authoritative ceiling to encode).
+- [x] RLS: enabled, zero anon/authenticated policies — same default-deny posture as every existing SEO table
+- [x] Diffed the migration's `CREATE TABLE` blocks against ARCHITECTURE.md §3 before committing — same check Milestone 1 applied; no drift beyond the additive constraints/timestamps noted above
 
 **Dependencies:** Phase 1 Milestone 1 (existing `sites`, `pages`, `keywords` tables these reference).
 
-**Expected outputs:** Three new tables live in production, empty until Milestones 1–6 populate them.
+**Expected outputs:** Three new tables, validated locally; **not yet applied to production** (see below).
 
 **Database changes:** New migration, no changes to existing tables (Milestone 1 already forward-provisioned `keywords.search_volume`/`keyword_difficulty`/`cpc`/`search_intent`/`monthly_volumes`/`last_volume_refresh` — confirmed by re-reading the applied migration before writing this plan, nothing missing there).
 
-**Files to create:**
-- `supabase/migrations/<timestamp>_seo_phase2_intelligence.sql`
+**Files created:**
+- `supabase/migrations/20260720120000_seo_phase2_intelligence.sql`
 
-**Tests to perform:**
-- Same two-track validation Phase 1 used throughout: apply to a local throwaway Postgres instance first (constraint/RLS verification, `anon` role check via `security_invoker`-equivalent reasoning for any views added later), then to production via whatever DB-access path is available in that session (SQL editor, MCP connector, or direct `psql` — Phase 1's experience says don't assume any one of these will be available; document whichever was actually used)
+**Tests performed:**
+- [x] **Local integration, real PostgreSQL 16 instance** (the same throwaway `naijagrill_dev` database used for Milestones 7–8's local validation): applied cleanly, then exercised every constraint deliberately:
+  - Valid `actions` insert (`queued`, no `completed_at`) succeeds
+  - `completed` status with `NULL completed_at` → correctly rejected by `actions_completed_at_consistency_check`
+  - Invalid `type` enum value → correctly rejected by `actions_type_check`
+  - Valid `api_budgets` insert (`period_start = '2026-07-01'`) succeeds, defaults (`current_spend = 0`, `alert_threshold = 0.8`) correct
+  - `period_start` not the 1st of the month → correctly rejected
+  - `alert_threshold = 1.5` (out of 0–1 range) → correctly rejected
+  - Valid `serp_snapshots` insert succeeds; a duplicate `(keyword_id, date, position)` → correctly rejected by the `UNIQUE` constraint; `position = 0` → correctly rejected; an invalid `serp_feature` value → correctly rejected
+  - `SET ROLE anon` → `0` rows visible across all three tables; superuser sees the real rows — RLS default-deny confirmed empirically, not assumed
+  - `updated_at` trigger fires correctly on `actions` (verified `updated_at > created_at` after a real `UPDATE`, 1-second-apart timestamps)
+- **Not yet performed:** applied to production. Same DB-access constraints as every prior Phase 1 migration apply here too (no Supabase MCP connector reachable this session, no direct Postgres egress) — needs the SQL editor (paste `20260720120000_seo_phase2_intelligence.sql`'s contents) or a working MCP connection.
 
 **Success criteria (DoD):**
-- All three tables pass the same constraint/RLS audit Milestone 1's 28-check verification used
-- Local Postgres validation clean before any production apply
+- [x] All three tables pass the same constraint/RLS audit Milestone 1's 28-check verification used — see above
+- [x] Local Postgres validation clean before any production apply
+- [ ] Applied to production — **pending**
 
 **Risks & rollback:**
 - Risk: none of these tables are read by anything yet (built ahead of the code that populates them) — inert until Milestones 1+ ship, same "additive, zero regression" posture as every Phase 1 migration
