@@ -8,6 +8,29 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+- **`PHASE_2_IMPLEMENTATION.md` — Phase 2 (Intelligence Layer) planning
+  document, 13 milestones (0–12) covering the schema additions
+  (`actions`, `api_budgets`, `serp_snapshots`), all six Phase 2 scoring
+  algorithms (CTR model, cannibalization, content decay, opportunity
+  score, page ROI score, conversion-weighted keyword value), DataForSEO
+  integration (client, search volume sync, SERP snapshots, budget
+  controls), the action-queue analysis engine, and the two admin UI
+  surfaces (action queue, site settings) — mirrors
+  `PHASE_1_IMPLEMENTATION.md`'s structure and discipline exactly.
+  Deliberately resequences ARCHITECTURE.md §5/§6's algorithm order
+  (documented as an explicit, reasoned build-order decision, not a
+  scope change): the three GSC/GA4-only algorithms (CTR model,
+  cannibalization, content decay) ship before DataForSEO integration,
+  so real scoring output exists before a second external-credential
+  saga is needed; the three DataForSEO-enriched algorithms are built
+  null-safe from the start and improve automatically once that data
+  lands. Flags one real open question for a stop-and-discuss at
+  Milestone 6 (SERP snapshots): its documented 10-minute timeout
+  budget exceeds Hobby's confirmed 300s ceiling — needs either
+  backfill-style chunking or a Pro-plan decision when that milestone
+  starts. Execution not yet begun
+
 ### Deployed
 - **16-month GSC backfill run, production, 2026-07-20.** `curl` against
   `/api/seo/sync/gsc/backfill` completed the entire 2025-03-20 through
