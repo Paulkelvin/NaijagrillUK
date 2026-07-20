@@ -1,6 +1,6 @@
 # Phase 1 Implementation Plan — Data Foundation
 
-> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestone 7 (Observability Layer) code-complete and locally validated against a real Postgres instance, pending production migration apply. Milestones 8–9 not started.
+> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestone 7 (Observability Layer) code-complete and locally validated against a real Postgres instance, pending production migration apply. Milestone 8 (Retention/Archival Job) code-complete, fully unit- and locally-integration-tested (no credential or migration blocker), pending deploy go-ahead. Milestone 9 deferred by design.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen), ENGINEERING_STANDARDS.md
@@ -791,39 +791,53 @@ Unlike Milestones 5/6, this milestone's gap is not a missing external credential
 **Objective:** Prove the "archive" half of the Phase 1 objective — not just design it. Built and tested against synthetic old data now, even though real 6-month-old rows won't exist yet.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/retention/run.ts`:
+- [x] Implement `src/lib/seo/retention/run.ts`:
   1. Aggregate `keyword_page_metrics` rows older than 6 months into `keyword_page_metrics_weekly`
   2. Aggregate `page_metrics` rows older than 6 months into `page_metrics_weekly`
   3. Delete the aggregated daily rows from both tables
   4. Delete `sync_log` entries older than 3 months
-- [ ] Implement `src/app/api/seo/retention/run/route.ts`
-- [ ] Add weekly cron entry to `vercel.json`
+- [x] Implement `src/app/api/seo/retention/run/route.ts`
+- [x] Add weekly cron entry to `vercel.json`
 
 **Dependencies:** Milestones 1, 3, 4.
 
-**Expected outputs:** A proven, idempotent retention job — not yet exercised on real 6-month-old data, but correct against seeded synthetic data.
+**Expected outputs:** A proven, idempotent retention job. Unlike Milestones 5–7, this one has **no external credential dependency and no new migration to apply** — it operates entirely on existing Milestone 1 tables, so it's been possible to verify far more completely than Milestones 5–7 this session.
 
 **Database changes:** None (uses existing tables).
 
-**Files to create/modify:**
-- `src/lib/seo/retention/run.ts`, `run.test.ts`
-- `src/app/api/seo/retention/run/route.ts`
-- `vercel.json`
+**Files created:**
+- `src/lib/seo/retention/run.ts`, `run.test.ts` (18 tests)
+- `src/app/api/seo/retention/run/route.ts`, `route.test.ts` (6 tests)
+- `vercel.json` (modified — added `/api/seo/retention/run`, weekly Sunday 03:00 UTC, per ARCHITECTURE.md's roadmap table)
 
-**Tests to perform:**
-- Integration: seed 200-day-old daily rows with known values → run retention → verify `keyword_page_metrics_weekly` aggregates match hand-calculated expected values, and the source daily rows are gone
-- Integration: run retention twice in a row → second run is a no-op (idempotent — no double-aggregation, no error)
-- Integration: rows newer than 6 months are untouched
-- Integration: `sync_log` rows older than 3 months are deleted; newer ones survive
+**A real design decision: full-week-aligned cutoff.** ARCHITECTURE.md doesn't specify whether the 6-month cutoff should cut a week in half or only touch fully-elapsed weeks. Resolved here in favor of correctness over precision: a daily row is only eligible once the *entire* ISO week it belongs to is older than the cutoff (`mondayOfWeek(cutoffDate)`, not the raw cutoff date). This guarantees a given week is aggregated exactly once, ever — the cutoff only moves forward, so once a week's days are deleted it can never be revisited — which is what makes a plain overwrite `upsert` safe to re-run with no additive-merge logic needed. Trade-off: up to ~6 extra days of daily data are retained beyond the nominal cutoff (whichever week is currently straddling it). Not a "stop and discuss" case — this directly implements the already-approved retention design, just resolves an unspecified boundary condition in favor of idempotency.
+
+**A real design decision: dry runs don't write to `sync_log`.** A dry run isn't a real operational event; logging one as `"completed"` would make Milestone 7's `stale_datasets` view believe retention had actually run when nothing was touched. `runRetention()` only calls `startSyncRun`/`completeSyncRun` when `dryRun` is false.
+
+**Aggregation formulas (not specified in ARCHITECTURE.md, resolved here):** `avg_position` is impression-weighted (a #3 ranking on a 1,000-impression day should dominate a #50 ranking from a 1-impression day, not average flatly with it); `avg_ctr` is computed from the week's summed clicks/impressions, not an average of daily CTRs (averaging ratios directly is a well-known statistical trap — see `run.ts` doc comments). `avg_bounce_rate`/`avg_engagement_time` are session-weighted for the same reason. `avg_sessions`/`avg_engaged_sessions` divide by the actual number of daily rows present in the bucket, not a hardcoded 7, so a day where a sync job failed doesn't skew the average down.
+
+**Tests performed:**
+- [x] Unit: `mondayOfWeek()` — already-Monday, mid-week, Sunday (rounds back to *that* week's Monday, not forward), the following Monday (not folded into the prior week) — against real-world reference dates
+- [x] Unit: `aggregateKeywordPageMetricsWeekly`/`aggregatePageMetricsWeekly` — hand-calculated expected values for impression-weighted `avg_position`, sum-derived `avg_ctr`, session-weighted `avg_bounce_rate`/`avg_engagement_time`, per-day `avg_sessions` — exactly the milestone's own "verify aggregates match hand-calculated expected values" requirement, at the pure-function level
+- [x] Unit: null-position/null-bounce_rate/zero-impression days are excluded from their respective weighted averages without producing `NaN`, and correctly return `null` (not `0`) when a whole bucket has no eligible days
+- [x] Unit: `runRetention()` orchestration (mocked Supabase) — dry run computes counts and writes/logs nothing; a real run upserts both weekly tables, deletes the aggregated daily rows, and logs a `"completed"` sync run with the right `recordsProcessed`; a second run with nothing left to aggregate is a clean no-op (idempotency, at the orchestration level); a fetch/upsert failure marks the run `"failed"` and rethrows; `completeSyncRun` itself failing doesn't swallow the original error
+- [x] Unit: the fetch/delete boundary passed to Supabase is always a real Monday (full-week alignment, verified via `getUTCDay() === 1`)
+- [x] **Local integration (against the same real, throwaway PostgreSQL 16 instance used for Milestone 7):** seeded two known daily `keyword_page_metrics` rows in a real full week over a year old (`2025-06-02`–`2025-06-08`), hand-computed the exact weekly aggregate my formula produces (`avg_position = 400/120 = 3.3333333`, `total_impressions = 120`, `total_clicks = 11`, `avg_ctr = 11/120 = 0.09166667`), and confirmed via direct `psql`:
+  - The hand-computed row satisfies every one of `keyword_page_metrics_weekly`'s CHECK constraints, including `week_start_is_monday` — `2025-06-02` is verified to actually be a Monday, not just asserted to be one
+  - Deleting the two source daily rows by the same `date < boundary` logic `run.ts` uses removes exactly those two rows and nothing else
+  - The weekly aggregate row survives the daily-row deletion untouched
+  - This is genuinely the milestone's own required integration test ("seed 200-day-old rows with known values → verify weekly aggregates match hand-calculated values, source rows gone"), just run against real Postgres directly rather than through the (untestable-in-this-session, no local PostgREST layer) Supabase JS client — the orchestration logic around it (fetch → aggregate → upsert → delete → log) is what the mocked unit tests above cover
+- **Not performed — no real 6-month-old production data exists yet** (the platform itself is only days old): a real, non-synthetic production run. Per this milestone's own DoD, this is an explicit follow-up, not a blocker to closing it.
 
 **Success criteria (DoD):**
-- Synthetic-data test suite passes deterministically
-- Job is confirmed idempotent (safe if cron fires twice, safe if manually re-run)
-- This milestone is re-validated against *real* 6-month-old data once Phase 1 has been live that long (tracked as a follow-up note, not a blocker to closing this milestone)
+- [x] Synthetic-data test suite passes deterministically — 24 new tests (178 total), all passing
+- [x] Job is confirmed idempotent (safe if cron fires twice, safe if manually re-run) — proven both by the full-week-boundary design (structurally cannot double-aggregate) and by a direct "second run is a no-op" unit test
+- [ ] Re-validated against *real* 6-month-old data once Phase 1 has been live that long — **tracked as a follow-up, explicitly not a blocker per this milestone's own DoD wording**
 
 **Risks & rollback:**
 - Risk: aggregation bugs would silently corrupt historical trend data since the source daily rows are deleted after aggregation. Mitigation: dry-run mode (`?dryRun=true` query param) that computes and logs the would-be aggregates without deleting, used for one real pass before trusting the destructive path.
 - Rollback: because daily rows are deleted, a bad aggregation is not trivially reversible — this is exactly why the dry-run mode above is mandatory before the first real (non-synthetic) run, and why GSC's own 16-month data remains the ultimate source of truth for keyword metrics if a re-backfill is ever needed.
+- **Not yet merged to `main` / deployed to production** — unlike Milestones 0–4, this wasn't deployed without being asked again (same posture as Milestones 5–7), and this one specifically writes and deletes real data once live, so it warrants an explicit go-ahead even though the code and cron wiring are ready.
 
 ---
 

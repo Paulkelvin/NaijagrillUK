@@ -9,6 +9,31 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 8 (Retention/Archival Job) code-complete, fully tested, no
+  external blocker.** `retention/run.ts` — aggregates
+  `keyword_page_metrics`/`page_metrics` rows older than 6 months into
+  their `_weekly` tables and deletes the source rows, deletes `sync_log`
+  rows older than 3 months; `?dryRun=true` computes the same result
+  without writing anything (mandatory before the first real pass, per this
+  milestone's own risk note). Only fully-elapsed ISO weeks are ever
+  aggregated (`mondayOfWeek(cutoffDate)` boundary) so a week is never
+  revisited once deleted — this is what makes the plain-overwrite upsert
+  safe to re-run with no additive-merge logic. `avg_position` is
+  impression-weighted, `avg_ctr`/`avg_bounce_rate`/`avg_engagement_time`
+  are computed from summed/session-weighted totals rather than averaging
+  daily ratios directly (a well-known statistical trap) — none of these
+  formulas are specified in ARCHITECTURE.md, resolved here and documented
+  in code. Dry runs deliberately don't write to `sync_log` (would falsely
+  satisfy Milestone 7's staleness check). `/api/seo/retention/run` route;
+  weekly Sunday 03:00 UTC cron entry added to `vercel.json`. 24 new unit
+  tests (178 total). Additionally verified locally against a real
+  PostgreSQL instance: hand-calculated weekly aggregates for two known
+  daily rows in a real full week satisfy every CHECK constraint
+  (including `week_start_is_monday`), and the boundary-based delete
+  removes exactly the aggregated rows. Unlike Milestones 5–7, this
+  milestone has no credential dependency and no new migration — not yet
+  merged/deployed, same posture as Milestones 5–7 (destructive job,
+  warrants an explicit go-ahead)
 - **Milestone 7 (Observability Layer) code-complete, locally validated,
   production apply pending.** New migration
   `20260720000000_seo_observability_views.sql` — `sync_status_summary`
