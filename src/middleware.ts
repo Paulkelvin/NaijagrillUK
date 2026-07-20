@@ -4,9 +4,12 @@ import { isBasicAuthValid } from "@/lib/auth/basic-auth";
 
 /**
  * Protects the owner-only /admin dashboard and, from Milestone 7, the
- * /api/seo/status observability endpoint with the same HTTP Basic Auth
- * (ARCHITECTURE.md §7: "the existing HTTP Basic Auth used by /admin ...
- * matcher extends to cover these paths once they're built").
+ * /api/seo/status observability endpoint, and from Phase 2 Milestone 11
+ * the /api/seo/actions/[id] action-queue mutation endpoint, with the same
+ * HTTP Basic Auth (ARCHITECTURE.md §7: "the existing HTTP Basic Auth used
+ * by /admin ... matcher extends to cover these paths once they're built").
+ * /admin/seo itself needs no separate matcher entry — it's already covered
+ * by the existing "/admin/:path*" entry.
  * Set ADMIN_USER (optional, defaults to "admin") and ADMIN_PASSWORD in your
  * environment. If ADMIN_PASSWORD is not set, every matched route stays locked.
  */
@@ -28,5 +31,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/api/seo/status"],
+  matcher: ["/admin", "/admin/:path*", "/api/seo/status", "/api/seo/actions/:path*"],
 };

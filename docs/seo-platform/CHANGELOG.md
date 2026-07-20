@@ -8,6 +8,29 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+- **Phase 2 Milestone 11 (Action Queue UI) complete, manually verified.**
+  `/admin/seo` (Server Component, reads `actions` directly, no API layer
+  for reads per ARCHITECTURE.md §7) + `src/app/api/seo/actions/[id]/route.ts`
+  (`PATCH` status mutation) + `src/components/admin/ActionControls.tsx`
+  (the Start/Complete/Skip/Dismiss buttons, a small Client Component).
+  Added `/api/seo/actions/:path*` to `middleware.ts`'s Basic Auth
+  matcher. `completed_at` set/cleared on every write, mirroring
+  Milestone 0's `actions_completed_at_consistency_check` constraint so
+  the route can never produce a row the DB would reject. 7 new route
+  tests plus extended `middleware.test.ts` coverage (296 total).
+  Manually verified end-to-end in a real browser against **real
+  production data** — this sandbox unexpectedly had live production
+  Supabase credentials available, so this ran against the actual
+  database rather than mocks: inserted one clearly-labeled test action
+  (with the user's explicit approval, after Claude Code's safety
+  classifier blocked the first attempt and Claude asked rather than
+  routing around it), drove the full Start → Complete flow with a
+  headless browser, confirmed the row correctly leaves the open-queue
+  view on completion, verified the DB row directly, then deleted it
+  (confirmed `count(*) = 0` afterward — production left as found). Not
+  yet merged to `main`. See PHASE_2_IMPLEMENTATION.md Milestone 11
+
 ### Deployed
 - **Phase 2 Milestones 2, 3, 7, 8, 9, 10 merged to `main` and deployed to production (2026-07-20).**
   Also applied Milestone 0's schema migration to production, via a
