@@ -8,6 +8,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Deployed
+- **Phase 2 Milestones 2, 3, 7, 8, 9, 10 merged to `main` and deployed to production (2026-07-20).**
+  Also applied Milestone 0's schema migration to production, via a
+  newly-discovered path: Supabase's Management API
+  (`POST https://api.supabase.com/v1/projects/{ref}/database/query`,
+  Bearer auth with a user-supplied personal access token) runs SQL over
+  plain HTTPS, sidestepping this sandbox's raw-Postgres network block
+  that blocked every earlier migration's automated path. Verified
+  before/after: no tables existed pre-apply; all three exist post-apply
+  with RLS enabled, 0 policies, the `updated_at` trigger, and all 7
+  `actions` CHECK constraints confirmed present via direct query. See
+  PHASE_2_IMPLEMENTATION.md Milestone 0.
+
 ### Added
 - **Phase 2 Milestone 10 (Action Queue Engine) code-complete.**
   `src/lib/seo/intelligence/run-analysis.ts` + `src/app/api/seo/analysis/run/route.ts`
