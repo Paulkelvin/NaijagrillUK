@@ -65,6 +65,20 @@ describe("extractCandidates", () => {
     expect(extractCandidates([relatedItem({ keyword: "obscure nigerian dish name birmingham", search_volume: 5 })])).toEqual([]);
   });
 
+  it("drops a high-volume result even with 3+ words — word count alone doesn't make something long-tail", () => {
+    // Regression: a real production run passed "jollof rice recipe" as
+    // "long-tail" purely for having 3 words, at 9,900 searches/month — the
+    // same scale as this site's actual broad, competitive terms ("mix
+    // grill" 9,900/mo, "suya" 8,100/mo). Long-tail is a volume/specificity
+    // concept, not a word-count one.
+    expect(extractCandidates([relatedItem({ keyword: "jollof rice recipe", search_volume: 9900 })])).toEqual([]);
+  });
+
+  it("keeps a genuinely specific, moderate-volume long-tail result just under the ceiling", () => {
+    const result = extractCandidates([relatedItem({ keyword: "jollof rice near me", search_volume: 2400 })]);
+    expect(result).toHaveLength(1);
+  });
+
   it("dedupes candidates that normalize to the same keyword within one batch", () => {
     const result = extractCandidates([
       relatedItem({ keyword: "Best Jollof Rice Birmingham" }),

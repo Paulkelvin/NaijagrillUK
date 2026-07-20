@@ -35,9 +35,27 @@ const RESULTS_LIMIT_PER_SEED = 100;
 // use. Not specified anywhere in ARCHITECTURE.md; a new, reasoned
 // convention for this module, same as action-outcomes.ts's thresholds.
 const MIN_SEARCH_VOLUME = 10;
-// "Long-tail" heuristic: 3+ words. A 1-2 word term ("suya", "jollof rice")
-// is exactly the big, competitive kind of keyword the user asked this
-// module to filter OUT, not surface as a new discovery.
+// The real, rigorous definition of "long-tail" is a keyword's position on
+// the search-demand curve — low individual volume and high specificity —
+// not its word count (confirmed against current SEO literature while
+// fixing this; word count is, at best, a loose correlate). Proven wrong
+// by this module's own first real production run: "jollof rice recipe"
+// passed as "long-tail" purely for having 3 words, at 9,900 searches/month
+// — the same order of magnitude as this site's actual broad, competitive
+// terms ("mix grill" 9,900/mo, "suya" 8,100/mo, both real GSC-discovered
+// keywords). A volume ceiling is what actually distinguishes a specific,
+// low-competition long-tail phrase from a broad topic term that merely
+// happens to be phrased in 3+ words. Calibrated from this site's own real
+// data: genuinely niche dish/location-specific discoveries range 10-2,900/mo;
+// 5,000 sits comfortably above that range and below the broad-term scale,
+// so it excludes "jollof rice recipe" (9,900) while keeping every other
+// real find from this module's first run intact.
+const MAX_SEARCH_VOLUME = 5000;
+// Still required alongside the volume ceiling — necessary but not
+// sufficient on its own (see above). A 1-2 word term ("suya", "jollof
+// rice") is exactly the big, competitive kind of keyword the user asked
+// this module to filter OUT, not surface as a new discovery, regardless
+// of its volume.
 const MIN_WORD_COUNT = 3;
 const PROVIDER = "dataforseo" as const;
 
@@ -84,11 +102,13 @@ export interface DiscoveredKeywordCandidate {
 
 /**
  * Filters + normalizes one seed's raw API response into real candidates:
- * long-tail only, real volume at/above the floor, no navigational intent,
- * deduped by normalized form. The API's own `filters` param already asks
- * for volume >= the floor — this re-checks defensively rather than
- * trusting it blindly, same discipline as every other DataForSEO
- * response in this codebase.
+ * long-tail only (3+ words AND real volume inside [MIN_SEARCH_VOLUME,
+ * MAX_SEARCH_VOLUME] — see those constants for why volume, not word
+ * count, is what actually makes something "long-tail"), no navigational
+ * intent, deduped by normalized form. The API's own `filters` param
+ * already asks for volume >= the floor — this re-checks defensively
+ * rather than trusting it blindly, same discipline as every other
+ * DataForSEO response in this codebase.
  *
  * Navigational intent is excluded outright, not just left neutral: found
  * via a real production run of this module — 2 of its first 17 real
@@ -109,7 +129,7 @@ export function extractCandidates(items: RelatedKeywordItem[]): DiscoveredKeywor
     if (!isLongTail(kd.keyword)) continue;
 
     const searchVolume = kd.keyword_info?.search_volume ?? null;
-    if (searchVolume === null || searchVolume < MIN_SEARCH_VOLUME) continue;
+    if (searchVolume === null || searchVolume < MIN_SEARCH_VOLUME || searchVolume > MAX_SEARCH_VOLUME) continue;
 
     if (kd.search_intent_info?.main_intent === "navigational") continue;
 

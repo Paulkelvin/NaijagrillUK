@@ -8,6 +8,31 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **Keyword discovery's "long-tail" filter was word-count-only — the
+  user pushed back directly asking what actually made a result
+  long-tail, and checking real SEO literature confirmed word count is
+  at best a loose correlate, not the definition (the real one is a
+  keyword's position on the demand curve: low volume, high specificity).**
+  Proven wrong by this module's own real data: `"jollof rice recipe"`
+  passed as long-tail purely for having 3 words, at 9,900 searches/month
+  — the same scale as this site's actual broad terms (`"mix grill"`
+  9,900/mo, `"suya"` 8,100/mo). Added a real volume ceiling
+  (`MAX_SEARCH_VOLUME = 5000`), calibrated from this site's own data
+  (genuine long-tail finds range 10-2,900/mo). 2 new tests (462 total).
+  The already-inserted "jollof rice recipe" row was removed from
+  production to match. Also added "Discovered keywords" to
+  `/admin/seo/analytics` — a real gap found right after shipping
+  Milestone 15: only the 3 of 15 discovered keywords that cleared
+  Opportunity Score's bar showed up anywhere; the other 12, including
+  the single highest-volume find, were invisible in the admin UI
+  entirely. Also fixed a real horizontal-overflow bug on the action
+  queue's competitor-title list, reported directly by the user with a
+  mobile screenshot — the `truncate` class sat on a nested inline
+  `<span>`, which CSS ignores for width/min-width entirely; moved to a
+  block-level element, verified with a real headless-browser check at
+  390px width (scrollWidth now exactly matches clientWidth).
+
 ### Added
 - **Phase 2 Milestone 15 (Real Keyword Discovery) — closes a limitation
   every prior DataForSEO module had: only ever enriching keywords GSC
