@@ -688,6 +688,46 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 ---
 
+## Milestone 15 — Real Keyword Discovery — ✅ Complete (2026-07-20)
+
+**Objective:** Every DataForSEO module up to this point only enriches keywords Google Search Console already reports an impression for — the user asked directly for real discovery instead: long-tail, niche-relevant, decent-volume keywords the site doesn't rank for at all yet. This is exactly the "Related Keywords" endpoint ARCHITECTURE.md §6's original 5-endpoint plan named but never built (Milestones 4–6 only shipped Search Volume + SERP).
+
+**Tasks:**
+- [x] `src/lib/seo/dataforseo/keyword-discovery.ts` — `discoverKeywords()`, seeded from real niche terms
+- [x] `src/app/api/seo/sync/dataforseo/discover/route.ts` — cron route, monthly
+- [x] `vercel.json` — new cron entry, 1st of month, 15 min after the search-volume refresh
+
+**Implementation notes:**
+- **Verified DataForSEO's real endpoint before writing any code** (`dataforseo_labs/google/related_keywords/live`), not assumed: real cost ~$0.01/seed keyword request (their own documented example), not ARCHITECTURE.md §6's original $0.05/seed estimate — 5x cheaper, same pattern as every other DataForSEO cost finding this project has made. Confirmed the exact response shape (`result[0].items[].keyword_data.{keyword, keyword_info.search_volume, keyword_info.cpc, keyword_properties.keyword_difficulty, search_intent_info.main_intent}`) and the `filters` array syntax for a server-side minimum-volume filter.
+- **A genuinely good find: this endpoint's `search_intent_info.main_intent` values (`informational`/`navigational`/`commercial`/`transactional`) are an exact match for `keywords.search_intent`'s existing CHECK constraint and Opportunity Score's existing `intentValue()` mapping** — both already built in Phase 2, both previously stuck reading a permanent null/neutral default for every real keyword (Milestone 7's own documented gap: "requires search_intent... before DataForSEO integration, this check is skipped"). Same story for `keyword_properties.keyword_difficulty` against `keywords.keyword_difficulty`'s existing 0-100 range constraint. No new consumer code was needed — this discovery module is the missing producer for two fields Phase 2 already had real, waiting consumers for.
+- **Seeded from this site's own real niche** (`DEFAULT_SEED_KEYWORDS`: nigerian food birmingham, jollof rice, suya, small chops, west african restaurant birmingham, handsworth restaurants, nigerian restaurant birmingham, nigerian catering birmingham) — derived from real production keywords/brand already in the system, not invented generically. Overridable via `sites.config.seed_keywords` (the same lightweight-JSONB-override column `brand_terms` already uses), since a real business niche isn't something this module should guess forever.
+- **Filtered to genuinely long-tail** (3+ words — a deliberate, reasoned, new convention, not specified anywhere in ARCHITECTURE.md) **and a decent-volume floor** (≥10/month — realistic for a local business's long-tail terms, not a national-brand four-figure floor), both re-checked in application code even though the API's own `filters` param already asks for it — same "don't trust a single filter blindly" discipline as every other DataForSEO response in this codebase.
+- **A discovered keyword needs zero new UI or scoring code.** It's inserted into the same `keywords` table (`data_source='dataforseo'`, `is_target=false`) every other module already reads — Opportunity Score picks it up on the next daily analysis run, the SERP sync's own `search_volume`-ranked top-100 selection picks it up naturally, and Milestone 14's content-brief section works the moment a SERP snapshot exists for it. One new producer, the entire existing pipeline downstream unchanged.
+- **A bonus, free enrichment**: if a related-keyword result happens to match a keyword the site already tracks (rather than a brand-new one), and that existing row is missing `keyword_difficulty`/`search_intent`, this module backfills just those two fields — the API response was already paid for either way, so this costs nothing extra.
+- Budget-checked before every seed (not once for the whole run), same pattern as Milestone 6's SERP sync; spend recorded via `try/finally` so a mid-run failure never drops already-incurred cost, applying Milestone 13's bug-review finding to this new module from day one rather than needing a follow-up fix.
+
+**Dependencies:** `src/lib/seo/dataforseo/client.ts`/`budget.ts` (Milestone 4), `sites.config` (Milestone 1/2), `keywords.search_intent`/`keyword_difficulty` columns (Milestone 1, unpopulated until now).
+
+**Database changes:** None — writes to existing `keywords` columns only.
+
+**Files created:**
+- `src/lib/seo/dataforseo/keyword-discovery.ts`, `keyword-discovery.test.ts` (17 tests)
+- `src/app/api/seo/sync/dataforseo/discover/route.ts`, `route.test.ts` (5 tests)
+- `vercel.json` updated (new monthly cron entry)
+
+**Tests performed:**
+- Unit: `isLongTail`'s word-count boundary; `extractCandidates`'s long-tail filter, volume floor, in-batch dedup, invalid-intent-to-null mapping, missing-`keyword_data` defensiveness (6 tests); `discoverKeywords`'s budget-exceeded early exit, default-vs-configured seed list, insert-vs-enrich branching (including "don't touch a keyword that already has both fields"), cross-seed dedup, mid-run budget re-check, and spend recorded even when a later seed's task fails (11 tests) — 17 total. Route: auth/config-gate/delegate/error-propagate (5 tests, mirrors `sync/dataforseo/route.test.ts` exactly)
+- Full suite: 459 tests passing, lint clean, build clean
+
+**Success criteria (DoD):**
+- Real long-tail keywords the site has never ranked for can enter the system, with real volume/difficulty/intent attached — confirmed via unit tests exercising the full discover → filter → insert/enrich path
+- Discovered keywords require no new scoring/UI code to become visible in the action queue — confirmed by design (shared `keywords` table, no new columns)
+
+**Risks & rollback:**
+- Pure additive — new module, new route, new cron entry, no schema change. Reverting means removing the cron entry and the route; any already-inserted keywords simply remain as ordinary `data_source='dataforseo'` rows, same as Milestone 5's search-volume enrichment.
+
+---
+
 ## Cross-Cutting Notes
 
 - **Same engineering discipline as Phase 1, no exceptions:** one milestone at a time, tested and documented before moving on, database-first principles for Milestone 0, real integration verification distinguished from mocked unit tests at every step, CHANGELOG.md/this document updated after every milestone.

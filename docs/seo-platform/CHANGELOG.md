@@ -9,6 +9,36 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 15 (Real Keyword Discovery) — closes a limitation
+  every prior DataForSEO module had: only ever enriching keywords GSC
+  already reports an impression for, never finding a genuinely new one.**
+  `src/lib/seo/dataforseo/keyword-discovery.ts` — real long-tail keyword
+  discovery via DataForSEO Labs' Related Keywords endpoint
+  (`dataforseo_labs/google/related_keywords/live`), seeded from this
+  site's own real niche terms (jollof rice, suya, small chops, Nigerian
+  restaurant Birmingham/Handsworth — not generic restaurant SEO),
+  overridable via `sites.config.seed_keywords`. Real cost ~$0.01/seed
+  request, confirmed against DataForSEO's own docs — 5x cheaper than
+  ARCHITECTURE.md §6's original $0.05/seed estimate, same pattern as
+  every other real DataForSEO cost finding this project has made. Filters
+  to genuinely long-tail (3+ words) and a decent real volume floor
+  (≥10/month), both re-checked in code rather than trusted from the API's
+  own filter alone. **A genuinely good find**: this endpoint's search
+  intent values are an exact match for `keywords.search_intent`'s
+  existing CHECK constraint and Opportunity Score's existing
+  `intentValue()` mapping — both built in Phase 2, both stuck reading a
+  permanent neutral default until now, since nothing ever produced real
+  intent/difficulty data before. Discovered keywords need zero new UI or
+  scoring code — they land in the same `keywords` table every existing
+  module already reads, so Opportunity Score, the SERP sync, and Milestone
+  14's content briefs all pick them up automatically. A bonus: if a
+  result matches a keyword already tracked but missing
+  difficulty/intent, those two fields get backfilled for free (the
+  response was already paid for). Monthly cron
+  (`api/seo/sync/dataforseo/discover`), same day as the search-volume
+  refresh. 22 new tests (459 total). No schema changes. See
+  PHASE_2_IMPLEMENTATION.md Milestone 15
+
 - **Phase 2 Milestone 14 (Content Briefs & Real Analytics) — two more
   gaps closed at explicit user request after seeing the live queue:
   "target this keyword" cards had no real guidance, and there was no
