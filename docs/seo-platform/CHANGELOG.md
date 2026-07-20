@@ -9,6 +9,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 12 (Site Configuration UI) complete, manually verified.**
+  `/admin/seo/settings` (Server Component) + `src/components/admin/SettingsForm.tsx`
+  (Client Component with live sum feedback) + `src/app/api/seo/settings/route.ts`
+  (`PUT`, Zod-validated per `config.ts`'s schema-first discipline: each
+  `scoring_weights` module must sum to 1.0 within 0.01 tolerance —
+  every §5.1/§5.2/§5.3 scoring formula assumes a full 1.0 partition;
+  `conversion_events` validated as `{name, value>0}[]`). `scoring_weights`
+  updates shallow-merge per module rather than replacing the whole
+  column. Added `/api/seo/settings` to `middleware.ts`'s Basic Auth
+  matcher. 11 new route tests (311 total). Manually verified in a real
+  browser against **real production `site_configs`**, with extra care
+  since (unlike Milestone 11's isolated test row) every scoring module
+  reads this table: captured the original values, round-tripped a test
+  conversion event through the real UI, confirmed the shallow-merge
+  preserved all four weight modules exactly, then verified via direct
+  DB read that the final state matches the original byte-for-byte.
+  Incidentally discovered `conversion_events` was already configured
+  in production with 5 real events — Page ROI/Keyword Value's
+  `avg_conversion_value` has real data to read from already. Not yet
+  merged to `main`. See PHASE_2_IMPLEMENTATION.md Milestone 12
 - **Phase 2 Milestone 11 (Action Queue UI) complete, manually verified.**
   `/admin/seo` (Server Component, reads `actions` directly, no API layer
   for reads per ARCHITECTURE.md §7) + `src/app/api/seo/actions/[id]/route.ts`

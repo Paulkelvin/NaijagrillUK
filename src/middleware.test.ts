@@ -17,13 +17,19 @@ afterEach(() => {
 });
 
 describe("middleware", () => {
-  it("matcher covers /admin, /api/seo/status, and /api/seo/actions/:path* (ARCHITECTURE.md §7)", () => {
+  it("matcher covers /admin, /api/seo/status, /api/seo/actions/:path*, and /api/seo/settings (ARCHITECTURE.md §7)", () => {
     expect(config.matcher).toEqual(
-      expect.arrayContaining(["/admin", "/admin/:path*", "/api/seo/status", "/api/seo/actions/:path*"]),
+      expect.arrayContaining([
+        "/admin",
+        "/admin/:path*",
+        "/api/seo/status",
+        "/api/seo/actions/:path*",
+        "/api/seo/settings",
+      ]),
     );
   });
 
-  for (const path of ["/admin", "/api/seo/status", "/api/seo/actions/abc-123"]) {
+  for (const path of ["/admin", "/api/seo/status", "/api/seo/actions/abc-123", "/api/seo/settings"]) {
     describe(`path: ${path}`, () => {
       beforeEach(() => {
         process.env.ADMIN_USER = "admin";

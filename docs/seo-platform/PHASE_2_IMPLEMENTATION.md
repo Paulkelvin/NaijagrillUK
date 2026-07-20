@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestones 0 (schema), 1 (CTR model), 2 (cannibalization), 3 (content decay), 7 (opportunity score), 8 (page ROI score), 9 (keyword value), and 10 (action queue engine) are all merged to `main` and deployed to production (2026-07-20) — 7, 8, 9 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision. In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline now runs on its own schedule. Milestone 0's migration was applied to production via a newly-discovered path: Supabase's Management API over plain HTTPS (a Bearer-token-authenticated `POST .../database/query` endpoint), which sidesteps this sandbox's raw-Postgres network block — see Milestone 0's section for the full verification. **Milestone 11 (Action Queue UI) is code-complete and manually verified end-to-end against real production data** — `/admin/seo` + `/api/seo/actions/[id]` — see its section for the full browser-verification writeup; not yet merged to `main`. 296 tests passing total; lint/build clean. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); opportunity score and cannibalization are genuinely runnable against real data now; page ROI score and keyword value are both currently 0 for every page/keyword (need Milestone 5's search_volume) — the action queue is consequently empty in production right now, confirmed correct rather than broken. Milestones 4–6, 12 not started.
+> **Status:** Every milestone that doesn't need a DataForSEO account is now complete (0–3, 7–12). Milestones 0, 1, 2, 3, 7, 8, 9, 10 are merged to `main` and deployed to production (2026-07-20) — 7, 8, 9 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision. In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule. Milestone 0's migration was applied to production via a newly-discovered path: Supabase's Management API over plain HTTPS, which sidesteps this sandbox's raw-Postgres network block — see Milestone 0's section. **Milestones 11 (Action Queue UI) and 12 (Site Configuration UI) are code-complete and manually verified end-to-end against real production data** (not yet merged to `main`) — both ran real browser sessions against the live database, including one round-trip write-then-revert on `site_configs` confirmed byte-identical afterward; see their sections for the full writeups. 311 tests passing total; lint/build clean. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); opportunity score and cannibalization are genuinely runnable against real data now; page ROI score and keyword value are both currently 0 for every page/keyword (need Milestone 5's search_volume) — the action queue is consequently empty in production right now, confirmed correct rather than broken. Only Milestones 4–6 (DataForSEO client, search volume sync, SERP snapshots) remain, blocked on the user setting up a DataForSEO account.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -542,30 +542,38 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 ---
 
-## Milestone 12 — Site Configuration UI
+## Milestone 12 — Site Configuration UI — ✅ Complete, manually verified (2026-07-20)
 
 **Objective:** Let the scoring weights and conversion events (currently only editable via direct SQL) be configured from the admin UI.
 
 **Tasks:**
-- [ ] `/admin/seo/settings` — edit `site_configs.scoring_weights`/`conversion_events`
-- [ ] `src/app/api/seo/settings/route.ts` — `PUT`, Basic Auth, validates weight sums / conversion-event shape server-side (mirrors `config.ts`'s Zod-schema-first discipline)
+- [x] `/admin/seo/settings` — edit `site_configs.scoring_weights`/`conversion_events`
+- [x] `src/app/api/seo/settings/route.ts` — `PUT`, Basic Auth, validates weight sums / conversion-event shape server-side (mirrors `config.ts`'s Zod-schema-first discipline)
+
+**Implementation notes:**
+- Server-side validation (Zod, `src/app/api/seo/settings/route.ts`): each of `scoring_weights`' four known modules (`opportunity`, `page_roi`, `cannibalization`, `internal_link`) must sum to 1.0 within a 0.01 tolerance — every 0-100 scoring formula in §5.1/§5.2/§5.3 assumes its weights are a full partition of 1.0, so a corrupted sum would silently mis-scale every action's `priority_score`. `conversion_events` validated as `{name: non-empty string, value: > 0}[]`.
+- `scoring_weights` updates shallow-merge over the existing column per module (submitting `page_roi` alone doesn't wipe `opportunity`/`cannibalization`/`internal_link`) — `conversion_events` is a full array replace, matching how the form always submits its complete current list.
+- `src/components/admin/SettingsForm.tsx` — a Client Component with live client-side sum feedback (green ✓ / red "must be 1.0") per module as you type, purely advisory; the server-side Zod check is what's actually authoritative.
+- Added `/api/seo/settings` to `middleware.ts`'s Basic Auth matcher (`/admin/seo/settings` itself needed no change — already covered by `/admin/:path*`).
 
 **Dependencies:** None beyond Phase 1's `site_configs` table (live since Milestone 1).
 
-**Expected outputs:** A real settings page — genuinely independent of every other Phase 2 milestone, could be built any time.
+**Expected outputs:** A real settings page — genuinely independent of every other Phase 2 milestone. Discovered while verifying: `conversion_events` was already configured in production with 5 real events (whatsapp_click, uber_eats_click, phone_call, reservation_submit, directions_click) — Page ROI/Keyword Value's `avg_conversion_value` component has real config to read from already, ahead of what earlier milestones assumed.
 
 **Database changes:** None.
 
-**Files to create:**
+**Files created:**
 - `src/app/admin/seo/settings/page.tsx`
-- `src/app/api/seo/settings/route.ts`, `route.test.ts`
+- `src/components/admin/SettingsForm.tsx`
+- `src/app/api/seo/settings/route.ts`, `route.test.ts` (11 tests)
+- `src/middleware.ts`/`middleware.test.ts` updated (new matcher entry + test coverage)
 
-**Tests to perform:**
-- Unit: server-side validation rejects malformed weight objects / conversion-event shapes
-- Manual: exercise in a browser, same standing rule as Milestone 11
+**Tests performed:**
+- Unit: invalid JSON, empty body, weights not summing to 1.0, negative weight, non-positive conversion value, empty event name, shallow-merge-preserves-other-modules, valid conversion_events update, 404 no matching row, 500 on DB error (11 tests)
+- **Manual, in a real browser, against real production `site_configs`** — same rigor as Milestone 11, with extra care since this table (unlike Milestone 11's isolated test action) is read by every scoring module: captured the exact original values first (`scoring_weights` for all 4 modules + 5 real conversion events), confirmed the form prefills correctly from real data, added one clearly-labeled test conversion event via the real UI and confirmed the `PUT` correctly shallow-merged (all 4 weight modules byte-identical, the new event appended to the real 5), confirmed the client-side red sum-mismatch warning fires on a bad edit, removed the test event via the UI and saved, then **verified via a direct DB read that the final state matches the originally-captured values exactly** — production `site_configs` was left precisely as found
 
 **Success criteria (DoD):**
-- A real admin can change scoring weights and conversion events without touching SQL directly
+- A real admin can change scoring weights and conversion events without touching SQL directly — confirmed against real production data, round-tripped and reverted cleanly
 
 **Risks & rollback:**
 - Rollback: pure UI + mutation route
