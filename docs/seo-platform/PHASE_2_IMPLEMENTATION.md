@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestone 0 (schema) written and validated against a real local PostgreSQL instance — every constraint, the unique key, and both `updated_at` triggers confirmed working, RLS default-deny confirmed via `SET ROLE anon`. Not yet applied to production (same DB-access constraints Phase 1 hit repeatedly this session). Milestones 1–12 not started.
+> **Status:** In progress. Milestone 0 (schema) written and validated against a real local PostgreSQL instance — every constraint, the unique key, and both `updated_at` triggers confirmed working, RLS default-deny confirmed via `SET ROLE anon`. Milestone 1 (CTR model) code-complete and unit-tested. Neither is deployed to production yet. In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — every real sync so far happened via manual `curl`. Milestones 2–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -119,30 +119,39 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 **Objective:** Replace the industry-default CTR curve with the site's own real click-through data — the first Phase 2 algorithm to ship, and the only one every other scoring algorithm in this phase depends on.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/intelligence/ctr-model.ts`: for each position bucket 1–20, `ctr = Σclicks / Σimpressions` over the last 90 days of `keyword_page_metrics`, only including buckets with ≥50 impressions; positions below that threshold fall back to the industry-default table (already specified in ARCHITECTURE.md §5.4, to be hard-coded as a constant)
-- [ ] Minimum-data gate: below 1,000 total clicks across all positions, skip the rebuild entirely and leave `site_configs.ctr_model` at its industry-default seed (Milestone 1's seed migration already wrote this default — confirmed no schema change needed)
-- [ ] Write result to `site_configs.ctr_model` with `source: "site_data" | "industry_default"` and `sample_size`
-- [ ] `src/app/api/seo/analysis/ctr-model/route.ts` (or folded into the Milestone 10 analysis-engine route — decide during implementation whether this warrants its own cron entry per ARCHITECTURE.md §7's "CTR model rebuild | Cron | Weekly after GSC sync" or is simpler as a step inside Milestone 10's orchestrator; ARCHITECTURE.md lists it as its own background job, so default to a separate route unless implementation reveals a reason not to)
+- [x] Implement `src/lib/seo/intelligence/ctr-model.ts`: for each position bucket 1–20, `ctr = Σclicks / Σimpressions` over the last 90 days of `keyword_page_metrics`, only including buckets with ≥50 impressions; positions below that threshold fall back to the industry-default table (hard-coded as `INDUSTRY_DEFAULT_POSITIONS`, byte-identical to ARCHITECTURE.md §5.4's table and Milestone 1's seed value, exported for reuse rather than re-derived elsewhere)
+- [x] Minimum-data gate: below 1,000 total clicks across all positions, skip the rebuild entirely and leave `site_configs.ctr_model` untouched
+- [x] Write result to `site_configs.ctr_model` with `source: "site_data" | "industry_default"` and `sample_size`
+- [x] `src/app/api/seo/analysis/ctr-model/route.ts` — its own route and cron entry (not folded into Milestone 10), added to `vercel.json` at Monday 06:15 UTC (a reasoned default: ARCHITECTURE.md specifies "weekly after GSC sync" without an exact time; 15 minutes after GSC's daily 06:00 UTC slot gives that day's sync a comfortable buffer)
+
+**A real gap found and fixed in passing:** while adding this cron entry, discovered `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually added to `vercel.json` — only `ping` and `retention` were. Every real sync run today happened via manual `curl`, not the automated schedule ARCHITECTURE.md's §7 table specifies. Added both (GSC daily 06:00 UTC, GA4 daily 06:30 UTC, matching that table exactly) in the same commit as this milestone, since leaving it unfixed would have meant the pipeline still doesn't run itself even after this milestone ships.
 
 **Dependencies:** Phase 1 Milestone 1 (`keyword_page_metrics`, `site_configs.ctr_model` column, already live).
 
-**Expected outputs:** A real, site-specific CTR curve — buildable and testable against actual production GSC data already flowing, no external credential needed. Given Phase 1's current click volume (day one of real syncing), this will very likely stay on `industry_default` for a while — expected, not a bug, matches the ≥1,000-click gate's own design intent.
+**Expected outputs:** A real, site-specific CTR curve. Code-complete and locally verified; **not yet deployed** (this session's established posture — code doesn't reach production without an explicit go-ahead, same as every Phase 1 milestone past #4). Given Phase 1's current click volume (day one of real syncing), this will very likely stay on `industry_default` for a while once it is live — expected, not a bug, matches the ≥1,000-click gate's own design intent.
 
 **Database changes:** None (uses existing `site_configs.ctr_model` column and `keyword_page_metrics`).
 
-**Files to create:**
-- `src/lib/seo/intelligence/ctr-model.ts`, `ctr-model.test.ts`
-- `src/app/api/seo/analysis/ctr-model/route.ts`, `route.test.ts` (or wherever the implementation lands it — see Tasks note above)
+**Files created:**
+- `src/lib/seo/intelligence/ctr-model.ts`, `ctr-model.test.ts` (10 tests)
+- `src/app/api/seo/analysis/ctr-model/route.ts`, `route.test.ts` (5 tests)
+- `vercel.json` (modified — CTR model cron entry, plus the GSC/GA4 fix above)
 
-**Tests to perform:**
-- Unit: hand-calculated CTR values for synthetic position-bucketed click/impression data, matching the exact `Σclicks/Σimpressions` formula
-- Unit: a bucket with <50 impressions correctly falls back to the industry default for that position, not a noisy real value
-- Unit: total clicks below 1,000 across the whole model skips the rebuild entirely (industry defaults preserved, not overwritten with a bad partial model)
-- Integration: run against real production data once it exists, compare output shape against the seeded industry-default structure
+**Tests performed:**
+- [x] Unit: hand-calculated CTR values for synthetic position-bucketed click/impression data, matching the exact `Σclicks/Σimpressions` formula
+- [x] Unit: a bucket with <50 impressions correctly falls back to the industry default for that position, not a noisy real value
+- [x] Unit: position 4.5 rounds up to bucket 5 (standard JS `Math.round` behavior), matching ARCHITECTURE.md's documented bucketing rule
+- [x] Unit: null-position and out-of-1–20-range rows are excluded from bucketing but still counted toward `totalClicks`
+- [x] Unit: zero input rows returns all 20 positions fully defaulted, not an empty/partial object
+- [x] Unit: total clicks below 1,000 across the whole model skips the rebuild entirely — confirmed `site_configs` is never even queried in that path, not just that the write is skipped
+- [x] Unit: a real rebuild (≥1,000 clicks) writes the exact `{source, positions, sample_size}` shape to `site_configs.ctr_model`
+- [x] Unit: fetch and update errors both propagate with a clear message rather than failing silently
+- **Not yet performed:** integration against real production data — blocked on this code being deployed, which hasn't happened yet this milestone (see Expected outputs above)
 
 **Success criteria (DoD):**
-- Model rebuild is deterministic and idempotent (same input data → same output every time)
-- `source`/`sample_size` correctly distinguish a real vs. default model at a glance (this is what Milestones 7–9 use to know how much to trust their own inputs)
+- [x] Model rebuild is deterministic and idempotent (same input data → same output every time) — pure-function `computeCtrBuckets` guarantees this by construction, verified via unit tests
+- [x] `source`/`sample_size` correctly distinguish a real vs. default model at a glance — confirmed in both the skip and rebuild paths
+- [ ] Verified against real production data — pending deployment
 
 **Risks & rollback:**
 - Risk: a site with genuinely low traffic (this restaurant, realistically, for months) may never cross 1,000 clicks and stay on industry defaults indefinitely — explicitly anticipated in ARCHITECTURE.md's own Phase 2 risk note, not a design flaw

@@ -8,7 +8,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **`/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never added to
+  `vercel.json`'s cron schedule** — found while adding Phase 2
+  Milestone 1's own cron entry. Every real sync that ran today happened
+  via manual `curl`, not the automated daily schedule ARCHITECTURE.md
+  §7 specifies. Added both (GSC daily 06:00 UTC, GA4 daily 06:30 UTC,
+  matching that table exactly) — not deployed yet, same as the rest of
+  this session's Phase 2 work
+
 ### Added
+- **Phase 2 Milestone 1 (Site-Specific CTR Model) code-complete.**
+  `src/lib/seo/intelligence/ctr-model.ts` — buckets `keyword_page_metrics`
+  by rounded position over a 90-day window, `Σclicks/Σimpressions` per
+  bucket with a ≥50-impression floor before trusting real data over the
+  industry default, a ≥1,000-total-click gate before touching
+  `site_configs.ctr_model` at all. `/api/seo/analysis/ctr-model` route,
+  cron entry added (Monday 06:15 UTC, 15 min after GSC's daily sync —
+  ARCHITECTURE.md specifies "weekly after GSC sync" without an exact
+  time). 15 new unit tests (191 total), all passing. Not yet deployed.
+  See PHASE_2_IMPLEMENTATION.md Milestone 1
 - **Phase 2 Milestone 0 (Database Schema) — locally validated, not yet
   in production.** New migration
   `20260720120000_seo_phase2_intelligence.sql` — `actions` (the action

@@ -6,6 +6,18 @@
       "schedule": "17 3 * * *"
     },
     {
+      "path": "/api/seo/sync/gsc",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/seo/sync/ga4",
+      "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/seo/analysis/ctr-model",
+      "schedule": "15 6 * * 1"
+    },
+    {
       "path": "/api/seo/retention/run",
       "schedule": "0 3 * * 0"
     }
