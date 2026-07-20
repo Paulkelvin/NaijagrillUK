@@ -14,6 +14,20 @@ const LINK_CLASS = "block rounded-lg px-3 py-2 text-sm font-medium transition";
 const ACTIVE_CLASS = "bg-amber-300/10 text-amber-200";
 const INACTIVE_CLASS = "text-white/70 hover:bg-white/5 hover:text-white";
 
+// Exact match, not a startsWith prefix check — /admin/seo/settings is a
+// sibling of /admin/seo in this nav, not a sub-route of it, but
+// "/admin/seo/settings".startsWith("/admin/seo") is still true, so a
+// prefix check highlighted both "Action Queue" and "Settings" at once on
+// the settings page (found via code review, not caught during manual
+// browser verification — the two active-looking links look similar enough
+// at a glance to miss). Exported and unit-tested separately since this
+// project has no React-component test setup (vitest only runs *.test.ts
+// under a node environment) — everything else in the nav is only
+// verifiable in a real browser.
+export function isActiveLink(pathname: string, href: string): boolean {
+  return pathname === href;
+}
+
 /**
  * Shared nav across every /admin/* page, added because a real user
  * (checking the dashboard from their phone) couldn't discover /admin/seo
@@ -25,7 +39,7 @@ export function AdminNav() {
   const [open, setOpen] = useState(false);
 
   function isActive(href: string) {
-    return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+    return isActiveLink(pathname, href);
   }
 
   return (

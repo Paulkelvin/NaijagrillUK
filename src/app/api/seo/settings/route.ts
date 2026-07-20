@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { getPrimarySiteId } from "@/lib/seo/site";
 
-// Authentication is enforced by src/middleware.ts (its matcher covers this
+// Authentication is enforced by src/proxy.ts (its matcher covers this
 // exact path — ARCHITECTURE.md §7), not here — same boundary as /admin and
 // /api/seo/status.
 export const dynamic = "force-dynamic";
@@ -78,13 +78,23 @@ export async function PUT(request: NextRequest) {
     // submitting one module's weights doesn't wipe the other three.
     const updates: Record<string, unknown> = {};
     if (result.data.scoring_weights) {
+      // maybeSingle(), not single() — a missing row is a legitimate,
+      // already-handled outcome (see the 404 below, matching the same
+      // "site_configs row not found" response the update path already
+      // returns when conversion_events-only requests hit a missing row).
+      // single() would instead throw a PostgREST "no rows" error here,
+      // producing an inconsistent 500 for the exact same underlying
+      // condition depending on which field happened to be in the request.
       const { data: existing, error: fetchError } = await supabase
         .from("site_configs")
         .select("scoring_weights")
         .eq("site_id", siteId)
-        .single();
+        .maybeSingle();
       if (fetchError) throw new Error(`Failed to load existing scoring_weights: ${fetchError.message}`);
-      updates.scoring_weights = { ...(existing?.scoring_weights ?? {}), ...result.data.scoring_weights };
+      if (!existing) {
+        return NextResponse.json({ ok: false, error: "site_configs row not found" }, { status: 404 });
+      }
+      updates.scoring_weights = { ...(existing.scoring_weights ?? {}), ...result.data.scoring_weights };
     }
     if (result.data.conversion_events) {
       updates.conversion_events = result.data.conversion_events;

@@ -13,9 +13,9 @@ interface ActionControlsProps {
 
 /**
  * Status mutation buttons for one action-queue row. Talks to
- * /api/seo/actions/[id] directly — that route is Basic-Auth protected by
- * middleware.ts, and the browser already holds those credentials from
- * loading /admin/seo itself, so no extra auth wiring is needed here.
+ * /api/seo/actions/[id] directly — that route is session-cookie protected
+ * by src/proxy.ts, and the browser already holds that cookie from loading
+ * /admin/seo itself, so no extra auth wiring is needed here.
  */
 export function ActionControls({ actionId, status }: ActionControlsProps) {
   const router = useRouter();

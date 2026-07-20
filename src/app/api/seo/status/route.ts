@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { getPrimarySiteId } from "@/lib/seo/site";
 
-// Authentication is enforced by src/middleware.ts (its matcher covers this
+// Authentication is enforced by src/proxy.ts (its matcher covers this
 // exact path — ARCHITECTURE.md §7), not here — same boundary as /admin,
 // deliberately not duplicated per-route.
 export const dynamic = "force-dynamic";
