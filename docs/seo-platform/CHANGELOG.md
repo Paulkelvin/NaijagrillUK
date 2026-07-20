@@ -9,6 +9,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Deployed
+- **16-month GSC backfill run, production, 2026-07-20.** `curl` against
+  `/api/seo/sync/gsc/backfill` completed the entire 2025-03-20 through
+  2026-07-17 range in one invocation (2m54s, no chunking needed against
+  real data volume). 484 of 485 days processed successfully; one date
+  (`2026-06-17`) failed and was skipped rather than aborting the run
+  (by design), retried on its own and failed again — root cause not
+  yet diagnosed (needs `sync_log` or Vercel log access this session
+  didn't have). Found a real gap while diagnosing: the backfill
+  response reports *which* dates failed but not *why* — worth adding
+  per-failure error detail in a future pass. See
+  PHASE_1_IMPLEMENTATION.md Milestone 5 for full detail
 - **Real GSC/GA4 credentials configured and verified in production, 2026-07-20.**
   The Google Cloud service-account setup finally completed after a long
   multi-session troubleshooting thread (Organization Policy Administrator
