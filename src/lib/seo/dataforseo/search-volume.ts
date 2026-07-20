@@ -123,53 +123,91 @@ export async function syncSearchVolume(siteId: string): Promise<SyncSearchVolume
   let totalCost = 0;
   let updatedCount = 0;
 
-  for (const batch of chunk(keywords, MAX_KEYWORDS_PER_REQUEST)) {
-    const response = await callDataForSeoApi<SearchVolumeApiResult>(ENDPOINT, [
-      { location_code: UK_LOCATION_CODE, language_code: LANGUAGE_CODE, keywords: batch.map((k) => k.keyword) },
-    ]);
-    totalCost += response.cost;
+  // The whole loop (both the paid calls and the DB writes below) runs
+  // inside try/finally so that recordSpend always sees whatever totalCost
+  // was actually charged, even if a later chunk's task fails or a DB write
+  // throws partway through. Previously recordSpend only ran after the loop
+  // finished normally, so any error from a batch after the first one — a
+  // failed task, a DB error — silently dropped every dollar already spent
+  // on the batches (and rows) before it, letting real spend drift ahead of
+  // what api_budgets.current_spend tracks (found via code review, not a
+  // hypothetical: this is the same category of bug as the upsert issue
+  // Milestone 5 found in production).
+  try {
+    for (const [batchIndex, batch] of chunk(keywords, MAX_KEYWORDS_PER_REQUEST).entries()) {
+      // The budget was already checked once, above, before any keywords
+      // were even fetched — but that's only a fast-path check for the
+      // "already over budget" case. A site with more than
+      // MAX_KEYWORDS_PER_REQUEST stale keywords issues more than one paid
+      // call in this loop, and the first batch's spend could push the
+      // account over the limit before a later batch fires — so every
+      // batch after the first re-checks, same as serp.ts already does per
+      // keyword.
+      if (batchIndex > 0) {
+        const midCheck = await checkBudget(supabase, siteId, PROVIDER);
+        if (!midCheck.allowed) {
+          logger.warn("dataforseo_search_volume_budget_exceeded", { siteId, currentSpend: midCheck.currentSpend, monthlyLimit: midCheck.monthlyLimit });
+          break;
+        }
+      }
 
-    const task = response.tasks?.[0];
-    if (!task || task.status_code < 20000 || task.status_code > 29999) {
-      throw new Error(`DataForSEO search volume task failed: ${task?.status_message ?? "no task in response"}`);
+      const response = await callDataForSeoApi<SearchVolumeApiResult>(ENDPOINT, [
+        { location_code: UK_LOCATION_CODE, language_code: LANGUAGE_CODE, keywords: batch.map((k) => k.keyword) },
+      ]);
+      totalCost += response.cost;
+
+      const task = response.tasks?.[0];
+      if (!task || task.status_code < 20000 || task.status_code > 29999) {
+        throw new Error(`DataForSEO search volume task failed: ${task?.status_message ?? "no task in response"}`);
+      }
+
+      const resultByKeyword = new Map((task.result ?? []).map((r) => [r.keyword, r]));
+      const updates = batch
+        .map((k) => {
+          const result = resultByKeyword.get(k.keyword);
+          if (!result) return null;
+          return {
+            id: k.id,
+            search_volume: result.search_volume,
+            cpc: result.cpc,
+            monthly_volumes: monthlySearchesToVolumesByMonth(result.monthly_searches),
+            last_volume_refresh: nowIso,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      // Plain per-row UPDATE, not upsert. These rows always already exist
+      // (found via the earlier SELECT) — an UPDATE's SET clause only ever
+      // touches the columns listed, correctly leaving
+      // keyword/keyword_normalized/site_id/keyword_difficulty/is_target/
+      // data_source untouched. upsert() looked equivalent but isn't: Postgres
+      // validates NOT NULL columns while constructing the row to (possibly)
+      // insert *before* it even checks for a conflict, so a partial payload
+      // missing a NOT NULL column like site_id fails outright — confirmed
+      // the hard way, running this for real against production, not
+      // something the row-construction distinction is obvious from
+      // PostgREST's docs alone.
+      //
+      // A single row's UPDATE failing is logged and skipped rather than
+      // aborting the rest of the batch — this keyword was already paid
+      // for as part of this batch's single API call, so the money's spent
+      // either way; skipping the write just means it stays stale and gets
+      // retried on the next scheduled sync, same as any keyword this run
+      // never got to.
+      for (const row of updates) {
+        const { id, ...values } = row;
+        const { error } = await supabase.from("keywords").update(values).eq("id", id);
+        if (error) {
+          logger.warn("dataforseo_search_volume_update_failed", { siteId, keywordId: id, error: error.message });
+          continue;
+        }
+        updatedCount += 1;
+      }
     }
-
-    const resultByKeyword = new Map((task.result ?? []).map((r) => [r.keyword, r]));
-    const updates = batch
-      .map((k) => {
-        const result = resultByKeyword.get(k.keyword);
-        if (!result) return null;
-        return {
-          id: k.id,
-          search_volume: result.search_volume,
-          cpc: result.cpc,
-          monthly_volumes: monthlySearchesToVolumesByMonth(result.monthly_searches),
-          last_volume_refresh: nowIso,
-        };
-      })
-      .filter((row): row is NonNullable<typeof row> => row !== null);
-
-    // Plain per-row UPDATE, not upsert. These rows always already exist
-    // (found via the earlier SELECT) — an UPDATE's SET clause only ever
-    // touches the columns listed, correctly leaving
-    // keyword/keyword_normalized/site_id/keyword_difficulty/is_target/
-    // data_source untouched. upsert() looked equivalent but isn't: Postgres
-    // validates NOT NULL columns while constructing the row to (possibly)
-    // insert *before* it even checks for a conflict, so a partial payload
-    // missing a NOT NULL column like site_id fails outright — confirmed
-    // the hard way, running this for real against production, not
-    // something the row-construction distinction is obvious from
-    // PostgREST's docs alone.
-    for (const row of updates) {
-      const { id, ...values } = row;
-      const { error } = await supabase.from("keywords").update(values).eq("id", id);
-      if (error) throw new Error(`Failed to update keyword ${id}: ${error.message}`);
+  } finally {
+    if (totalCost > 0) {
+      await recordSpend(supabase, siteId, PROVIDER, totalCost);
     }
-    updatedCount += updates.length;
-  }
-
-  if (totalCost > 0) {
-    await recordSpend(supabase, siteId, PROVIDER, totalCost);
   }
 
   logger.info("dataforseo_search_volume_synced", { siteId, keywordsChecked: keywords.length, keywordsUpdated: updatedCount, cost: totalCost });

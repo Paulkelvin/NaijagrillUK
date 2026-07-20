@@ -197,4 +197,45 @@ describe("syncSerpSnapshots", () => {
     await syncSerpSnapshots("site-1", 280_000);
     expect(mockRecordSpend).toHaveBeenCalledWith(mockSupabase, "site-1", "dataforseo", 0.006);
   });
+
+  it("logs and skips a keyword whose serp_snapshots write fails, without losing that call's cost or aborting the rest of the run", async () => {
+    const { from } = makeSupabaseMock({
+      topKeywords: [{ id: "kw-1", keyword: "a" }, { id: "kw-2", keyword: "b" }],
+      upsertError: { message: "connection reset" },
+    });
+    mockSupabase = { from };
+    mockCallDataForSeoApi.mockResolvedValue(serpResponse({ cost: 0.003 }));
+
+    const result = await syncSerpSnapshots("site-1", 280_000);
+    expect(result.keywordsSynced).toBe(2);
+    expect(result.snapshotsWritten).toBe(0);
+    expect(mockRecordSpend).toHaveBeenCalledWith(mockSupabase, "site-1", "dataforseo", 0.006);
+  });
+
+  it("still records accumulated spend when a DB write throws an unexpected error partway through the run", async () => {
+    const { from } = makeSupabaseMock({ topKeywords: [{ id: "kw-1", keyword: "a" }, { id: "kw-2", keyword: "b" }] });
+    // Force the second call's upsert to reject outright (not just return { error }),
+    // simulating a genuinely unexpected failure rather than a clean PostgREST error.
+    let call = 0;
+    const originalFrom = from.getMockImplementation()!;
+    from.mockImplementation((table: string) => {
+      const impl = originalFrom(table);
+      if (table === "serp_snapshots") {
+        return {
+          ...impl,
+          upsert: vi.fn(() => {
+            call += 1;
+            if (call === 2) return Promise.reject(new Error("network blip"));
+            return Promise.resolve({ error: null });
+          }),
+        };
+      }
+      return impl;
+    });
+    mockSupabase = { from };
+    mockCallDataForSeoApi.mockResolvedValue(serpResponse({ cost: 0.003 }));
+
+    await expect(syncSerpSnapshots("site-1", 280_000)).rejects.toThrow(/network blip/);
+    expect(mockRecordSpend).toHaveBeenCalledWith(mockSupabase, "site-1", "dataforseo", 0.006);
+  });
 });

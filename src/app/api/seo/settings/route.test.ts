@@ -26,6 +26,7 @@ const VALID_OPPORTUNITY_WEIGHTS = { volume: 0.2, position: 0.35, difficulty: 0.1
 
 interface MockConfig {
   existingScoringWeights?: Record<string, unknown>;
+  existingRowMissing?: boolean;
   fetchError?: { message: string } | null;
   updatedRow?: Record<string, unknown> | null;
   updateError?: { message: string } | null;
@@ -36,8 +37,8 @@ function makeSupabaseMock(config: MockConfig = {}) {
   const from = vi.fn(() => ({
     select: vi.fn(() => ({
       eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({
-          data: { scoring_weights: config.existingScoringWeights ?? {} },
+        maybeSingle: vi.fn().mockResolvedValue({
+          data: config.existingRowMissing ? null : { scoring_weights: config.existingScoringWeights ?? {} },
           error: config.fetchError ?? null,
         }),
       })),
@@ -142,6 +143,21 @@ describe("PUT /api/seo/settings", () => {
 
     const res = await PUT(request({ conversion_events: [{ name: "x", value: 1 }] }));
     expect(res.status).toBe(404);
+  });
+
+  it("returns 404 (not 500) when site_configs has no matching row and the request includes scoring_weights", async () => {
+    // Regression test: the scoring_weights path used to fetch the existing
+    // row with .single(), which throws a PostgREST "no rows" error on a
+    // missing row instead of returning null — producing a 500 here while
+    // the conversion_events-only path above correctly returned 404 for the
+    // exact same underlying condition.
+    const { from } = makeSupabaseMock({ existingRowMissing: true });
+    mockSupabase = { from };
+
+    const res = await PUT(request({ scoring_weights: { opportunity: VALID_OPPORTUNITY_WEIGHTS } }));
+    expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toContain("site_configs row not found");
   });
 
   it("returns 500 with the error message when the update fails", async () => {

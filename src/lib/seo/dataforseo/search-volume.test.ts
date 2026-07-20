@@ -208,4 +208,90 @@ describe("syncSearchVolume", () => {
 
     await expect(syncSearchVolume("site-1")).rejects.toThrow(/Invalid Field/);
   });
+
+  it("still records the already-incurred cost when the task fails after DataForSEO already charged for the call", async () => {
+    const { from } = makeSupabaseMock({ keywordRows: [{ id: "kw-1", keyword: "jollof rice", last_volume_refresh: null }] });
+    mockSupabase = { from };
+    mockCallDataForSeoApi.mockResolvedValue({
+      status_code: 20000,
+      status_message: "Ok.",
+      cost: 0.05,
+      tasks_count: 1,
+      tasks_error: 1,
+      tasks: [{ id: "t1", status_code: 40501, status_message: "Invalid Field.", cost: 0.05, result: null }],
+    });
+
+    await expect(syncSearchVolume("site-1")).rejects.toThrow(/Invalid Field/);
+    expect(mockRecordSpend).toHaveBeenCalledWith(mockSupabase, "site-1", "dataforseo", 0.05);
+  });
+
+  it("logs and skips a single keyword whose DB update fails, without losing the rest of the batch or the recorded spend", async () => {
+    const { from, updateCalls } = makeSupabaseMock({
+      keywordRows: [
+        { id: "kw-1", keyword: "jollof rice", last_volume_refresh: null },
+        { id: "kw-2", keyword: "suya", last_volume_refresh: null },
+      ],
+      updateError: { message: "connection reset" },
+    });
+    mockSupabase = { from };
+    mockCallDataForSeoApi.mockResolvedValue({
+      status_code: 20000,
+      status_message: "Ok.",
+      cost: 0.05,
+      tasks_count: 1,
+      tasks_error: 0,
+      tasks: [
+        {
+          id: "t1",
+          status_code: 20000,
+          status_message: "Ok.",
+          cost: 0.05,
+          result: [
+            { keyword: "jollof rice", search_volume: 500, cpc: 1.2, monthly_searches: null },
+            { keyword: "suya", search_volume: 300, cpc: 0.8, monthly_searches: null },
+          ],
+        },
+      ],
+    });
+
+    const result = await syncSearchVolume("site-1");
+    expect(result.keywordsUpdated).toBe(0);
+    expect(updateCalls).toHaveLength(2);
+    expect(mockRecordSpend).toHaveBeenCalledWith(mockSupabase, "site-1", "dataforseo", 0.05);
+  });
+
+  it("re-checks the budget before every batch after the first, stopping once a later batch is denied", async () => {
+    const keywordRows = Array.from({ length: 1500 }, (_, i) => ({
+      id: `kw-${i}`,
+      keyword: `keyword ${i}`,
+      last_volume_refresh: null,
+    }));
+    const { from, updateCalls } = makeSupabaseMock({ keywordRows });
+    mockSupabase = { from };
+    mockCheckBudget
+      .mockResolvedValueOnce({ allowed: true, warning: false, currentSpend: 0, monthlyLimit: 10 }) // pre-loop check
+      .mockResolvedValueOnce({ allowed: false, reason: "budget_exceeded", currentSpend: 10, monthlyLimit: 10 }); // 2nd batch
+    mockCallDataForSeoApi.mockImplementation((_endpoint: string, [{ keywords }]: [{ keywords: string[] }]) => ({
+      status_code: 20000,
+      status_message: "Ok.",
+      cost: 0.05,
+      tasks_count: 1,
+      tasks_error: 0,
+      tasks: [{
+        id: "t1",
+        status_code: 20000,
+        status_message: "Ok.",
+        cost: 0.05,
+        result: keywords.map((keyword) => ({ keyword, search_volume: 100, cpc: 1, monthly_searches: null })),
+      }],
+    }));
+
+    const result = await syncSearchVolume("site-1");
+    // Only the first 1000-keyword batch was ever sent — the second batch
+    // was blocked by the mid-loop budget re-check before calling the API.
+    expect(mockCallDataForSeoApi).toHaveBeenCalledTimes(1);
+    expect(updateCalls).toHaveLength(1000);
+    expect(result.keywordsUpdated).toBe(1000);
+    expect(mockRecordSpend).toHaveBeenCalledWith(mockSupabase, "site-1", "dataforseo", 0.05);
+  });
 });

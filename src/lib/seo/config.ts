@@ -124,7 +124,7 @@ export function getDataForSeoConfig(): DataForSeoConfig {
 /**
  * Authenticates cron-triggered API routes (ARCHITECTURE.md §7). Not a
  * secret used by an external API, so no Zod schema beyond non-empty-string
- * — mirrors the existing ADMIN_PASSWORD check pattern in src/middleware.ts.
+ * — mirrors the existing ADMIN_PASSWORD check pattern in src/proxy.ts.
  */
 export function isCronSecretConfigured(): boolean {
   return typeof process.env.CRON_SECRET === "string" && process.env.CRON_SECRET.length > 0;

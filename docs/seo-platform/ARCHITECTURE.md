@@ -121,7 +121,7 @@ CMS (Sanity) ───────────┘               │             
 | Application framework | Next.js 15 (App Router) | Already in use. Server Components for data-heavy pages. |
 | Database | Supabase (PostgreSQL) | Already in use. Handles time-series volumes for single-site. |
 | Background jobs | Vercel Cron or external cron hitting API routes | Simple. No job queue infrastructure needed at this scale. |
-| Authentication | Existing `/admin` HTTP Basic Auth | Already built. Sufficient for single-user admin. |
+| Authentication | `/admin` signed-cookie session auth (was HTTP Basic Auth) | See §7 Authentication — corrected post-Milestone-12; ADR-010. |
 | External APIs | GSC API, GA4 Data API, DataForSEO REST API, Sanity GROQ | Direct HTTP calls. No SDK dependencies where avoidable. |
 | Hosting | Existing deployment (Vercel or similar) | No new infrastructure. |
 
@@ -780,7 +780,7 @@ Supabase Migrations (SQL files in `supabase/migrations/`) manage schema changes.
 
 ### Row-Level Security (RLS)
 
-SEO platform tables use the `SUPABASE_SERVICE_ROLE_KEY` (server-side only) to bypass RLS. Server Components and API routes connect with the service role client, not the anon client. No RLS policies are defined on SEO tables — access control is handled by HTTP Basic Auth on the `/admin/seo/*` routes.
+SEO platform tables use the `SUPABASE_SERVICE_ROLE_KEY` (server-side only) to bypass RLS. Server Components and API routes connect with the service role client, not the anon client. No RLS policies are defined on SEO tables — access control is handled by session-cookie auth (see §7 Authentication) on the `/admin/seo/*` routes.
 
 ---
 
@@ -1245,9 +1245,11 @@ POST /api/seo/briefs/generate   Generate content brief for a keyword
 
 ### Authentication
 
-Two independent mechanisms, chosen per route by who calls it — never both on the same route. Vercel's cron invoker never presents Basic Auth credentials, and an admin's browser never presents a Bearer token, so requiring both on one route would make it permanently uncallable by its actual caller.
+Two independent mechanisms, chosen per route by who calls it — never both on the same route. Vercel's cron invoker never presents a session cookie, and an admin's browser never presents a Bearer token, so requiring both on one route would make it permanently uncallable by its actual caller.
 
-**Corrected during Milestone 4** (`docs/seo-platform/PHASE_1_IMPLEMENTATION.md`): this section originally sketched a custom `x-cron-secret` header checked in addition to Basic Auth on every `/api/seo/*` route. Verified against Vercel's current documentation instead of assumed from training data (flagged by `AGENTS.md`'s own warning that this environment's platform behaviour may differ from what's expected) — Vercel does not send a custom header. When a `CRON_SECRET` environment variable is set on the project, Vercel automatically sends it as `Authorization: Bearer <CRON_SECRET>` on every cron-triggered request, and never sends Basic Auth credentials at all.
+**Corrected during Milestone 4** (`docs/seo-platform/PHASE_1_IMPLEMENTATION.md`): this section originally sketched a custom `x-cron-secret` header checked in addition to admin auth on every `/api/seo/*` route. Verified against Vercel's current documentation instead of assumed from training data (flagged by `AGENTS.md`'s own warning that this environment's platform behaviour may differ from what's expected) — Vercel does not send a custom header. When a `CRON_SECRET` environment variable is set on the project, Vercel automatically sends it as `Authorization: Bearer <CRON_SECRET>` on every cron-triggered request, and never sends Basic Auth credentials or cookies at all.
+
+**Corrected post-Milestone-12** (ADR-010): this section originally specified HTTP Basic Auth for `/admin` and its mutation routes. Replaced with a stateless, HMAC-signed 90-day session cookie, issued by a real login form at `/admin/login` and verified in `src/proxy.ts` (Next.js 16 renamed Middleware to Proxy — see AGENTS.md). Reason: Basic Auth's session lifetime is entirely browser-controlled and was ending far sooner than the user expected in real use, and it left `/admin` with no room for anything (like a nav bar) beyond the browser's native credential prompt. See ADR-010 for the full reasoning.
 
 - **Cron-triggered sync jobs** (`/api/seo/sync/*`, `/api/seo/retention/*`) — `CRON_SECRET` only, checked against Vercel's auto-injected `Authorization: Bearer` header:
 
@@ -1259,7 +1261,7 @@ Two independent mechanisms, chosen per route by who calls it — never both on t
   }
   ```
 
-- **Client-side mutation routes** (`/api/seo/actions/:id`, `/api/seo/clusters`, `/api/seo/settings`) and the observability endpoint (`/api/seo/status`, Milestone 7) — the existing HTTP Basic Auth used by `/admin` (`src/middleware.ts`'s matcher extends to cover these paths once they're built). Called from an authenticated admin's browser, which already carries the Basic Auth session.
+- **Client-side mutation routes** (`/api/seo/actions/:id`, `/api/seo/clusters`, `/api/seo/settings`) and the observability endpoint (`/api/seo/status`, Milestone 7) — the same signed session cookie used by `/admin` (`src/proxy.ts`'s matcher extends to cover these paths). Called from an authenticated admin's browser, which already carries the session cookie set at login.
 - **CMS webhook** (`/api/seo/webhook/cms`) — validates the CMS's own webhook signature (§4.4), neither of the above.
 
 ### Background Jobs

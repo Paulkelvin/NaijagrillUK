@@ -146,58 +146,76 @@ export async function syncSerpSnapshots(siteId: string, timeBudgetMs: number): P
   let syncedCount = 0;
   let budgetExceeded = false;
 
-  for (const keyword of keywords) {
-    if (Date.now() - startedAt >= timeBudgetMs) break;
+  // try/finally so recordSpend always sees the real totalCost accumulated
+  // so far, even if a DB write throws partway through the loop — without
+  // this, an error on (say) keyword 47 of a 100-keyword run would drop
+  // the ~$1.60 already spent on keywords 1-46 from api_budgets entirely,
+  // letting real spend drift ahead of what the budget module tracks
+  // (found via code review; same category of bug search-volume.ts had).
+  try {
+    for (const keyword of keywords) {
+      if (Date.now() - startedAt >= timeBudgetMs) break;
 
-    const budgetCheck = await checkBudget(supabase, siteId, PROVIDER);
-    if (!budgetCheck.allowed) {
-      logger.warn("dataforseo_serp_budget_exceeded", { siteId, currentSpend: budgetCheck.currentSpend, monthlyLimit: budgetCheck.monthlyLimit });
-      budgetExceeded = true;
-      break;
-    }
+      const budgetCheck = await checkBudget(supabase, siteId, PROVIDER);
+      if (!budgetCheck.allowed) {
+        logger.warn("dataforseo_serp_budget_exceeded", { siteId, currentSpend: budgetCheck.currentSpend, monthlyLimit: budgetCheck.monthlyLimit });
+        budgetExceeded = true;
+        break;
+      }
 
-    const response = await callDataForSeoApi<SerpApiResult>(ENDPOINT, [
-      { keyword: keyword.keyword, location_code: BIRMINGHAM_LOCATION_CODE, language_code: LANGUAGE_CODE, device: DEVICE },
-    ]);
-    totalCost += response.cost;
+      const response = await callDataForSeoApi<SerpApiResult>(ENDPOINT, [
+        { keyword: keyword.keyword, location_code: BIRMINGHAM_LOCATION_CODE, language_code: LANGUAGE_CODE, device: DEVICE },
+      ]);
+      totalCost += response.cost;
 
-    const task = response.tasks?.[0];
-    if (!task || task.status_code < 20000 || task.status_code > 29999) {
-      logger.warn("dataforseo_serp_task_failed", { siteId, keyword: keyword.keyword, statusMessage: task?.status_message });
+      const task = response.tasks?.[0];
+      if (!task || task.status_code < 20000 || task.status_code > 29999) {
+        logger.warn("dataforseo_serp_task_failed", { siteId, keyword: keyword.keyword, statusMessage: task?.status_message });
+        syncedCount += 1;
+        continue;
+      }
+
+      const items = (task.result?.[0]?.items ?? []).filter(
+        (item): item is SerpItem & { rank_absolute: number; domain: string; url: string } =>
+          item.rank_absolute !== null && !!item.domain && !!item.url && Boolean(TYPE_TO_SERP_FEATURE[item.type]),
+      );
+      const rows = items.map((item) => ({
+        site_id: siteId,
+        keyword_id: keyword.id,
+        date: today,
+        position: item.rank_absolute,
+        url: item.url,
+        domain: item.domain,
+        is_own_site: normalizeDomain(item.domain) === ownDomain,
+        serp_feature: TYPE_TO_SERP_FEATURE[item.type],
+        title: item.title,
+      }));
+
+      if (rows.length > 0) {
+        // Rows are immutable once inserted (schema comment) — ignoreDuplicates
+        // rather than a DO UPDATE, so a re-run within the same day is a safe
+        // no-op instead of silently overwriting an existing snapshot.
+        //
+        // A write failure here is logged and skipped rather than thrown —
+        // this keyword's SERP call was already paid for either way, and
+        // aborting the rest of the run over one bad write would also lose
+        // every keyword still queued after it (same reasoning as the task-
+        // failure case just above, now applied consistently to DB errors
+        // too instead of the run dying on the first one).
+        const { error } = await supabase.from("serp_snapshots").upsert(rows, { onConflict: "keyword_id,date,position", ignoreDuplicates: true });
+        if (error) {
+          logger.warn("dataforseo_serp_write_failed", { siteId, keyword: keyword.keyword, error: error.message });
+        } else {
+          snapshotsWritten += rows.length;
+        }
+      }
+
       syncedCount += 1;
-      continue;
     }
-
-    const items = (task.result?.[0]?.items ?? []).filter(
-      (item): item is SerpItem & { rank_absolute: number; domain: string; url: string } =>
-        item.rank_absolute !== null && !!item.domain && !!item.url && Boolean(TYPE_TO_SERP_FEATURE[item.type]),
-    );
-    const rows = items.map((item) => ({
-      site_id: siteId,
-      keyword_id: keyword.id,
-      date: today,
-      position: item.rank_absolute,
-      url: item.url,
-      domain: item.domain,
-      is_own_site: normalizeDomain(item.domain) === ownDomain,
-      serp_feature: TYPE_TO_SERP_FEATURE[item.type],
-      title: item.title,
-    }));
-
-    if (rows.length > 0) {
-      // Rows are immutable once inserted (schema comment) — ignoreDuplicates
-      // rather than a DO UPDATE, so a re-run within the same day is a safe
-      // no-op instead of silently overwriting an existing snapshot.
-      const { error } = await supabase.from("serp_snapshots").upsert(rows, { onConflict: "keyword_id,date,position", ignoreDuplicates: true });
-      if (error) throw new Error(`Failed to write serp_snapshots for "${keyword.keyword}": ${error.message}`);
-      snapshotsWritten += rows.length;
+  } finally {
+    if (totalCost > 0) {
+      await recordSpend(supabase, siteId, PROVIDER, totalCost);
     }
-
-    syncedCount += 1;
-  }
-
-  if (totalCost > 0) {
-    await recordSpend(supabase, siteId, PROVIDER, totalCost);
   }
 
   const result: SyncSerpSnapshotsResult = {
