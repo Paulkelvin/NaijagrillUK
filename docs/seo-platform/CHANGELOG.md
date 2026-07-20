@@ -8,6 +8,38 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Fixed
+- **`/admin` had no navigation to any of Phase 2's UI, and Basic Auth's
+  session length was unpredictable — both real gaps the user hit and
+  reported directly (with screenshots showing the Owner Dashboard with
+  zero links to `/admin/seo` or `/admin/seo/settings`, both of which
+  already existed).** Replaced HTTP Basic Auth on `/admin` with a
+  stateless, HMAC-signed 90-day session cookie (`src/lib/auth/session.ts`)
+  issued by a real `/admin/login` form (`src/app/api/admin/login/route.ts`,
+  `src/app/api/admin/logout/route.ts`) and verified in `src/proxy.ts`
+  (Next.js 16 renamed `middleware.ts` → `proxy.ts` — confirmed via
+  `node_modules/next/dist/docs/`, not assumed, per `AGENTS.md`'s own
+  warning; same `config.matcher` shape carried over). No new DB table —
+  the HMAC key is `ADMIN_PASSWORD` itself, so rotating that env var
+  invalidates every previously-issued session automatically. `basic-auth.ts`
+  deleted, nothing else referenced it. Added `src/components/admin/AdminNav.tsx`
+  (desktop inline links + a mobile hamburger menu) and a shared layout
+  (`src/app/admin/(dashboard)/layout.tsx`, a route group so `/admin/login`
+  itself stays nav-free) linking Dashboard/Action Queue/Settings/Log out
+  across every `/admin/*` page. Full real-browser verification via
+  Playwright against a local dev server: unauthenticated redirect with a
+  `?next=` param, wrong-password rejection with no cookie set, successful
+  login landing on the originally-requested page, nav links actually
+  navigating, session persistence across a brand-new browser tab (same
+  cookie jar), and logout genuinely clearing the session (subsequent visit
+  redirects to login again). 378 tests passing overall (38 test files, 1
+  skipped) after this change — net +30 versus the deleted
+  `basic-auth.test.ts`/`middleware.test.ts` (14 tests removed,
+  `session.test.ts`/`proxy.test.ts`/the two new route tests add 44).
+  Documented as a real architecture deviation from ARCHITECTURE.md §7's
+  literal Basic-Auth mechanism, not a silent swap — see ADR-010 and the
+  corrected §7/technology-stack-table text. Not yet merged to `main`.
+
 ### Added
 - **Phase 2 Milestone 6 (DataForSEO SERP Snapshots) code-complete — all 13
   Phase 2 milestones now done.** `src/lib/seo/dataforseo/serp.ts` +
