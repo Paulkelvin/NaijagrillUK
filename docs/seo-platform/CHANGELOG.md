@@ -8,6 +8,20 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Verified
+- **Ran the real Milestone 10 analysis engine against production ahead of its
+  07:00 UTC cron** (`runAnalysis(siteId)` invoked directly via `tsx` with
+  real credentials, not the HTTP route, to isolate the business logic).
+  Result: 14 real actions created — 9 Opportunity-sourced `create_content`
+  recommendations for untargeted keywords with real GSC data (all scoring
+  exactly 50.0, hand-verified against the formula), 5 Cannibalization-
+  sourced `fix_cannibalization` recommendations, including one that
+  surfaced a real known gap: the site's own brand name is flagged as
+  cannibalized because `sites.config.brand_terms` was never configured
+  (open since Milestone 2). Left in production — genuine output, not test
+  data. The action queue is no longer empty. See PHASE_2_IMPLEMENTATION.md
+  Milestone 10.
+
 ### Added
 - **Phase 2 Milestone 12 (Site Configuration UI) complete, manually verified.**
   `/admin/seo/settings` (Server Component) + `src/components/admin/SettingsForm.tsx`
