@@ -1,7 +1,7 @@
 # Phase 1 Implementation Plan — Data Foundation
 
-> **Status:** Planning complete, execution not started.
-> **Last updated:** 2026-07-18
+> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestones 7–9 not started.
+> **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen), ENGINEERING_STANDARDS.md
 
@@ -671,37 +671,62 @@ Per your instruction to proceed without waiting for credentials ("we'll do all t
 **Objective:** Mirror Milestone 5 for GA4 page-level metrics, reusing the normalization and retry infrastructure already proven.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/ga4/client.ts`: JWT service-account auth, `runReport` for sessions/engagement/conversions
-- [ ] Implement `src/lib/seo/ga4/sync.ts`: orchestrates fetch → normalize pagePath (reuses `normalize.ts`) → upsert `page_metrics`
-- [ ] Implement conversion breakdown as a second report call, mapped against `site_configs.conversion_events`
-- [ ] Implement `src/app/api/seo/sync/ga4/route.ts`
-- [ ] Log pages seen in GA4 but missing from `pages` (potential crawler miss) as a `metadata.warnings` entry, not a hard failure
+- [x] Implement `src/lib/seo/ga4/client.ts`: JWT service-account auth, `runReport` for sessions/engagement/conversions
+- [x] Implement `src/lib/seo/ga4/sync.ts`: orchestrates fetch → normalize pagePath (reuses `normalize.ts`) → upsert `page_metrics`
+- [x] Implement conversion breakdown as a second report call, mapped against `site_configs.conversion_events`
+- [x] Implement `src/app/api/seo/sync/ga4/route.ts`
+- [x] Log pages seen in GA4 but missing from `pages` (potential crawler miss) as a `metadata.warnings` entry, not a hard failure
 
 **Dependencies:** Milestones 1–4 (not 5 — can run in parallel with Milestone 5).
 
-**Expected outputs:** Real `page_metrics` rows sourced from the live GA4 property.
+**Expected outputs:** Real `page_metrics` rows sourced from the live GA4 property. **Not yet achieved** — see "Code Complete, Integration Verification Pending" below (same credential dependency as Milestone 5).
 
-**Database changes:** None.
+**Database changes:** None (uses Milestone 1 tables).
 
-**Files to create/modify:**
-- `src/lib/seo/ga4/client.ts`
-- `src/lib/seo/ga4/sync.ts`
-- `src/app/api/seo/sync/ga4/route.ts`
+**Files created:**
+- `src/lib/seo/ga4/client.ts`, `client.test.ts` (14 tests, including real RSA signature verification, mirrors `gsc/client.test.ts`)
+- `src/lib/seo/ga4/sync.ts`, `sync.test.ts` (11 tests)
+- `src/app/api/seo/sync/ga4/route.ts`, `route.test.ts` (5 tests)
 
-**Tests to perform:**
-- Unit: conversion breakdown mapping against `site_configs.conversion_events`
-- Integration: idempotency proof (same pattern as Milestone 5)
-- Integration: real curl trigger against the live GA4 property
-- Manual: confirm a page with zero GA4 traffic doesn't produce a spurious warning (only genuinely-missing `pages` rows should warn)
+**Tests performed:**
+- [x] Unit: `client.ts`'s JWT is cryptographically verified against a real (throwaway, test-only) RSA key pair, same rigor as Milestone 5's GSC client
+- [x] Unit: pagination via `rowCount` (GA4 gives an exact total, unlike GSC's short-page heuristic) — confirmed a second page is requested with the correct `offset` and pagination stops exactly at `rowCount`
+- [x] Unit: 429/5xx/network-error retry, exactly-one-re-auth-then-fail-fast on repeated 401/403, non-retryable 400 fails immediately — all against a mocked `fetch`
+- [x] Unit: request body asks for `keyEvents`, never the deprecated `conversions` name (see "A Real Finding" below)
+- [x] Unit: `fetchConversionBreakdown` skips the network call entirely with zero configured events (the default `site_configs.conversion_events = '[]'` state), and sends the correct `inListFilter` when events are configured
+- [x] Unit: conversion breakdown mapping against `site_configs.conversion_events` — `conversion_value = purchaseRevenue + Σ(eventCount × configured value)`, confirmed with a concrete case (3 × £15 = £45)
+- [x] Unit: validation rejects empty `pagePath` and the two excluded patterns (`/studio`, `/api/`) without aborting the batch
+- [x] Unit: newly-created `pages` rows (paths GA4 reports that didn't already exist) are counted and surfaced as a `metadata.warnings` entry, distinct from rejected rows
+- [x] Unit: `pages.url` is correctly built from the site's `www.`-stripped `domain` plus the normalized path (GA4 only reports a bare `pagePath`, never a full URL, unlike GSC)
+- [x] Unit: zero valid rows short-circuits before any Supabase call (site/config lookups, breakdown fetch, upserts all skipped) — same idempotent-no-op discipline as `gsc/sync.ts`
+- **Not performed — genuinely cannot be, no real credentials exist yet:**
+  - Integration: idempotency proof (same pattern as Milestone 5)
+  - Integration: real curl trigger against the live GA4 property
+  - Manual: confirm a page with zero GA4 traffic doesn't produce a spurious warning (only genuinely-missing `pages` rows should warn) — the logic treats "genuinely missing" as "not already present in `pages`," which is correct by construction, but has not been observed against real GA4 response shapes for a zero-traffic page
 
 **Success criteria (DoD):**
-- Two consecutive runs for the same day produce zero duplicate `page_metrics` rows
-- Conversion breakdown values match GA4's own UI for a spot-checked date
-- `sync_log` reflects accurate row counts and duration
+- [ ] Two consecutive runs for the same day produce zero duplicate `page_metrics` rows — **logic is upsert-based (`onConflict: page_id,date`) and unit-tested, but not proven against a real database yet**
+- [ ] Conversion breakdown values match GA4's own UI for a spot-checked date — **blocked entirely on credentials existing**
+- [ ] `sync_log` reflects accurate row counts and duration — **same caveat as Milestone 5**
 
 **Risks & rollback:**
-- Risk: GA4's `conversions`/`purchaseRevenue` metrics are effectively 0 for a restaurant site with no e-commerce — expected, not a bug (see ARCHITECTURE.md's GA4 metric mapping note). Custom event conversions (WhatsApp click, etc.) are the meaningful signal here and depend on GA4 events already being configured in Analytics — confirm they exist before trusting this data.
-- Rollback: same pattern as Milestone 5 — safe, non-cascading delete + re-sync.
+- Risk: GA4's `purchaseRevenue` metric is effectively 0 for a restaurant site with no e-commerce — expected, not a bug (see ARCHITECTURE.md's GA4 metric mapping note). Custom event conversions (WhatsApp click, etc.) are the meaningful signal here and depend on GA4 events already being configured in Analytics — confirm they exist before trusting this data.
+- Risk: no confirmed real-world shape for GA4's zero-session-day `bounceRate`/`averageSessionDuration` values (omitted field vs. `"0"` string) — `client.ts` treats an explicitly empty value as `null`, never guesses at omission behavior it hasn't observed. Watch for this specifically during first real integration verification.
+- Rollback: `DELETE FROM page_metrics WHERE site_id = ...` is safe and non-cascading to other tables; re-run the sync to repopulate.
+
+### A Real Finding: `conversions` → `keyEvents`
+
+ARCHITECTURE.md §4.2's request example listed a `conversions` metric. Verified against Google's live GA4 Data API documentation and changelog during this milestone (not assumed from training data, per `AGENTS.md`'s standing warning about this environment): Google renamed GA4 "conversions" to "key events" platform-wide, and the Data API's `conversions` metric name is now deprecated in favor of `keyEvents` (migration completed June 2026, after ARCHITECTURE.md was originally written). `ga4/client.ts` requests `keyEvents`; ARCHITECTURE.md §4.2 has been corrected in place with a note explaining why, mirroring how the Vercel Cron auth-header correction was handled in Milestone 4. Same underlying metric, current API name — no design change, no stop-and-discuss needed.
+
+### Code Complete, Integration Verification Pending
+
+Same posture as Milestone 5, per your instruction to keep building without waiting on credentials: everything in this milestone that *can* be built and proven without a real GA4 service account has been — 30 new unit tests (up from 100 after Milestone 5, now 130 total), all passing. `npm run lint` and `npm run build` both clean.
+
+**What this milestone is explicitly not claiming:** that any of this has talked to the real GA4 Data API. Same discipline as Milestone 5 — mocked-`fetch` unit tests are not integration verification, and this doesn't blur that line.
+
+**One genuinely new design decision made during this milestone**, not requiring a stop-and-discuss since it directly resolves an FK requirement rather than introducing a trade-off: ARCHITECTURE.md §4.2's "create if new" instruction and this milestone's task list's "log as a warning, don't hard-fail" instruction both apply to the same event (a GA4 page not yet in `pages`) — `page_metrics.page_id` is `NOT NULL`, so a `pages` row must exist regardless of whether it's newly discovered. `ga4/sync.ts` upserts the page (satisfying the FK and the "create if new" instruction) and separately counts+logs newly-created paths as a `metadata.warnings` entry (satisfying "potential crawler miss" visibility) — both directives are satisfied by the same code path, not in tension.
+
+**When credentials exist:** re-open this milestone (don't silently mark it done) — run the daily sync once via curl, confirm real `page_metrics` rows appear and match GA4's own UI for sessions/engagement, run it a second time to prove idempotency for real, then spot-check a page with a configured conversion event (e.g. WhatsApp click) against GA4's own event count and confirm `conversion_value` matches the configured multiplier. Only then are the DoD boxes above allowed to be checked.
 
 ---
 

@@ -9,6 +9,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Milestone 6 (GA4 Sync Job) code-complete, integration verification
+  pending real credentials.** `ga4/client.ts` — hand-rolled JWT
+  service-account auth (mirrors `gsc/client.ts`), `runReport` with
+  rowCount-based pagination (exact, unlike GSC's short-page heuristic),
+  same retry/auth-failure classification (`Ga4AuthError`) — 14 tests
+  including real cryptographic JWT signature verification. Requests the
+  `keyEvents` metric, not `conversions` — see "Fixed" below. `ga4/sync.ts`
+  — fetch page metrics → validate (empty/excluded pagePath) → fetch
+  conversion breakdown (skipped entirely when no
+  `site_configs.conversion_events` are configured) → upsert
+  pages/page_metrics → sync_log; computes
+  `conversion_value = purchaseRevenue + Σ(eventCount × configured value)`,
+  the platform's stated first-party competitive advantage
+  (ARCHITECTURE.md) — 11 tests. `/api/seo/sync/ga4` route — 5 tests. 30
+  new unit tests (130 total), all passing; zero real GA4 API calls made
+  or claimed — see PHASE_1_IMPLEMENTATION.md Milestone 6 for exactly what
+  is and isn't verified
 - **Milestone 5 (GSC Sync Job) code-complete, integration verification
   pending real credentials.** `normalize.ts` (`normalizeKeyword`,
   `normalizeUrl`/`normalizePath` — 26 tests). `retry.ts`
@@ -53,6 +70,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
   (materially more generous than outdated 10s/60s assumptions)
 
 ### Fixed
+- **ARCHITECTURE.md §4.2 corrected:** the originally-sketched GA4 `runReport`
+  request listed a `conversions` metric. Google renamed GA4 "conversions"
+  to "key events" platform-wide (migration completed June 2026, after
+  ARCHITECTURE.md was written) — the Data API's `conversions` metric name
+  is now deprecated in favor of `keyEvents`. Verified against Google's
+  live docs/changelog during Milestone 6, not assumed from training data.
+  `ga4/client.ts` requests `keyEvents`; same underlying metric, current
+  API name, no design change
+
 - **ARCHITECTURE.md §7 corrected:** the originally-sketched cron auth
   (`x-cron-secret` custom header, checked alongside Basic Auth on every
   `/api/seo/*` route) doesn't match Vercel's actual mechanism and would

@@ -676,11 +676,13 @@ Each data source has an independent sync job. Jobs are idempotent — running th
     {"name": "engagedSessions"},
     {"name": "bounceRate"},
     {"name": "averageSessionDuration"},
-    {"name": "conversions"},
+    {"name": "keyEvents"},
     {"name": "purchaseRevenue"}
   ]
 }
 ```
+
+**Correction (verified live during Milestone 6, 2026-07-20):** the metric above is `keyEvents`, not `conversions` as originally sketched here. Google renamed GA4 "conversions" to "key events" platform-wide, and the Data API's `conversions` metric name is now listed under `deprecatedApiNames` for `keyEvents` (migration completed June 2026, after this document was originally written). Same underlying metric, current API name — no design change. See `src/lib/seo/ga4/client.ts`.
 
 **Metric mapping:** GA4's `purchaseRevenue` maps to `page_metrics.conversion_value`. For sites without e-commerce transactions (e.g., restaurants), this will be 0 — the meaningful conversion data comes from the conversion breakdown report below, where custom event values are assigned via `site_configs.conversion_events`.
 
