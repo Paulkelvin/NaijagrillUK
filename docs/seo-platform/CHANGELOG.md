@@ -9,6 +9,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 7 (Opportunity Score) code-complete — skipped
+  ahead of Milestones 4–6** since DataForSEO doesn't exist yet (per
+  the Sequencing Decision). `src/lib/seo/intelligence/opportunity-score.ts`
+  — `position_potential` from the last 7 days of real GSC data,
+  `difficulty_score`/`intent_value`/`volume_norm`/`business_value` all
+  null-safe against missing DataForSEO fields. Resolved two null-safety
+  conventions ARCHITECTURE.md doesn't fully specify: `difficulty_score`
+  defaults to a neutral `0.5` (matching `intent_value`'s own documented
+  null rule); `volume_norm`/`business_value` default to `0` instead,
+  since a min/max ratio with no numerator has no relative standing to
+  report. 14 new unit tests (234 total). Genuinely runnable against
+  real production data right now — just not wired to a route yet
+  (Milestone 10's job). See PHASE_2_IMPLEMENTATION.md Milestone 7
 - **Phase 2 Milestone 3 (Content Decay Score) code-complete.**
   `src/lib/seo/intelligence/content-decay.ts` — linear regression slope
   and a 30-day rolling average (slid exhaustively across the 90-day

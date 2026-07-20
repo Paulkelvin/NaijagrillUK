@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization) and 3 (content decay) are both code-complete and unit-tested — neither has a route/deploy yet, since neither is its own background job (both feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet). Milestones 4–12 not started.
+> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization), 3 (content decay), and 7 (opportunity score, skipped ahead of 4–6 since DataForSEO doesn't exist yet — see the Sequencing Decision) are all code-complete and unit-tested — none has a route/deploy yet, since none is its own background job (all feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet); opportunity score is genuinely runnable against real data right now, just not wired to anything yet. Milestones 4–6, 8–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -337,25 +337,31 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 **Objective:** Rank keywords by pursuit value — the headline scoring algorithm.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/intelligence/opportunity-score.ts`: `position_potential` (from recent `keyword_page_metrics`), `difficulty_score`/`intent_value`/`volume_norm`/`business_value` (all null-safe against missing DataForSEO fields — see the Sequencing Decision above), weighted sum using `site_configs.scoring_weights.opportunity` (already seeded per business type in Milestone 1)
-- [ ] Business-type default weight table (already documented in ARCHITECTURE.md §5.1, already seeded in `site_configs` — confirm no drift between what's live and what's specified)
+- [x] Implement `src/lib/seo/intelligence/opportunity-score.ts`: `position_potential` (best position per keyword from the last 7 days of `keyword_page_metrics`), `difficulty_score`/`intent_value`/`volume_norm`/`business_value` (all null-safe against missing DataForSEO fields — see the Sequencing Decision above), weighted sum using `site_configs.scoring_weights.opportunity` (already seeded per business type in Milestone 1)
+- [x] Business-type default weight table — no drift found: `site_configs`'s seeded restaurant weights (`volume 0.20, position 0.35, difficulty 0.15, intent 0.15, business_value 0.15`) match ARCHITECTURE.md §5.1 exactly; used as the module's own hard-coded fallback when `scoring_weights.opportunity` is missing
+
+**Two null-safety defaults resolved that ARCHITECTURE.md doesn't fully specify:** `difficulty_score` has no documented null behavior (only `intent_value` does) — resolved as the same neutral `0.5` `intent_value` already uses for its own null case, applied consistently. `volume_norm`/`business_value` are ratio components (`min(value/max, 1.0)`) — resolved as `0` when null, not `0.5`, since a ratio with no numerator has no relative standing to report; a neutral default would misrepresent "no data" as "average", which a min/max ratio component has no basis to claim.
 
 **Dependencies:** Milestone 1 (nothing else strictly required — DataForSEO fields degrade gracefully when null, matching the Sequencing Decision above; Milestone 5 improves this algorithm's accuracy but doesn't gate shipping it).
 
 **Expected outputs:** Real, immediately-testable opportunity scores using GSC-only data (`position_potential`, the single highest-weighted component per the restaurant default weights) even before DataForSEO exists; improves automatically once Milestone 5 lands.
 
-**Database changes:** None (writes to `actions` via Milestone 10).
+**Database changes:** None (reads `keywords`/`keyword_page_metrics`/`site_configs`; writes nothing — Milestone 10's orchestrator writes to `actions`).
 
-**Files to create:**
-- `src/lib/seo/intelligence/opportunity-score.ts`, `opportunity-score.test.ts`
+**Files created:**
+- `src/lib/seo/intelligence/opportunity-score.ts`, `opportunity-score.test.ts` (14 tests)
 
-**Tests to perform:**
-- Unit: each formula component (`position_potential` bucketing, `difficulty_score`, `intent_value` mapping, `volume_norm`, `business_value`) hand-calculated against synthetic keyword data
-- Unit: null `search_volume`/`keyword_difficulty`/`cpc`/`search_intent` degrade to documented defaults rather than throwing or producing `NaN`
-- Unit: business-type weight lookup matches the exact table in ARCHITECTURE.md §5.1
+**Tests performed:**
+- [x] Unit: `position_potential` — every documented boundary (3/4, 10/11, 20/21, 50/51) plus the `null` (no ranking) case
+- [x] Unit: `difficulty_score` — real-value formula plus the resolved neutral-`0.5` null default
+- [x] Unit: `intent_value` — all four categories plus `null`/unrecognized-string default
+- [x] Unit: `normalized_ratio` — real ratio, clamping above `1.0`, `0` for a `null` value, `0` for a zero/negative max
+- [x] Unit: `computeOpportunityScore` — exact weighted sum hand-calculated against synthetic component values
+- [x] Unit: orchestration (mocked Supabase) — zero keywords returns `[]` immediately; an all-null-DataForSEO-fields keyword correctly uses neutral/zero defaults per component; `volume_norm`/`business_value` correctly computed against the *site-wide* max across all fetched keywords, not just the one being scored; the best (lowest) position is correctly selected across multiple rows in the 7-day window; missing `scoring_weights.opportunity` correctly falls back to the documented default weights
 
 **Success criteria (DoD):**
-- Produces plausible, rank-ordered output against real production keyword data using GSC-only fields, before any DataForSEO data exists
+- [x] Every formula component independently verified against hand-calculated values, including both resolved null-safety conventions
+- [ ] Produces plausible, rank-ordered output against real production keyword data — not yet deployed this milestone; genuinely runnable now given real GSC data already exists, just needs a route/deploy (folded into Milestone 10, or given a temporary standalone route — decide when this actually ships)
 
 **Risks & rollback:**
 - Risk (ARCHITECTURE.md's own note): cannot detect SERP-feature-adjusted click distribution without SERP snapshot data (Milestone 6) — documented limitation, not a defect
