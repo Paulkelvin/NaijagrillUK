@@ -9,6 +9,33 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 10 (Action Queue Engine) code-complete.**
+  `src/lib/seo/intelligence/run-analysis.ts` + `src/app/api/seo/analysis/run/route.ts`
+  — the orchestrator tying Milestones 1–9 together, converting each
+  algorithm's output into `actions` rows. Two genuinely underspecified
+  design questions were confirmed with the user before implementation
+  rather than silently resolved: (1) cross-module priority scoring —
+  Opportunity/Cannibalization use their own 0-100 scores directly; Page
+  ROI and Content Decay share a new 0-100 blend built from
+  `site_configs.scoring_weights.page_roi`'s four weights
+  (`traffic_potential`, `conversion_rate`, `effort_inverse`,
+  `decay_urgency`) — the same weighted-blend shape
+  `scoring_weights.cannibalization` already uses in production, with
+  `decay_urgency` being one of `page_roi`'s own listed weights as the
+  direct evidence for folding decay into that same formula; Keyword
+  Value never generates its own action, only enriches an Opportunity
+  action's `supporting_data` per §5.5's own Output note. (2) trigger
+  mechanism — implemented as its own daily 07:00 UTC cron (after GSC
+  06:00/GA4 06:30), matching the CTR model's own precedent, rather than
+  inline-chaining onto `gsc/sync.ts`/`ga4/sync.ts` and risking Vercel
+  Hobby's 300s ceiling with no real timing data to justify it. Dedup
+  keys `fix_cannibalization` on `keyword_id` alone (canonical-page
+  recommendations can shift between runs) and every other type on
+  page/keyword id; updates never touch `status`. `actions.expires_at`
+  set to a reasoned 90-day default; the auto-dismiss sweep itself isn't
+  built (out of this milestone's scope, tracked as a follow-up). 14 new
+  unit/route tests (284 total). Not merged to `main` yet. See
+  PHASE_2_IMPLEMENTATION.md Milestone 10
 - **Phase 2 Milestone 9 (Conversion-Weighted Keyword Value) code-complete.**
   `src/lib/seo/intelligence/keyword-value.ts` — `search_volume ×
   expected_ctr × conversion_rate × avg_conversion_value` per

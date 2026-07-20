@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization), 3 (content decay), 7 (opportunity score), 8 (page ROI score), and 9 (keyword value) — 7, 8, 9 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision — are all code-complete and unit-tested (270 tests passing total). None has a route/deploy yet, since none is its own background job (all feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet); opportunity score is genuinely runnable against real data right now, just not wired to anything yet; page ROI score and keyword value are both currently 0 for every page/keyword (both need Milestone 5's search_volume — see their own sections for the full findings). Milestones 4–6, 10–12 not started.
+> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization), 3 (content decay), 7 (opportunity score), 8 (page ROI score), and 9 (keyword value) — 7, 8, 9 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision — are all code-complete and unit-tested. Milestone 10 (Action Queue Engine) is also code-complete: `run-analysis.ts` now wires all five action-generating modules into real `actions` rows via `/api/seo/analysis/run`, on its own daily 07:00 UTC cron (confirmed with the user: a separate cron with a time offset, not inline-chained onto GSC/GA4 sync — see Milestone 10's section for both design decisions confirmed with the user). 284 tests passing total. None of Milestones 2/3/7/8/9/10 is merged to `main` yet — still on this feature branch. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); opportunity score and cannibalization are genuinely runnable against real data now; page ROI score and keyword value are both currently 0 for every page/keyword (need Milestone 5's search_volume). Milestones 4–6, 11–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -449,36 +449,52 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 ---
 
-## Milestone 10 — Action Queue Engine
+## Milestone 10 — Action Queue Engine — ✅ Code complete, deployable (2026-07-20)
 
 **Objective:** The orchestrator that ties Milestones 1–9 together — runs after every sync completes (ARCHITECTURE.md §7: "Analysis engine | After any sync completes | Event-driven"), writes ranked `actions` rows.
 
+**Two design questions were genuinely underspecified by ARCHITECTURE.md and were confirmed with the user before implementation** (rather than silently resolved, per this project's standing rule for "significantly better approach"-level judgment calls):
+
+1. **Cross-module priority scoring.** Only Cannibalization (§5.3) documents a 0-100 score with an action threshold (>40). Opportunity Score is also 0-100 but undocumented for a threshold. Page ROI's `roi_score` and Keyword Value's `monthlyValue` are unbounded — not comparable to a 0-100 score at all. **Resolved:** Opportunity and Cannibalization use their own 0-100 scores directly as `priority_score`. Page ROI and Content Decay share a second 0-100 blend built from `site_configs.scoring_weights.page_roi` (`traffic_potential`, `conversion_rate`, `effort_inverse`, `decay_urgency`) — the same "weights blend normalized 0-1 components into a 0-100 score" shape `scoring_weights.cannibalization` already uses in production. `decay_urgency` being one of `page_roi`'s own four listed weights is the direct textual evidence for folding Content Decay into the same blend rather than inventing a second formula. The raw `roi_score`/`decay_pct` still ride along in `supporting_data` for context. Keyword Value never generates its own action — per §5.5's own Output note, it only enriches an Opportunity action's `supporting_data` when a value exists. A single `ACTION_THRESHOLD = 40` gates every 0-100-scaled score, reusing Cannibalization's own documented bar rather than inventing a per-module number. Content Decay is the one exception: it generates an action whenever `decay_stage !== 'stable'`, independent of the threshold — a page can be actively losing traffic while scoring low on rank-gain headroom, and ARCHITECTURE.md frames decay as its own urgency signal.
+2. **Trigger mechanism.** ARCHITECTURE.md §7 says "After any sync completes | Event-driven," and this milestone's own task list originally described "called at the end of each Phase 1 sync job." **Resolved:** implemented as its own separately-scheduled cron with a time offset (07:00 UTC, after GSC's 06:00 and GA4's 06:30) — the same pattern already live in production for the CTR model rebuild (Milestone 1, Monday 06:15) — rather than an inline call chained onto `gsc/sync.ts`/`ga4/sync.ts`'s own request handlers, avoiding the flagged risk of pushing either of those closer to Vercel Hobby's 300s ceiling with no real timing data to justify doing otherwise.
+
 **Tasks:**
-- [ ] Implement `src/lib/seo/intelligence/run-analysis.ts`: runs all six scoring modules, converts each algorithm's "Action generation" rules (already specified per-algorithm in §5.1–§5.7) into `actions` rows — dedupe against existing non-completed actions for the same `page_id`/`keyword_id`/`type` rather than creating duplicates on every run
-- [ ] `src/app/api/seo/analysis/run/route.ts` — both the event-driven trigger (called at the end of each Phase 1 sync job — a real integration point into `gsc/sync.ts`/`ga4/sync.ts`, needs care not to blow their own timeout budgets) and a manual re-run endpoint per ARCHITECTURE.md §7's route list
-- [ ] `actions.expires_at` — auto-dismiss stale actions logic (mentioned in the schema comment, behavior not otherwise specified in §5 — resolve during implementation with a documented default, e.g. 90 days, flagged as a reasoned default rather than a hidden assumption)
+- [x] Implement `src/lib/seo/intelligence/run-analysis.ts`: runs the five action-generating modules (Opportunity, Page ROI, Cannibalization, Content Decay; Keyword Value enriches rather than generates), converts each into `actions` rows, deduped against existing `queued`/`in_progress` rows for the same dedup key rather than creating duplicates on every run
+- [x] `src/app/api/seo/analysis/run/route.ts` — cron trigger (see resolution above) and manual re-run endpoint, same route serves both
+- [x] `actions.expires_at` set to `created/updated_at + 90 days` on every write — a reasoned default (schema comment gives no window). The sweep that actually flips `status` to `dismissed` once `expires_at` passes is **not built in this milestone** — out of its stated task list, tracked as an open follow-up below
 
-**Dependencies:** Milestones 1–9.
+**Dedup key:** `fix_cannibalization` keys on `keyword_id` alone (the recommended canonical page can shift between runs as traffic shifts — that updates the existing row in place rather than spawning a second one for the same underlying keyword). Every other type keys on both `page_id`/`keyword_id`, which is equivalent to keying on whichever one is real since exactly one is always populated per type. Updates never touch `status` (respects an owner's `in_progress`/manual state) — implemented as two batched writes total per run (`insert` for new rows, `upsert(onConflict:"id")` for updates), not one write per candidate.
 
-**Expected outputs:** A real, populated `actions` table reflecting all six algorithms' current output.
+**Dependencies:** Milestones 1–9 (all complete).
+
+**Expected outputs:** Code-complete, fully wired, deployable. Real `actions` rows will start appearing once the cron runs against production — currently only Cannibalization is capable of producing a non-zero-priority action (Opportunity needs real GSC ranking variance; Page ROI/Content Decay/Keyword Value are still gated on Milestone 5's `search_volume` per Milestones 8-9's own findings).
 
 **Database changes:** None (uses Milestone 0's `actions` table).
 
-**Files to create:**
-- `src/lib/seo/intelligence/run-analysis.ts`, `run-analysis.test.ts`
-- `src/app/api/seo/analysis/run/route.ts`, `route.test.ts`
+**Files created:**
+- `src/lib/seo/intelligence/run-analysis.ts`, `run-analysis.test.ts` (10 tests)
+- `src/app/api/seo/analysis/run/route.ts`, `route.test.ts` (4 tests)
+- `vercel.json`: new cron entry, `0 7 * * *`
 
-**Tests to perform:**
-- Unit: dedup logic — re-running against unchanged underlying data doesn't create duplicate `actions` rows for the same open issue
-- Unit: each algorithm's action-generation rule correctly maps to an `actions` row shape (`type`/`source_module`/`priority_score`/`supporting_data`)
-- Integration: triggered from the end of a real `gsc/sync.ts` run without blowing its own timeout budget
+**Tests performed:**
+- Unit: `computePagePriority`'s exact weighted blend, including the conversion-rate clamp
+- Unit: `actionDedupKey`'s keyword_id-only behavior for `fix_cannibalization` vs. the page+keyword key for other types
+- Unit: dedup — a matching existing action is upserted (status untouched), not duplicated
+- Unit: each algorithm's action-generation rule mapped to an `actions` row shape, including the untargeted-keyword filter and the combined page_performance + decay case for a single page
+- Unit: `keyword_monthly_value` enrichment attaches correctly to an Opportunity action's `supporting_data`
+- Route: auth (401 on missing/wrong secret), success passthrough, error passthrough — same pattern as every other cron route
+- Full suite: 284/284 passing (14 new), lint clean (pre-existing unrelated issues only), build clean, `/api/seo/analysis/run` confirmed registered
 
 **Success criteria (DoD):**
-- Running twice in a row against the same data is idempotent — no duplicate/runaway `actions` growth
-- Timeout budget respected when chained after a real sync job
+- Running twice in a row against the same data is idempotent — verified via the dedup unit test (upsert, not duplicate insert)
+- Timeout budget respected — resolved by NOT chaining inline; own cron, own 300s budget, no shared risk with GSC/GA4 sync
+
+**Open follow-ups (not this milestone's scope):**
+- The `expires_at` auto-dismiss sweep itself (flipping `status` to `dismissed` once the deadline passes) isn't built — this milestone only sets the column
+- `actions.effort` (small/medium/large) is never populated by this module — Milestone 8's `effort_score` components could inform it later, not required by this milestone's task list
+- Not yet merged to `main` or deployed to production — code-complete and tested, deployment is a separate step
 
 **Risks & rollback:**
-- Risk: chaining onto the end of `gsc/sync.ts`/`ga4/sync.ts` risks pushing those jobs closer to Hobby's 300s ceiling — may need to become its own separately-triggered step instead of literally inline; decide during implementation with real timing data, not guessed now
 - Rollback: `DELETE FROM actions WHERE status != 'completed'` — safe, doesn't touch history
 
 ---

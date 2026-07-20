@@ -18,6 +18,10 @@
       "schedule": "15 6 * * 1"
     },
     {
+      "path": "/api/seo/analysis/run",
+      "schedule": "0 7 * * *"
+    },
+    {
       "path": "/api/seo/retention/run",
       "schedule": "0 3 * * 0"
     }
