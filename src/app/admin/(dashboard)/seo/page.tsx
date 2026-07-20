@@ -165,10 +165,16 @@ function ContentBriefSection({ brief }: { brief: KeywordContentBrief | undefined
         {brief.competitors.map((c) => (
           <li key={`${c.domain}-${c.position}`} className="flex items-start gap-2 text-sm text-white/70">
             <span className="mt-0.5 shrink-0 text-xs text-white/30">#{c.position}</span>
-            <span className="min-w-0">
-              <span className="truncate">{c.title ?? c.domain}</span>{" "}
-              <span className="text-xs text-white/40">({c.domain})</span>
-            </span>
+            {/* min-w-0 only constrains a flex item's own box — it does nothing
+                on the inline <span> that used to sit here, since inline
+                elements ignore width/min-width entirely. A block-level element
+                (div/p) is what actually lets `truncate` clip long competitor
+                titles instead of forcing the whole page into horizontal
+                scroll on mobile (real bug, reported with a screenshot). */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate">{c.title ?? c.domain}</p>
+              <p className="truncate text-xs text-white/40">{c.domain}</p>
+            </div>
           </li>
         ))}
       </ul>
