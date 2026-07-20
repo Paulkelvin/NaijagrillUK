@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** Milestones 0–5 and 7–12 are complete. The user set up a real DataForSEO account mid-session — Milestone 5 (search volume sync) has been run for real against production, not just tested: 81/81 keywords updated with real search volume/CPC/monthly trend data, $0.09 real spend correctly recorded in `api_budgets`. Re-running the analysis engine afterward confirmed Opportunity Score's null-safe design worked exactly as promised — scores went from a flat 50.0 to a real 40.5–56.7 range with zero code changes. A real bug was found and fixed running Milestone 5 for real (a partial-column `upsert()` failed on a NOT NULL constraint Postgres validates before conflict resolution even applies — switched to plain `UPDATE`; corrected the same over-general reasoning in Milestone 10's comment too, though that one was safe in practice). Milestone 4 was verified against DataForSEO's real live docs throughout, not assumed. 351 tests passing total; lint/build clean. `sites.config.brand_terms` is configured, fixing a real cannibalization false positive (the site's own name) the first analysis-engine run surfaced. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); Page ROI Score/Keyword Value still show 0 pending real GA4 conversion volume (their formulas now have real `search_volume` to work with, but revenue-side inputs still need traffic to accumulate). Only Milestone 6 (SERP snapshots) remains — its Vercel Hobby 300s-vs-10-minute-budget risk is resolved as a plan (reuse the GSC backfill's proven time-budgeted-chunk pattern, confirmed with the user), not yet implemented.
+> **Status:** All 13 Phase 2 milestones (0–12) are now code-complete. The user set up a real DataForSEO account mid-session. Milestone 5 (search volume sync) ran for real against production, not just tested: 81/81 keywords updated with real search volume/CPC/monthly trend data, $0.09 real spend correctly recorded in `api_budgets`. Re-running the analysis engine afterward confirmed Opportunity Score's null-safe design worked exactly as promised — scores went from a flat 50.0 to a real 40.5–56.7 range with zero code changes. Milestone 6 (SERP snapshots) is code-complete and unit-tested against the real response shape, with its Hobby-timeout risk resolved (daily cron, 7-day cache staleness as the natural resumability signal, no Pro-plan upgrade needed) — but **DataForSEO paused the account mid-verification, flagged as "unusual activity"** from the burst of test calls; a full real production run of Milestone 6 is pending the user contacting DataForSEO support to lift the pause. Two real findings from live-testing beyond what any doc assumed: a partial-column `upsert()` bug (Postgres validates NOT NULL columns before conflict resolution even applies — fixed, and the same over-general reasoning corrected in Milestone 10's comment too), and SERP's real cost is $0.002/call, not ARCHITECTURE.md's documented $0.035 (17x cheaper). 363 tests passing total; lint/build clean. `sites.config.brand_terms` is configured, fixing a real cannibalization false positive the first analysis-engine run surfaced. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); Page ROI Score/Keyword Value still show 0 pending real GA4 conversion volume.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -312,33 +312,43 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 
 ---
 
-## Milestone 6 — DataForSEO SERP Snapshots
+## Milestone 6 — DataForSEO SERP Snapshots — ✅ Code complete, real-verification partial (2026-07-20)
 
 **Objective:** Weekly competitive SERP data — powers `missing_paa` in Page ROI Score and (in Phase 3) competitor tracking.
 
+**Chunking decision (confirmed with the user before implementation):** reuse Phase 1's GSC backfill philosophy — time-budgeted processing per invocation — but adapted for a *recurring* job rather than a one-time bounded backfill: instead of an explicit resumable cursor, the job runs **daily** (not weekly) and relies on the 7-day cache staleness check itself as the resumability signal. Whatever a run doesn't get to in ~280s just stays stale and gets picked up automatically by the next day's run — self-healing, no cursor state to persist or corrupt. Chosen over a Vercel Pro upgrade (which would also work) since it's free and needs no new infrastructure.
+
 **Tasks:**
-- [ ] Implement `src/lib/seo/dataforseo/serp.ts`: fetch SERP > Regular for top keywords (weekly, top 100 per ARCHITECTURE.md §6), populate `serp_snapshots`, 7-day cache
-- [ ] `src/app/api/seo/sync/dataforseo/serp/route.ts` (or folded into Milestone 5's route — decide during implementation), weekly Monday 07:00 UTC cron
+- [x] Implemented `src/lib/seo/dataforseo/serp.ts`: fetches SERP > Regular for the top 100 keywords by `search_volume` whose most recent snapshot is >7 days old (or missing), Birmingham city-level location (`1006524`, deliberately more local than Milestone 5's UK-wide choice — SERP rankings are genuinely geography-sensitive), budget-checked before *every single keyword* (not once per batch) so a run stops the instant the monthly limit would be exceeded
+- [x] `src/app/api/seo/sync/dataforseo/serp/route.ts`, cron `0 9 * * *` (daily, after every other cron's slot)
+
+**Real findings from live-testing against the actual API (not just docs) before running the full pipeline:**
+- **Real cost is $0.002/call, not ARCHITECTURE.md's documented $0.035** — an 17x discrepancy, confirmed directly from the API response's own `cost` field on a real call. At the real rate, refreshing all ~81 keywords costs roughly $0.16, not the ~$2.84 the documented rate would imply.
+- **`local_pack` and `people_also_ask` items frequently have no `domain`/`url` at the top level** (e.g. a real local pack result for "nigerian restaurant birmingham" — "Wolof Flavours" — had a `title`/`rating`/`description` but null `domain`/`url`; PAA items nest a sub-array of questions with no source attribution at all). Since `serp_snapshots.url`/`domain` are `NOT NULL`, the existing filter (skip any item missing `domain`/`url`) already handles this correctly — not a bug, just means `serp_snapshots` will capture mostly `organic` results in practice, with `local_pack`/`featured_snippet` only when DataForSEO resolves a real domain for them. Documented rather than silently accepted.
+- **DataForSEO temporarily paused the account mid-testing**, flagged as "unusual activity" — very likely triggered by the burst of calls made while verifying (locations lookup, `user_data` balance checks, the full Milestone 5 search-volume run, then several SERP test calls in quick succession on a brand-new trial account). This blocked completing a full real production run of `syncSerpSnapshots` before the account was reactivated. **Not a code defect** — the module's logic was validated against the real response shape from the calls that did succeed before the pause. Real end-to-end verification (a full run against all real stale keywords) is pending the user contacting DataForSEO support to lift the pause.
 
 **Dependencies:** Milestone 4, Milestone 0 (`serp_snapshots` table).
 
-**Expected outputs:** Real SERP position/feature data for the site's top keywords.
+**Expected outputs:** Code-complete, fully unit-tested against the real (not assumed) response shape. Real end-to-end production run pending DataForSEO support lifting the account pause.
 
 **Database changes:** None (uses Milestone 0's `serp_snapshots`).
 
-**Files to create:**
-- `src/lib/seo/dataforseo/serp.ts`, `serp.test.ts`
-- `src/app/api/seo/sync/dataforseo/serp/route.ts`, `route.test.ts`
+**Files created:**
+- `src/lib/seo/dataforseo/serp.ts`, `serp.test.ts` (7 tests)
+- `src/app/api/seo/sync/dataforseo/serp/route.ts`, `route.test.ts` (5 tests)
+- `vercel.json` (modified: new daily cron entry)
 
-**Tests to perform:**
-- Unit: response parsing, `UNIQUE(keyword_id, date, position)` upsert behavior
-- Unit: budget gate integration, same as Milestone 5
+**Tests performed:**
+- Unit: 7-day cache staleness filtering, `ignoreDuplicates` upsert behavior (rows are immutable once inserted — a same-day re-run is a safe no-op, not an overwrite), item-type-to-`serp_feature` mapping (only the 6 schema-supported types are written, everything else — `paid`, `knowledge_graph`, `find_results_on`, `related_searches`, etc. — correctly skipped), `is_own_site` detection via domain match, `rank_absolute` correctly used as `position` (not the confusingly-named `position: "left"/"right"` page-side field)
+- Unit: time-budget stop (a zero/expired budget stops before the next keyword, not mid-call), budget-gate stop mid-run (`budgetExceeded: true`, no error thrown), a failed individual task still counts as "checked" (no infinite same-run retry), real accumulated cost recorded correctly
+- Route: auth (401), 503 when not configured, success/error passthrough
+- **Real, partial:** verified the endpoint, auth, request shape, and real response shape (including the `local_pack`/PAA domain-null finding above) against 2 live calls before the account was paused; a full real production run of the orchestrator itself is still pending
+- Full suite: 363/363 passing (12 new), lint clean (pre-existing unrelated issues only), build clean
 
 **Success criteria (DoD):**
-- Same idempotency and budget-gate bar as Milestone 5
+- Same idempotency and budget-gate bar as Milestone 5 — done, unit-verified; full real-data confirmation pending the account pause being lifted
 
 **Risks & rollback:**
-- **Real, already-flagged risk (ARCHITECTURE.md §7), now resolved as a plan (confirmed with the user, not yet implemented):** this job's documented 10-minute timeout budget exceeds Hobby's confirmed 300s ceiling (Phase 1 Milestone 4). **Decision: reuse Phase 1's GSC backfill pattern** — `runBackfillChunk`-style time-budgeted chunks with a resumable cursor, splitting the weekly 100-keyword refresh across several smaller cron runs (e.g. 25 keywords/day across 4 days) rather than one atomic 100-keyword Monday run. Since SERP snapshots are already cached 7 days (ARCHITECTURE.md §6), spreading the refresh across a few days instead of one atomic run doesn't meaningfully hurt freshness. Chosen over a Vercel Pro upgrade (which would also work, 800s comfortably covers the 10-minute budget) since it's free and reuses an already-proven pattern in this codebase.
 - Rollback: `DELETE FROM serp_snapshots WHERE site_id = ...` — safe, no cascading dependents yet (Phase 3's competitor tracking is the first thing that would read this data cross-referentially)
 
 ---

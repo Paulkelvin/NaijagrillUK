@@ -9,6 +9,29 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 6 (DataForSEO SERP Snapshots) code-complete — all 13
+  Phase 2 milestones now done.** `src/lib/seo/dataforseo/serp.ts` +
+  `src/app/api/seo/sync/dataforseo/serp/route.ts` + a new daily cron.
+  Resolved the Hobby-timeout risk (confirmed with the user): daily runs
+  instead of weekly, relying on the existing 7-day cache staleness check
+  as the natural resumability signal rather than building new cursor
+  state — whatever a run doesn't finish in ~280s just stays stale and
+  gets picked up the next day. Budget-checked before every single
+  keyword, not once per batch, so a run stops the instant the monthly
+  limit would be hit. Real findings from live-testing against the actual
+  API before running the full pipeline: real cost is $0.002/call, not
+  ARCHITECTURE.md's documented $0.035 (17x cheaper — ~$0.16 for a full
+  81-keyword refresh, not ~$2.84); `local_pack`/`people_also_ask` items
+  frequently have no `domain`/`url` at the top level (confirmed with a
+  real result — a competitor's Google Business listing had a
+  title/rating but null domain/url), which the existing NOT-NULL filter
+  already handles correctly. **DataForSEO paused the account mid-testing**
+  ("unusual activity", from the burst of verification calls) before a
+  full real production run could complete — not a code defect, the
+  module was validated against the real response shape from calls that
+  did succeed. 12 new tests (363 total). See PHASE_2_IMPLEMENTATION.md
+  Milestone 6
+
 - **Phase 2 Milestone 5 (DataForSEO Search Volume Sync) complete — run for
   real against production, not just tested.** The user set up a real
   DataForSEO account mid-session. `src/lib/seo/dataforseo/search-volume.ts`
