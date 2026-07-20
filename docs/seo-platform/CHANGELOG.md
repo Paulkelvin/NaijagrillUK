@@ -9,6 +9,32 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Fixed
+- **Post-ship bug review of everything built so far — 5 real bugs found
+  and fixed, 9 new regression tests (387 total).** `search-volume.ts`/
+  `serp.ts`: `recordSpend()` only ran after the full sync loop finished
+  normally, so a DB write failure (or a failed task in a later batch)
+  partway through a run silently dropped every dollar already spent on
+  earlier, successfully-charged calls — `api_budgets.current_spend`
+  could drift below real spend, undermining the $10/month cap the
+  budget module exists to enforce. Now wrapped in try/finally so
+  accumulated spend is always recorded. `search-volume.ts` also only
+  checked the budget once before its whole (possibly multi-batch,
+  >1000-keyword) loop, unlike `serp.ts`'s existing per-keyword
+  re-check — fixed to re-check before each batch. `AdminNav.tsx`:
+  `isActive()` used a `startsWith` prefix check, so `/admin/seo/settings`
+  (which starts with the string `/admin/seo`) highlighted both "Action
+  Queue" and "Settings" as active at once on the settings page — switched
+  to exact match. `api/admin/login/route.ts`: the admin password
+  comparison was a plain `!==`, the one place not treating secret
+  comparison as timing-safe when `CRON_SECRET` and the session HMAC
+  already do — switched to `timingSafeEqual`. `api/seo/settings/route.ts`:
+  the `scoring_weights` merge fetched the existing row with `.single()`,
+  which throws on a missing row instead of returning null, producing a
+  500 where the identical "no site_configs row" condition returns a
+  clean 404 via every other path — switched to `.maybeSingle()`. Also
+  corrected 5 stale `src/middleware.ts` comment references to
+  `src/proxy.ts` left over from the auth rename above.
+
 - **`/admin` had no navigation to any of Phase 2's UI, and Basic Auth's
   session length was unpredictable — both real gaps the user hit and
   reported directly (with screenshots showing the Owner Dashboard with
