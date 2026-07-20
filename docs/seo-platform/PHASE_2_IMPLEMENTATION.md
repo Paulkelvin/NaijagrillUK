@@ -603,6 +603,46 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 ---
 
+## Milestone 13 — Action Outcome Tracking — ✅ Complete (2026-07-20)
+
+**Objective:** Close a real gap surfaced by the user after all 12 original milestones shipped: every other feedback loop in this platform improves its *inputs* (the CTR model recalibrating weekly from real clicks, the daily analysis re-scoring against fresh data, the budget module self-correcting spend) — but nothing ever checked whether completing a specific action actually worked. Not in ARCHITECTURE.md's original scope; added post-ship at explicit user request.
+
+**Tasks:**
+- [x] `src/lib/seo/intelligence/action-outcomes.ts` — `captureActionMetrics()`, `classifyOutcome()`, `measureActionOutcomes()`
+- [x] `src/app/api/seo/actions/[id]/route.ts` extended — captures a baseline snapshot on the transition into `completed`
+- [x] `src/app/api/seo/analysis/outcomes/route.ts` — daily cron, measures outcomes 30 days after completion
+- [x] `/admin/seo` — "Recent results" section surfacing measured outcomes
+
+**Implementation notes:**
+- **No schema migration.** This session's sandbox has no working path to apply DDL against production: direct Postgres is network-blocked here (the same finding Milestone 7 hit), and no Supabase Management API token was available this time to reach it over HTTPS instead (the workaround Milestone 0 used). Rather than block a real, explicitly-requested improvement on an unrelated infrastructure gap, outcome data is stored inside `actions.supporting_data` (JSONB, NOT NULL, already the designed per-action extensibility point every action type uses — see `run-analysis.ts`) under an `outcomeTracking` key, instead of new dedicated columns. Trade-off, stated plainly: no DB-level CHECK constraint on `outcome`'s enum values (validated in `action-outcomes.ts` only) and no partial index for "completed actions pending measurement" (`measureActionOutcomes` reads every completed action for the site instead — fine at this project's real scale of dozens of rows, not thousands). Promoting this to real columns + a partial index is a small, low-risk follow-up once a migration path is available again; the JSON shape was designed to map onto that directly.
+- **What gets measured** depends on what the action targets: a specific keyword+page pair (fix_cannibalization's canonical-page recommendation) uses that pair's `keyword_page_metrics`; a bare keyword (create_content, no page exists yet) aggregates across every page currently reporting data for it; a bare page (update_content/decay) uses `page_metrics` sessions/conversion_value. Position is impression-weighted, matching `retention/run.ts`'s existing weekly-rollup convention — not a new one invented for this module.
+- **Classification thresholds** (`MIN_POSITION_DELTA = 1`, `MIN_RELATIVE_DELTA = 20%`) are a new, reasoned convention for this module alone — ARCHITECTURE.md doesn't specify one, and nothing else in the codebase measures a before/after delta like this. A move needs to clear both an absolute floor (so 0→1 click isn't read as an infinite percentage swing) and a relative one (so noise on a high-traffic keyword isn't called "improved").
+- **30-day window** (`OUTCOME_WINDOW_DAYS`) before measuring, matching the trailing-30-day metric window itself and the same order of magnitude as every other "give Google/the data time to settle" window already used elsewhere in this codebase (content decay, keyword value).
+- Baseline is captured once, on the transition *into* `completed` (not on every PATCH that happens to already be completed) — a duplicate/idempotent re-PATCH never overwrites a real baseline with a stale one.
+- Actions completed before this feature existed have no baseline and are silently skipped by the measurement job, not retroactively guessed at — honest, since there's no real "before" snapshot for them.
+
+**Dependencies:** `keyword_page_metrics`/`page_metrics` (Phase 1, live since Milestone 5/6); the actions PATCH route (Milestone 11).
+
+**Database changes:** None (see implementation notes above).
+
+**Files created:**
+- `src/lib/seo/intelligence/action-outcomes.ts`, `action-outcomes.test.ts` (16 tests)
+- `src/app/api/seo/analysis/outcomes/route.ts`, `route.test.ts` (4 tests)
+- `src/app/api/seo/actions/[id]/route.ts` extended, 4 new tests
+- `src/app/admin/(dashboard)/seo/page.tsx` extended (Recent Results section) — no dedicated test, Server Component; manually verified
+
+**Tests performed:**
+- Unit: `classifyOutcome`'s improved/declined/unchanged boundaries including the absolute-floor-at-zero case and a null-position fallback to the clicks delta (8 tests); `captureActionMetrics`'s keyword-only/keyword+page/page-only/neither-set routing (4 tests); `measureActionOutcomes`'s skip-no-baseline, skip-already-measured, measure-and-merge (preserving other `supporting_data` keys), and cutoff-date correctness (4 tests) — 16 total in `action-outcomes.test.ts`; the PATCH route's baseline-capture-on-first-completion, no-recapture-on-idempotent-re-PATCH, graceful-skip-with-nothing-to-measure, and no-fetch-on-non-completed-transitions (4 new tests); the cron route's auth/delegate/error-propagate pattern (4 tests, mirrors `analysis/run/route.test.ts` exactly) — 24 new tests overall, 411 total
+- **Manual, real production data**: triggered the real SERP sync for the first time since the DataForSEO account was reactivated (81 keywords eligible, 47 synced within the Vercel time budget, 429 real snapshot rows written, $0.094 real cost — closes out Milestone 6's previously-incomplete real-world verification too). Ran the updated `/admin/seo` page against real production data via a local dev server with real Supabase credentials: confirmed a clean 200 render with the new "Recent results" section correctly staying silent (no runtime error) since production has zero completed actions with a measured outcome yet — the empty-state path, not the populated one, since nothing has had 30 days to season yet.
+
+**Success criteria (DoD):**
+- Completing an action now leaves a real, comparable "before" snapshot; 30 days later the daily cron measures the "after" and classifies it — confirmed via unit tests exercising the full capture → measure → classify path; end-to-end production proof (a real "improved"/"declined" badge appearing in the UI) isn't possible yet since no action has passed the 30-day window since this shipped
+
+**Risks & rollback:**
+- Pure additive change to `supporting_data` — no migration to roll back. Reverting means removing the cron entry, the two call sites in the PATCH route, and the UI section; no data cleanup needed since nothing outside `outcomeTracking` is touched.
+
+---
+
 ## Cross-Cutting Notes
 
 - **Same engineering discipline as Phase 1, no exceptions:** one milestone at a time, tested and documented before moving on, database-first principles for Milestone 0, real integration verification distinguished from mocked unit tests at every step, CHANGELOG.md/this document updated after every milestone.

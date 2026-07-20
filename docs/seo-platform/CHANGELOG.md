@@ -8,6 +8,40 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+- **Phase 2 Milestone 13 (Action Outcome Tracking) — a new milestone added
+  post-ship, at explicit user request, closing a real gap: every other
+  feedback loop in this platform improves its inputs (the CTR model
+  recalibrating weekly, the daily analysis re-scoring, the budget module
+  self-correcting spend) but nothing ever checked whether *completing* a
+  specific action actually worked.** `src/lib/seo/intelligence/action-outcomes.ts`
+  — captures a real before/after snapshot (impression-weighted position
+  and clicks for a keyword, sessions/conversion_value for a page) and
+  classifies the change as improved/unchanged/declined against a reasoned
+  absolute-and-relative threshold (documented in the module, since neither
+  ARCHITECTURE.md nor any existing convention specifies one). Baseline is
+  captured by `api/seo/actions/[id]/route.ts` the moment an action is
+  marked "completed"; a new daily cron (`api/seo/analysis/outcomes`,
+  07:30 UTC) measures the outcome 30 days later. Surfaced in `/admin/seo`
+  as a new "Recent results" section. **No schema migration** — this
+  session had no working path to apply DDL against production (direct
+  Postgres network-blocked, no Supabase Management API token available),
+  so outcome data lives in `actions.supporting_data` (already the
+  designed per-action JSONB extensibility point) instead of new columns —
+  a deliberate, documented environmental workaround, not a design
+  preference; see ADR-011. 24 new tests (411 total). See
+  PHASE_2_IMPLEMENTATION.md Milestone 13
+
+### Verified
+- **Milestone 6 (DataForSEO SERP Snapshots) real production run completed**
+  now that the user's DataForSEO account was reactivated (it had been
+  auto-paused for "unusual activity" mid-Milestone-6, blocking a full
+  real run until now): 81 keywords eligible, 47 synced within Vercel's
+  time budget (the remaining 34 picked up automatically by the next daily
+  cron run, exactly as the resumability design intends), 429 real SERP
+  snapshot rows written, $0.094 real cost. Closes out the one piece of
+  Phase 2 that had shipped code-complete but not fully real-world-verified.
+
 ### Fixed
 - **Post-ship bug review of everything built so far — 5 real bugs found
   and fixed, 9 new regression tests (387 total).** `search-volume.ts`/

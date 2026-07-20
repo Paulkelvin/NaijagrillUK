@@ -7,6 +7,11 @@ vi.mock("@/lib/supabase/server", () => ({
   createSupabaseServiceRoleClient: () => mockSupabase,
 }));
 
+const mockCaptureActionMetrics = vi.fn();
+vi.mock("@/lib/seo/intelligence/action-outcomes", () => ({
+  captureActionMetrics: (...args: unknown[]) => mockCaptureActionMetrics(...args),
+}));
+
 const { PATCH } = await import("./route");
 
 function request(body: unknown) {
@@ -24,11 +29,20 @@ function params(id = "action-1") {
 interface MockConfig {
   updatedRow?: Record<string, unknown> | null;
   error?: { message: string } | null;
+  // The row read back before marking an action "completed" (action-outcomes.ts's
+  // baseline capture) — undefined means "not found", matching a real maybeSingle().
+  fetchedRow?: Record<string, unknown> | null;
+  fetchError?: { message: string } | null;
 }
 
 function makeSupabaseMock(config: MockConfig = {}) {
   const updateCalls: Array<Record<string, unknown>> = [];
   const from = vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        maybeSingle: vi.fn().mockResolvedValue({ data: config.fetchedRow ?? null, error: config.fetchError ?? null }),
+      })),
+    })),
     update: vi.fn((values: Record<string, unknown>) => {
       updateCalls.push(values);
       return {
@@ -45,6 +59,7 @@ function makeSupabaseMock(config: MockConfig = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockCaptureActionMetrics.mockResolvedValue(null);
 });
 
 describe("PATCH /api/seo/actions/[id]", () => {
@@ -112,5 +127,56 @@ describe("PATCH /api/seo/actions/[id]", () => {
     const res = await PATCH(request({ status: "queued" }), params());
     const body = await res.json();
     expect(body).toEqual({ ok: true, action: { id: "action-1", status: "queued", completed_at: null } });
+  });
+
+  it("captures a baseline metrics snapshot into supporting_data when transitioning into completed for the first time", async () => {
+    const baseline = { window: "keyword", capturedAt: "t0", avgPosition: 12, clicks: 4, impressions: 80 };
+    mockCaptureActionMetrics.mockResolvedValue(baseline);
+    const { from, updateCalls } = makeSupabaseMock({
+      fetchedRow: { status: "queued", keyword_id: "kw-1", page_id: null, supporting_data: { opportunityScore: 55 } },
+      updatedRow: { id: "action-1", status: "completed" },
+    });
+    mockSupabase = { from };
+
+    const res = await PATCH(request({ status: "completed" }), params());
+    expect(res.status).toBe(200);
+    expect(mockCaptureActionMetrics).toHaveBeenCalledWith(mockSupabase, { keywordId: "kw-1", pageId: null });
+    expect(updateCalls[0].supporting_data).toEqual({ opportunityScore: 55, outcomeTracking: { baselineMetrics: baseline } });
+    // The original status/completed_at behavior is unaffected by the addition.
+    expect(updateCalls[0].status).toBe("completed");
+    expect(updateCalls[0].completed_at).not.toBeNull();
+  });
+
+  it("does not re-capture a baseline when the action was already completed (idempotent re-PATCH)", async () => {
+    const { from, updateCalls } = makeSupabaseMock({
+      fetchedRow: { status: "completed", keyword_id: "kw-1", page_id: null, supporting_data: { outcomeTracking: { baselineMetrics: { window: "keyword" } } } },
+      updatedRow: { id: "action-1", status: "completed" },
+    });
+    mockSupabase = { from };
+
+    await PATCH(request({ status: "completed" }), params());
+    expect(mockCaptureActionMetrics).not.toHaveBeenCalled();
+    expect(updateCalls[0].supporting_data).toBeUndefined();
+  });
+
+  it("skips baseline capture (but still completes the action) when there's nothing to measure against", async () => {
+    mockCaptureActionMetrics.mockResolvedValue(null); // action-outcomes.ts's defensive null case
+    const { from, updateCalls } = makeSupabaseMock({
+      fetchedRow: { status: "queued", keyword_id: null, page_id: null, supporting_data: {} },
+      updatedRow: { id: "action-1", status: "completed" },
+    });
+    mockSupabase = { from };
+
+    const res = await PATCH(request({ status: "completed" }), params());
+    expect(res.status).toBe(200);
+    expect(updateCalls[0].supporting_data).toBeUndefined();
+  });
+
+  it("does not fetch/capture a baseline for non-completed transitions", async () => {
+    const { from } = makeSupabaseMock({ updatedRow: { id: "action-1", status: "skipped" } });
+    mockSupabase = { from };
+
+    await PATCH(request({ status: "skipped" }), params());
+    expect(mockCaptureActionMetrics).not.toHaveBeenCalled();
   });
 });

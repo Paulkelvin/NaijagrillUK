@@ -49,6 +49,68 @@ async function loadOpenActions(): Promise<QueueResult> {
   }
 }
 
+// The feedback-loop surface: did completing an action actually work? See
+// src/lib/seo/intelligence/action-outcomes.ts for how baselineMetrics/
+// outcome get written. Read-only — no schema migration was available in
+// the build environment when this shipped, so outcome data lives in
+// supporting_data rather than a dedicated column/index (documented in
+// full in action-outcomes.ts). At this project's real scale (a handful of
+// completed actions), fetching every completed action for the site and
+// filtering in JS is simpler and just as fast as a JSONB path filter.
+const RECENT_RESULTS_LIMIT = 10;
+const RECENT_RESULTS_FETCH_LIMIT = 50;
+
+interface MetricsSnapshot {
+  window: "keyword" | "page";
+  avgPosition?: number | null;
+  clicks?: number;
+  sessions?: number;
+  conversionValue?: number;
+}
+
+interface OutcomeTracking {
+  baselineMetrics: MetricsSnapshot;
+  outcomeMetrics?: MetricsSnapshot;
+  outcome?: "improved" | "unchanged" | "declined";
+  outcomeMeasuredAt?: string;
+}
+
+interface CompletedActionRow {
+  id: string;
+  type: string;
+  title: string;
+  source_module: string;
+  completed_at: string;
+  supporting_data: { outcomeTracking?: OutcomeTracking } | null;
+}
+
+interface RecentResultsResult {
+  rows: CompletedActionRow[];
+  error: string | null;
+}
+
+async function loadRecentOutcomes(): Promise<RecentResultsResult> {
+  try {
+    const siteId = await getPrimarySiteId();
+    const supabase = createSupabaseServiceRoleClient();
+    const { data, error } = await supabase
+      .from("actions")
+      .select("id, type, title, source_module, completed_at, supporting_data")
+      .eq("site_id", siteId)
+      .eq("status", "completed")
+      .order("completed_at", { ascending: false })
+      .limit(RECENT_RESULTS_FETCH_LIMIT);
+
+    if (error) return { rows: [], error: error.message };
+    const withOutcome = ((data ?? []) as CompletedActionRow[])
+      .filter((row) => row.supporting_data?.outcomeTracking?.outcome)
+      .slice(0, RECENT_RESULTS_LIMIT);
+    return { rows: withOutcome, error: null };
+  } catch (err) {
+    return { rows: [], error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
@@ -107,8 +169,74 @@ function ActionCard({ action, rank }: { action: ActionRow; rank: number }) {
   );
 }
 
+const OUTCOME_BADGE_CLASS: Record<string, string> = {
+  improved: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
+  declined: "border-red-400/30 bg-red-400/10 text-red-200",
+  unchanged: "border-white/10 bg-white/[0.06] text-white/70",
+};
+
+const OUTCOME_LABEL: Record<string, string> = {
+  improved: "Improved",
+  declined: "Declined",
+  unchanged: "No change",
+};
+
+function formatMetricsChange(baseline: MetricsSnapshot, current: MetricsSnapshot): string | null {
+  if (baseline.window === "keyword" && current.window === "keyword") {
+    const parts: string[] = [];
+    if (baseline.avgPosition != null && current.avgPosition != null) {
+      parts.push(`Position ${baseline.avgPosition.toFixed(1)} → ${current.avgPosition.toFixed(1)}`);
+    }
+    parts.push(`Clicks ${baseline.clicks ?? 0} → ${current.clicks ?? 0}`);
+    return parts.join(" · ");
+  }
+  if (baseline.window === "page" && current.window === "page") {
+    return `Sessions ${baseline.sessions ?? 0} → ${current.sessions ?? 0}`;
+  }
+  return null;
+}
+
+function formatCompletedDate(value: string) {
+  return new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+function RecentResults({ rows, error }: RecentResultsResult) {
+  if (error || rows.length === 0) return null; // quiet on error/empty — this section is a bonus, not core to the page
+
+  return (
+    <section>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-white/50">Recent results</h2>
+      <p className="mt-1 text-xs text-white/40">
+        Did completing an action actually help? Measured {"~"}
+        30 days after completion against real ranking/traffic data.
+      </p>
+      <ul className="mt-4 space-y-3">
+        {rows.map((row) => {
+          const tracking = row.supporting_data?.outcomeTracking;
+          if (!tracking?.outcome) return null;
+          const change = tracking.outcomeMetrics ? formatMetricsChange(tracking.baselineMetrics, tracking.outcomeMetrics) : null;
+          return (
+            <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm text-white/80">{row.title}</p>
+                {change && <p className="mt-0.5 text-xs text-white/40">{change}</p>}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white/30">{formatCompletedDate(row.completed_at)}</span>
+                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${OUTCOME_BADGE_CLASS[tracking.outcome]}`}>
+                  {OUTCOME_LABEL[tracking.outcome]}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 export default async function SeoActionQueuePage() {
-  const { rows, error } = await loadOpenActions();
+  const [{ rows, error }, recentResults] = await Promise.all([loadOpenActions(), loadRecentOutcomes()]);
 
   return (
     <main className="min-h-screen bg-[#0f0c0a] px-5 py-12 text-white md:px-10 md:py-16">
@@ -145,6 +273,8 @@ export default async function SeoActionQueuePage() {
             ))}
           </ul>
         )}
+
+        <RecentResults {...recentResults} />
       </div>
     </main>
   );
