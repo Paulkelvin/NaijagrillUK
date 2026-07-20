@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization), 3 (content decay), and 7 (opportunity score, skipped ahead of 4–6 since DataForSEO doesn't exist yet — see the Sequencing Decision) are all code-complete and unit-tested — none has a route/deploy yet, since none is its own background job (all feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet); opportunity score is genuinely runnable against real data right now, just not wired to anything yet. Milestones 4–6, 8–12 not started.
+> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2 (cannibalization), 3 (content decay), 7 (opportunity score), and 8 (page ROI score) — 7 and 8 skipped ahead of 4–6 since DataForSEO doesn't exist yet, see the Sequencing Decision — are all code-complete and unit-tested (259 tests passing total). None has a route/deploy yet, since none is its own background job (all feed into Milestone 10's combined analysis engine). Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history that doesn't exist yet); opportunity score is genuinely runnable against real data right now, just not wired to anything yet; page ROI score is currently 0 for every page (needs Milestone 5's search_volume — see its own section for the full finding). Milestones 4–6, 9–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -369,36 +369,46 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 
 ---
 
-## Milestone 8 — Page ROI Score (§5.2)
+## Milestone 8 — Page ROI Score (§5.2) — ✅ Code complete (2026-07-20)
 
 **Objective:** Rank existing pages by improvement return on investment.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/intelligence/page-roi-score.ts`: `traffic_potential` (per-keyword click-gain projection using Milestone 1's CTR model), `revenue_potential` (page conversion rate from `page_metrics`, with site-wide fallback below 50 sessions), `effort_score` (six weighted components — `missing_paa` forced to 0 until Milestone 6 exists, `word_count_gap` uses the documented per-content-type defaults until a content-brief data source exists in Phase 3)
-- [ ] `roi_score = revenue_potential / max(effort_score, 0.05)`
+- [x] Implement `src/lib/seo/intelligence/page-roi-score.ts`: `traffic_potential` (per-keyword click-gain projection using Milestone 1's CTR model), `revenue_potential` (page conversion rate from `page_metrics`, with site-wide fallback below 50 sessions), `effort_score` (six weighted components)
+- [x] `roi_score = revenue_potential / max(effort_score, 0.05)`
 
-**Dependencies:** Milestone 1 (CTR model). Milestone 6 improves `effort_score`'s `missing_paa` component but doesn't gate shipping.
+**Real finding, beyond what this section originally anticipated:** the task above assumed only two `effort_score` components (`missing_paa`, `word_count_gap`) would degrade pre-DataForSEO. Checking `pages`' actual producers (`gsc/sync.ts`, `ga4/sync.ts`) shows both syncs only ever write `url`/`path` — `word_count`, `content_type`, `cms_updated_at`, `schema_types`, `title`, and `meta_description` are null for every real page, because no site crawler/CMS-content sync exists in Phase 1 or Phase 2 (the crawler is an explicit Phase 3 Non-Goal). So in practice **five of six** components are currently forced to 0, not two:
+- `word_count_gap` — has a real, live formula (ARCHITECTURE.md's documented per-content-type target-word-count substitution), but evaluates to 0 today since `word_count` itself has no producer yet.
+- `content_age`, `link_deficit`, `schema_gap`, `meta_quality` — ARCHITECTURE.md gives a real formula for each but no interim-default guidance (unlike `word_count_gap`/`missing_paa`), and their underlying columns/tables (`cms_updated_at`, `internal_links`, `schema_types`, `title`/`meta_description`) have zero producers in Phase 2. Rather than inventing undocumented thresholds or an expected-schema-types table (the same trap Milestone 3's seasonality check deliberately avoided), all four are forced to 0 — extending ARCHITECTURE.md's own explicit `missing_paa` precedent consistently.
 
-**Expected outputs:** Real ROI-ranked pages using GA4 conversion data + GSC keyword data, degraded-but-real `effort_score` until DataForSEO exists.
+Net effect: `effort_score` computes to 0 for every real page today, so `roi_score = revenue_potential / 0.05` — pages are currently ranked purely by `revenue_potential`. `revenue_potential` is itself 0 for every page too right now, because `traffic_potential` needs `keywords.search_volume`, which (like `cpc`) has no producer until Milestone 5 (DataForSEO search volume sync) runs — GSC sync only ever writes `keyword`/`keyword_normalized`/`data_source`. This is a **stronger** degradation than Opportunity Score's (Milestone 7), which still varies by `position_potential`/`intent_value` alone pre-DataForSEO. `avg_conversion_value` is the one input that can be real today, if `site_configs.conversion_events` is configured — everything else in the chain is gated on Milestone 5.
 
-**Database changes:** None (writes to `actions`).
+**Dependencies:** Milestone 1 (CTR model, live). Milestone 5 (DataForSEO search volume) is required for `roi_score` to produce any real variance at all. A future Phase 3 crawler is required before `effort_score` differentiates between pages.
 
-**Files to create:**
-- `src/lib/seo/intelligence/page-roi-score.ts`, `page-roi-score.test.ts`
+**Expected outputs:** Code-complete, null-safe, fully unit-tested. Not yet meaningful against real data — gated on Milestone 5.
 
-**Tests to perform:**
-- Unit: `traffic_potential` click-gain projection against synthetic multi-keyword page data
-- Unit: conversion-rate site-wide fallback triggers correctly below the 50-session floor
-- Unit: each `effort_score` component independently verified, including the two that degrade to defaults pre-DataForSEO
+**Database changes:** None (writes to `actions` — Milestone 10).
+
+**Files created:**
+- `src/lib/seo/intelligence/page-roi-score.ts`, `page-roi-score.test.ts` (25 tests)
+
+**Tests performed:**
+- Unit: `traffic_potential`/`projectedClickGain` against hand-calculated values, including the position-3-floor and position-20-ceiling CTR-bucket clamps
+- Unit: conversion-rate site-wide fallback triggers correctly at/below the 50-session floor
+- Unit: `avgConversionValue`'s conversion_events-then-CPC fallback chain, including the "neither exists → 0" case
+- Unit: each `effort_score` component independently verified, including all five forced-0 constants and `word_count_gap`'s real formula/clamping
 - Unit: `roi_score`'s `max(effort_score, 0.05)` floor prevents divide-by-zero/near-zero blowup
+- Unit: full orchestrator chain against a hand-calculated multi-stage example (`computePageRoiScores`)
+- Full suite: 259/259 passing (25 new), `npm run lint` clean (pre-existing unrelated warnings only), `npm run build` clean
 
 **Success criteria (DoD):**
-- Formula components each independently verified against hand-calculated values
-- Degraded-mode output (pre-DataForSEO) is plausible, not just non-crashing
+- Formula components each independently verified against hand-calculated values — done
+- Degraded-mode output (pre-DataForSEO) is plausible, not just non-crashing — done, though degraded further than originally scoped (see finding above); this is now clearly documented rather than silently shipped
 
 **Risks & rollback:**
 - Risk: conversion rate unreliable below 50 sessions/month — explicitly mitigated via the site-wide fallback, per ARCHITECTURE.md §5.2
-- Rollback: pure read + `actions` write
+- Risk (new): `roi_score` is currently 0 for every page — anyone consuming this module before Milestone 5 lands needs to know it's not yet discriminating, not that "no page needs work"
+- Rollback: pure read, no route/deploy yet (feeds Milestone 10); not merged to `main`
 
 ---
 

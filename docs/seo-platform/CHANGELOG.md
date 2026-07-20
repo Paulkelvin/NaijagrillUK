@@ -9,6 +9,27 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 ## [Unreleased]
 
 ### Added
+- **Phase 2 Milestone 8 (Page ROI Score) code-complete.**
+  `src/lib/seo/intelligence/page-roi-score.ts` — per-keyword click-gain
+  projection (`traffic_potential`) using Milestone 1's CTR model,
+  `revenue_potential` from GA4 conversion data with a site-wide fallback
+  below 50 sessions/month, `effort_score` across ARCHITECTURE.md §5.2's
+  six weighted components, `roi_score = revenue_potential /
+  max(effort_score, 0.05)`. Found a real gap beyond what
+  PHASE_2_IMPLEMENTATION.md's Milestone 8 section originally scoped:
+  checking `pages`' actual producers (GSC/GA4 sync) shows only `url`/
+  `path` are ever written, so `word_count`, `content_type`,
+  `cms_updated_at`, `schema_types`, `title`, and `meta_description` are
+  null for every real page — no site crawler/CMS sync exists in Phase 1
+  or 2. Five of six `effort_score` components (not the two originally
+  anticipated) are therefore forced to 0 today, extending
+  ARCHITECTURE.md's own explicit `missing_paa` precedent rather than
+  inventing undocumented thresholds/tables for `content_age`,
+  `link_deficit`, `schema_gap`, `meta_quality`. `roi_score` is currently
+  0 for every page — `traffic_potential` needs `keywords.search_volume`,
+  which has no producer until Milestone 5 (DataForSEO). 25 new unit
+  tests (259 total). Not merged to `main` — no route yet (Milestone 10's
+  job). See PHASE_2_IMPLEMENTATION.md Milestone 8
 - **Phase 2 Milestone 7 (Opportunity Score) code-complete — skipped
   ahead of Milestones 4–6** since DataForSEO doesn't exist yet (per
   the Sequencing Decision). `src/lib/seo/intelligence/opportunity-score.ts`
