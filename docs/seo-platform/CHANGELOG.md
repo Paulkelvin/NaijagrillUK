@@ -8,6 +8,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Added
+- **Phase 2 Milestone 2 (Cannibalization Detection & Scoring)
+  code-complete.** `src/lib/seo/intelligence/cannibalization.ts` —
+  detects keywords with impressions from 2+ distinct pages over a
+  90-day window, scores each over the last 30 days
+  (`position_variance`, `click_split`, `ctr_deficit` using Milestone
+  1's CTR model, `traffic_value`), generates a `"canonicalize"` or
+  `"merge"` recommendation above a 40-point threshold. Brand-name
+  exclusion resolved as `sites.config.brand_terms` — reuses the
+  existing "lightweight overrides" column rather than a new migration.
+  Deliberately skips ARCHITECTURE.md §5.3's third action case
+  ("differentiate" for mismatched intent) since that needs the Intent
+  Alignment Check, out of scope for Phase 2. 13 new unit tests (204
+  total). Read-only — doesn't write to `actions` yet (Milestone 10's
+  job); no route/deploy this milestone since it's not its own
+  background job. See PHASE_2_IMPLEMENTATION.md Milestone 2
+
 ### Deployed
 - **Phase 2 Milestones 0–1 merged to `main` and deployed to production,
   2026-07-20.** Verified via `curl`: `/api/seo/analysis/ctr-model`

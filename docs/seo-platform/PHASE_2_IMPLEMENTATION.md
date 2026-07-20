@@ -1,6 +1,6 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
-> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestones 2–12 not started.
+> **Status:** In progress. Milestones 0 (schema) and 1 (CTR model) both deployed to production (2026-07-20), verified via `curl`. The CTR model correctly stays on industry defaults for now (only 5 real clicks exist). In passing, found and fixed a real Phase 1 gap: `/api/seo/sync/gsc` and `/api/seo/sync/ga4` were never actually wired into `vercel.json`'s cron schedule — the entire pipeline (GSC, GA4, CTR model, retention, ping) now runs on its own schedule, confirmed registered via the Vercel API. Milestone 2 (cannibalization) is code-complete and unit-tested — no route/deploy yet, since it's not its own background job (feeds into Milestone 10's combined analysis engine instead). Milestones 3–12 not started.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
@@ -165,31 +165,33 @@ ARCHITECTURE.md's roadmap lists DataForSEO integration alongside the scoring alg
 **Objective:** Surface keywords where multiple pages compete against each other — pure GSC data, no DataForSEO dependency, real output possible as soon as any keyword has 90 days of multi-page ranking history.
 
 **Tasks:**
-- [ ] Implement `src/lib/seo/intelligence/cannibalization.ts`: detection query (90-day lookback, `GROUP BY keyword_id HAVING count(DISTINCT page_id) >= 2`), then per-keyword scoring (30-day window: `position_variance`, `click_split`, `ctr_deficit` using the CTR model from Milestone 1, `traffic_value`)
-- [ ] Brand-name exclusion: navigational keywords matching the site's own brand name are excluded from detection (ARCHITECTURE.md §5.3 Limitations) — needs a config value for "brand terms," not currently modeled anywhere; resolve during implementation (likely a new `site_configs` field or a simple hardcoded list for the single-site Phase 1/2 scope, consistent with ADR-003's "build for one, design for many")
-- [ ] Action generation: score > 40 → recommend canonical/redirect, merge, or differentiate per the three cases in §5.3
+- [x] Implement `src/lib/seo/intelligence/cannibalization.ts`: detection (90-day lookback, keywords with impressions from 2+ distinct pages — reproduced over already-fetched rows in application code, not a second DB round trip, same pattern as every prior sync/retention job in this project), then per-keyword scoring (30-day window: `position_variance`, `click_split`, `ctr_deficit` using the CTR model from Milestone 1, `traffic_value`)
+- [x] Brand-name exclusion: resolved as `sites.config.brand_terms` (an array of lowercased strings) — reuses the `sites.config` "lightweight overrides" column Milestone 1 already described for exactly this kind of single-value, single-site override (ADR-003), no new migration needed. A candidate keyword is excluded if its `keyword_normalized` contains any configured term (substring match, not exact — catches brand-adjacent queries like "naija grill menu" too)
+- [x] Action generation: score > 40 → `"canonicalize"` (one page holds ≥70% of clicks — a numeric threshold ARCHITECTURE.md's "significantly more traffic" doesn't define, resolved here by reusing `click_split`'s own 0–1 scale rather than inventing a second signal) or `"merge"` (more evenly split). **Deliberately does not implement the third case** ("pages serve different intents" → differentiate) — that needs the Intent Alignment Check (§5.9), explicitly out of scope for Phase 2 (this plan's own Non-Goals) since there's no reliable per-page intent signal yet to make that call from
 
 **Dependencies:** Milestone 1 (CTR model, for `expected_ctr` in the `ctr_deficit` calculation).
 
 **Expected outputs:** Real cannibalization scores, testable against production data as soon as any keyword genuinely ranks via 2+ pages — plausible even with Phase 1's current small dataset, unlike the CTR model's 1,000-click gate.
 
-**Database changes:** None (reads `keyword_page_metrics`, writes to `actions` via Milestone 10's orchestrator, not directly).
+**Database changes:** None (reads `keyword_page_metrics`/`keywords`/`sites`/`site_configs`; writes nothing — Milestone 10's orchestrator is what will eventually write to `actions`).
 
-**Files to create:**
-- `src/lib/seo/intelligence/cannibalization.ts`, `cannibalization.test.ts`
+**Files created:**
+- `src/lib/seo/intelligence/cannibalization.ts`, `cannibalization.test.ts` (13 tests)
 
-**Tests to perform:**
-- Unit: detection query logic reproduced in application code (or verified via a direct SQL test against a seeded local Postgres instance, matching Phase 1's established two-track validation habit) correctly requires 2+ distinct pages with impressions > 0 in the 90-day window
-- Unit: hand-calculated `position_variance`/`click_split`/`ctr_deficit`/`traffic_value` against synthetic multi-page keyword data
-- Unit: brand-name exclusion actually excludes the configured term
-- Unit: score > 40 threshold correctly gates action generation
+**Tests performed:**
+- [x] Unit: `detectCandidates` correctly requires 2+ distinct pages with impressions > 0, independently for multiple keywords in the same batch
+- [x] Unit: `scoreCandidate` — hand-calculated `position_variance`/`click_split`/`traffic_value` against synthetic two-page data; `cpc: null` correctly falls back to `1.0`; a best-average-position worse than 20 correctly clamps to the position-20 CTR-model entry rather than looking up a missing key; `ctr_deficit` correctly computed when actual CTR genuinely underperforms the expected rate; zero total clicks degenerates to `clickSplit`/`dominantShare` of `0` rather than `NaN` or a divide-by-zero
+- [x] Unit: `detectCannibalization` orchestration (mocked Supabase) — zero candidates short-circuits before any further query; a real dominant-page case produces `recommendation: "canonicalize"` with the correct `recommendedCanonicalPageId`; an evenly-split case produces `"merge"` with a `null` canonical page; a brand-term match correctly excludes the keyword entirely; a low-severity case correctly stays at `recommendation: null`
+- **Not yet performed:** real production run — this module isn't wired into any route yet (by design; ARCHITECTURE.md §7 doesn't list cannibalization as its own background job the way it does the CTR model, it's part of Milestone 10's combined "Analysis engine" job), so there's nothing to `curl` yet
 
 **Success criteria (DoD):**
-- Detection query matches the exact SQL shape in ARCHITECTURE.md §5.3
-- Scoring formula components each independently unit-verified against hand-calculated values, same rigor as Milestone 8's retention aggregation formulas
+- [x] Detection logic matches ARCHITECTURE.md §5.3's query semantics exactly (verified via `detectCandidates`'s own unit tests)
+- [x] Scoring formula components each independently unit-verified against hand-calculated values, same rigor as Milestone 8's retention aggregation formulas
+- [ ] Verified against real production cannibalization cases — pending Milestone 10 (no route to trigger this standalone) and real multi-page-ranking data existing
 
 **Risks & rollback:**
 - Risk: with Phase 1's current data volume, real cannibalization cases may not exist yet to test against — same "code-complete, needs real-world time" posture as Content Decay (Milestone 3) and the CTR model
+- Risk: `sites.config.brand_terms` is currently unset (empty) for the real site — brand-name exclusion is implemented and tested but inert until Paul configures it (worth doing once this ships for real, not blocking to ship without it, since GSC branded-query volume for a young property is likely near zero anyway)
 - Rollback: pure read + `actions` write: deleting generated `actions` rows is safe and non-cascading
 
 ---
