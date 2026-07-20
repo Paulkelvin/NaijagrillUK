@@ -8,6 +8,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ## [Unreleased]
 
+### Deployed
+- **`claude/exciting-johnson-nddaq1` merged into `main` and deployed to
+  production** (naijagrillandspice.co.uk) — Milestones 5–8's code (GSC
+  sync, GA4 sync, observability endpoint, retention job) is now live
+  alongside Milestones 0–4. No Vercel MCP connector was reachable this
+  session (toggled on per Paul, never surfaced in this session's tool
+  list), so the deploy was verified via direct `curl` against production
+  instead: `/api/seo/status`, `/api/seo/sync/gsc`, `/api/seo/sync/ga4`,
+  `/api/seo/sync/gsc/backfill`, and `/api/seo/retention/run` all
+  correctly return `401` (Basic Auth / `Bearer` auth enforced, exactly as
+  designed — none of these are meant to be callable without a credential
+  yet); `/admin` still `401`; the homepage still `200`. Diff touched zero
+  existing site pages/components — additive only, zero regressions
+  observed. **This does not mean the sync jobs are doing anything for
+  real** — `GSC_CLIENT_EMAIL`/`GA4_CLIENT_EMAIL` etc. still aren't
+  configured, so `isGscConfigured()`/`isGa4Configured()` are `false` and
+  those two routes stay inert (`503`) even once authorized; the retention
+  cron is live on its weekly schedule but has nothing to aggregate yet
+  (no 6-month-old data exists)
+
 ### Added
 - **Milestone 8 (Retention/Archival Job) code-complete, fully tested, no
   external blocker.** `retention/run.ts` — aggregates

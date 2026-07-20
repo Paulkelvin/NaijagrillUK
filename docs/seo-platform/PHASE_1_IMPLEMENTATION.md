@@ -1,6 +1,6 @@
 # Phase 1 Implementation Plan — Data Foundation
 
-> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–6 (GSC/GA4 sync jobs) code-complete and unit-tested, pending real credentials for integration verification and production deployment. Milestone 7 (Observability Layer) code-complete, locally validated, and its migration is now live in production (applied 2026-07-20); the `/api/seo/status` route itself is still only on the feature branch. Milestone 8 (Retention/Archival Job) code-complete, fully unit- and locally-integration-tested (no credential or migration blocker), pending deploy go-ahead. Milestone 9 deferred by design.
+> **Status:** In progress. Milestones 0–4 complete and verified in production. Milestones 5–8's code is merged to `main` and deployed to production (2026-07-20) — all routes confirmed live via `curl` (correctly `401` without credentials). Milestones 5–6 (GSC/GA4 sync jobs) still need real Google credentials before they do anything for real (routes stay `503`-inert until then). Milestone 7 (Observability Layer) is fully live — migration and endpoint both in production — but has nothing but Milestone 4's `ping` data to report on yet. Milestone 8 (Retention/Archival Job) is live on its weekly cron schedule but has no 6-month-old data to act on yet. Milestone 9 deferred by design.
 > **Last updated:** 2026-07-20
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen), ENGINEERING_STANDARDS.md
@@ -765,8 +765,9 @@ Same posture as Milestone 5, per your instruction to keep building without waiti
   - `sync_status_summary`'s `DISTINCT ON (site_id, source)` correctly surfaced the *most recent* row per source regardless of status (the stuck `'started'` row, being more recent than the completed one) — this is deliberate: "most recent activity" is more useful at a glance than "most recent success" (that's what `stale_datasets.last_success_at` is for)
   - Queried all three views as the `anon` role (`SET ROLE anon`) → `0` rows from every view, confirming `WITH (security_invoker = true)` actually makes the underlying tables' zero-policy RLS apply through the view rather than the view owner's superuser privileges — this is exactly the security property the migration's own comment claims, verified empirically rather than trusted from documentation
 - [x] **Production (Supabase SQL editor, applied by Paul, 2026-07-20):** the migration was pasted into the Supabase SQL editor and run directly against the production project. Verified live via `SELECT viewname FROM pg_views WHERE schemaname = 'public' AND viewname IN (...)` returning `stale_datasets`, `sync_failures_recent`, `sync_status_summary` — all three present.
-- **Not performed — the endpoint itself isn't deployed yet, and no real GSC/GA4 data exists to query:**
-  - `/api/seo/status` has not been hit against real production `sync_log` data — it lives on the feature branch, not merged; and even once deployed, production `sync_log` only has Milestone 4's `ping` rows until Milestones 5/6 run for real
+- [x] **Deployed to production, 2026-07-20:** merged to `main`, confirmed live via `curl https://www.naijagrillandspice.co.uk/api/seo/status` returning `401` (Basic Auth enforced, correct — no credential was sent). `/admin` still `401`, homepage still `200` — zero regressions.
+- **Not performed — no real GSC/GA4 data exists to query yet:**
+  - `/api/seo/status` has not been hit *with valid credentials* against real production `sync_log` data — production `sync_log` only has Milestone 4's `ping` rows until Milestones 5/6 run for real
   - `security_invoker`'s RLS behavior was verified locally (`anon` sees 0 rows), not re-checked against the production views directly — same mechanism, same Postgres version family (17 vs. local 16), low risk but not independently re-proven in production
 
 **Success criteria (DoD):**
@@ -785,7 +786,7 @@ No Supabase MCP connector was reachable from this session (toggled on in the cla
 
 **Verified live**, 2026-07-20: `SELECT viewname FROM pg_views WHERE schemaname = 'public' AND viewname IN ('sync_status_summary','stale_datasets','sync_failures_recent')` returned all three view names. Combined with the local PostgreSQL validation above (same DDL, byte-identical), this closes the database-changes side of this milestone to the same standard Milestone 1's production apply was held to.
 
-**Still open:** the `/api/seo/status` route itself is only on the feature branch — the views existing in production doesn't mean the endpoint is reachable yet. That, plus real GSC/GA4 data flowing through `sync_log`, are what's left before this milestone's full DoD (spot-checking all 8 questions against real pipeline data) can be checked off. Re-open this milestone when both exist — don't silently mark it done.
+**Update, same day:** `/api/seo/status` itself is now also merged and deployed — confirmed live via `curl` returning `401` without credentials. **Still open:** real GSC/GA4 data flowing through `sync_log` is what's left before this milestone's full DoD (spot-checking all 8 questions against real pipeline data) can be checked off. Re-open this milestone when that exists — don't silently mark it done.
 
 As a housekeeping note: the production database password was shared in this chat twice while diagnosing the connection path (once as the existing direct-connection value, once freshly reset). Paul was advised to reset it again since nothing in the deployed app depends on it.
 
@@ -842,7 +843,7 @@ As a housekeeping note: the production database password was shared in this chat
 **Risks & rollback:**
 - Risk: aggregation bugs would silently corrupt historical trend data since the source daily rows are deleted after aggregation. Mitigation: dry-run mode (`?dryRun=true` query param) that computes and logs the would-be aggregates without deleting, used for one real pass before trusting the destructive path.
 - Rollback: because daily rows are deleted, a bad aggregation is not trivially reversible — this is exactly why the dry-run mode above is mandatory before the first real (non-synthetic) run, and why GSC's own 16-month data remains the ultimate source of truth for keyword metrics if a re-backfill is ever needed.
-- **Not yet merged to `main` / deployed to production** — unlike Milestones 0–4, this wasn't deployed without being asked again (same posture as Milestones 5–7), and this one specifically writes and deletes real data once live, so it warrants an explicit go-ahead even though the code and cron wiring are ready.
+- **Deployed to production 2026-07-20, with explicit go-ahead** (Paul: "Yes, merge and deploy"). `/api/seo/retention/run` confirmed live via `curl` returning `401` without credentials; the weekly Sunday 03:00 UTC cron entry is active. It has nothing to aggregate yet — no `keyword_page_metrics`/`page_metrics` rows exist that are 6 months old (the platform itself is only days old) — so the first several scheduled runs are expected to be clean no-ops. The mandatory dry-run-before-first-real-pass note above still applies once real 6-month-old data eventually exists.
 
 ---
 
