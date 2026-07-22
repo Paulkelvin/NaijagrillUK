@@ -24,6 +24,18 @@ const nextConfig: NextConfig = {
         destination: "/menu",
         permanent: true,
       },
+      {
+        // The old commercial-intent blog post was cannibalizing the
+        // homepage for "nigerian restaurant birmingham"-type keywords —
+        // same pitch, same intent, no differentiation (Milestone 16
+        // cannibalization review). Rewritten in Sanity as a genuinely
+        // different, informational article (jollof rice origin story) at
+        // a new slug; this redirect carries over whatever the old URL had
+        // rather than letting it 404.
+        source: "/blog/best-nigerian-restaurant-in-handsworth-birmingham",
+        destination: "/blog/jollof-rice-origin-story",
+        permanent: true,
+      },
     ];
   },
   images: {
