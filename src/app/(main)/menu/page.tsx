@@ -70,7 +70,7 @@ const menuSections: MenuSection[] = [
     label: "Grill & Suya",
     kicker: "From the fire",
     description:
-      "Smoky skewers, wings, suya spice, and our Nigerian mixed grill for sharing.",
+      "Handsworth's home for real Birmingham suya — smoky skewers, wings, and our Nigerian mixed grill for sharing.",
   },
   {
     id: "seafood-pepper",
