@@ -41,6 +41,45 @@ action rows below — the platform's own outcome-tracking
 - Is the Mixed Grill menu item generating any real Uber Eats interest? It's currently `orderable: false` (no delivery listing set up) — dine-in/collection only until that's added.
 - Real photo still needed for Mixed Grill — it's using the jollof rice fallback image.
 
+**2026-07-22, later same day:** the 5 `create_content` actions for mix
+grill / jollof rice near me / suya birmingham / suya place near me / small
+chops near me were also marked `completed` with real `baseline_metrics`
+captured (mirroring the 5 `fix_cannibalization` actions above) — they'd
+been sitting `queued` in the UI even though the real content work was
+already done and deployed.
+
+---
+
+## Google Business Profile — real menu drift found, work in progress
+
+While drafting Google Posts/Menu content, direct access to the live Uber
+Eats listing was blocked (bot protection — tried direct fetch, WebFetch,
+and headless browser with multiple realistic configs, all failed).
+User-supplied screenshots of the real listing revealed the website's own
+menu (Sanity) and the real Uber Eats menu are **substantially different
+— different dish names, different prices, and Uber Eats' "(Halal)"
+labeling doesn't exist on the website at all.** Example: website Jollof
+Rice £12.99 vs. Uber Eats Jollof Rice £6.00. Not yet reconciled — worth a
+real decision on whether the website should match Uber Eats pricing/names
+or whether they're deliberately different (dine-in vs delivery pricing is
+common practice, but worth confirming intentional vs. drift).
+
+**Also found: Uber Eats listing showed "Delivery unavailable"** as of
+2026-07-22 — every "Order on Uber Eats" button on the website currently
+points to a listing that cannot deliver. Flagged to the user as urgent;
+not yet confirmed resolved.
+
+**Google Business Profile menu content drafted** (16 real dishes from the
+live Uber Eats listing, organized into Starters/Rice Dishes/Soup &
+Swallow/Grilled & Seafood, with names + descriptions, no prices per the
+user's preference) but not yet confirmed live on the actual listing —
+that's a manual step for the user to do in Google's Menu editor. Real
+photos pulled from the website (11 files) plus 3 user-supplied photos
+(Native Village Rice, Okro Soup with Seafood, Ewa Agoyin with Plantain)
+were renamed and sent to the user for upload. Still missing real photos:
+**Asun, Gizdodo, and the Peppered Turkey combo** — no photo exists on the
+website or was supplied for these three.
+
 ---
 
 ## Known weak spots / open gaps
@@ -86,5 +125,5 @@ in scope for what was asked at the time.
 
 ---
 
-*Last updated: 2026-07-22. Add to this file rather than replacing it —
-it's meant to accumulate, not reset each session.*
+*Last updated: 2026-07-22 (later same day). Add to this file rather than
+replacing it — it's meant to accumulate, not reset each session.*
