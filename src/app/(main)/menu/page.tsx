@@ -69,7 +69,8 @@ const menuSections: MenuSection[] = [
     id: "grill-suya",
     label: "Grill & Suya",
     kicker: "From the fire",
-    description: "Smoky skewers, wings, and suya spice for sharing.",
+    description:
+      "Smoky skewers, wings, suya spice, and our Nigerian mixed grill for sharing.",
   },
   {
     id: "seafood-pepper",
@@ -324,16 +325,28 @@ export async function generateMetadata() {
   return buildMetadata({
     title: "Menu | Nigerian Food for Dine-In & Uber Eats",
     description:
-      "Explore NaijaGrill's Nigerian and West African menu in Handsworth, Birmingham - rice bowls, egusi, ayamase, suya, pepper soup, fish, sides, and delivery favourites.",
+      "Explore NaijaGrill's Nigerian and West African menu in Handsworth, Birmingham - rice bowls, egusi, ayamase, suya, mixed grill, pepper soup, fish, sides, and delivery favourites.",
     path: "/menu",
     keywords: [
       "order Nigerian food Birmingham",
       "jollof rice and suya Birmingham",
+      "Nigerian mixed grill Birmingham",
       "Nigerian soup and swallow Birmingham",
       "African food delivery Birmingham",
     ],
   });
 }
+
+// "at-the-centre" bundles genuinely different dish types (Party Jollof is
+// rice, Mixed Grill is grill) under one Sanity organisational section, so
+// a single section->page-category mapping can't place all of them
+// correctly. Per-title override for the one that actually matters for
+// on-page relevance right now — a mixed grill showing up under "Rice
+// Specials" instead of "Grill & Suya" would undercut exactly the signal
+// this page is trying to send for that keyword.
+const categoryOverrideByTitle: Record<string, string> = {
+  "Mixed Grill": "grill-suya",
+};
 
 function categoryForSanitySection(section: string) {
   const map: Record<string, string> = {
@@ -373,7 +386,7 @@ function buildMenuDishes(cmsItems: MenuItemData[]) {
     title: item.title,
     description: item.description,
     price: formatPrice(item.price),
-    category: categoryForSanitySection(item.section),
+    category: categoryOverrideByTitle[item.title] ?? categoryForSanitySection(item.section),
     image: menuImageForItem(item),
     badge: item.badge,
   }));
@@ -431,6 +444,7 @@ export default async function MenuPage() {
     "Poundo with Egusi",
     "White Rice with Ayamase",
     "Amala, Ewedu & Gbegiri",
+    "Mixed Grill",
     "Beef Suya",
     "Peppered Hake Fish",
   ]
@@ -481,8 +495,8 @@ export default async function MenuPage() {
             </h1>
             <p className="mt-7 max-w-2xl text-lg font-medium leading-[1.65] text-ivory/88 md:text-xl">
               Browse NaijaGrill favourites for dine-in, collection, and Uber
-              Eats: ayamase, ofada stew, egusi, suya, pepper soup, grilled fish,
-              small chops, rice plates, and sides.
+              Eats: ayamase, ofada stew, egusi, suya, mixed grill, pepper soup,
+              grilled fish, small chops, rice plates, and sides.
             </p>
             <p className="mt-5 inline-flex rounded-full border border-ivory/18 bg-ivory/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-ivory/82 backdrop-blur">
               Uber Eats official ordering
