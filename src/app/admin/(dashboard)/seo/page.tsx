@@ -160,11 +160,16 @@ function ContentBriefSection({ brief }: { brief: KeywordContentBrief | undefined
                 {/* min-w-0 only constrains a flex item's own box — it does nothing
                     on the inline <span> that used to sit here, since inline
                     elements ignore width/min-width entirely. A block-level element
-                    (div/p) is what actually lets `truncate` clip long competitor
-                    titles instead of forcing the whole page into horizontal
-                    scroll on mobile (real bug, reported with a screenshot). */}
+                    (div/p) is what fixed the horizontal-scroll bug (real bug,
+                    reported with a screenshot). Titles wrap (break-words) instead
+                    of truncating with "…" — a competitor's real title is exactly
+                    what this section exists to show; cutting it off defeated the
+                    point (also reported with a screenshot: "I don't know what's
+                    there"). Wrapping can't reintroduce the overflow bug the way
+                    truncate-on-inline-span did, since wrapped text never exceeds
+                    its container's width. */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate">{c.title ?? c.domain}</p>
+                  <p className="break-words">{c.title ?? c.domain}</p>
                   <p className="truncate text-xs text-white/40">{c.domain}</p>
                 </div>
               </li>

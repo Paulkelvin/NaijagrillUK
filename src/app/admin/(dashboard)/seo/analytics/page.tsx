@@ -4,6 +4,7 @@ import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { loadAnalyticsSummary, DEFAULT_TREND_WINDOW_DAYS, type AnalyticsSummary } from "@/lib/seo/intelligence/analytics-summary";
 import { suggestContentFormat } from "@/lib/seo/intelligence/content-format";
 import { TrendChart } from "@/components/admin/TrendChart";
+import { CopyButton } from "@/components/admin/CopyButton";
 
 export const metadata: Metadata = {
   title: "SEO Analytics | NaijaGrill",
@@ -223,7 +224,12 @@ export default async function SeoAnalyticsPage() {
                         const format = suggestContentFormat(k.search_intent, k.search_volume);
                         return (
                           <tr key={k.id} className="border-b border-white/5 last:border-0">
-                            <td className="max-w-[16rem] truncate px-4 py-3 text-white/80">{k.keyword}</td>
+                            <td className="px-4 py-3 text-white/80">
+                              <div className="flex min-w-[10rem] max-w-xs items-start gap-2">
+                                <span className="break-words">{k.keyword}</span>
+                                <CopyButton text={k.keyword} label="Copy keyword" />
+                              </div>
+                            </td>
                             <td className="px-4 py-3 text-right tabular-nums text-white/70">{k.search_volume?.toLocaleString() ?? "—"}</td>
                             <td className="px-4 py-3 text-right tabular-nums text-white/70">{k.keyword_difficulty ?? "—"}</td>
                             <td className="px-4 py-3 text-white/70">{k.search_intent ? (INTENT_LABEL[k.search_intent] ?? k.search_intent) : "—"}</td>
