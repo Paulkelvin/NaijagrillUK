@@ -2,7 +2,7 @@ import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { detectCannibalization } from "./cannibalization";
 import { detectContentDecay } from "./content-decay";
 import { computeOpportunityScores, normalizedRatio } from "./opportunity-score";
-import { computePageRoiScores } from "./page-roi-score";
+import { computePageRoiScores, MAX_ACTIONABLE_VOLUME } from "./page-roi-score";
 import { computeKeywordValues } from "./keyword-value";
 import { logger } from "@/lib/seo/logger";
 
@@ -65,9 +65,9 @@ const EXPIRES_AFTER_DAYS = 90;
 // borderline "near me" terms slip through under it too), but it does catch
 // the multi-million-scale head terms that were clearly never actionable,
 // without excluding real opportunities like "mix grill" that happen to
-// have decent volume. 50,000 sits well above the real menu-item keywords
-// already in this site's queue and well below the multi-million noise.
-const MAX_ACTIONABLE_VOLUME = 50_000;
+// have decent volume. Same ceiling Page ROI Score (§5.2) needed for the
+// same reason — imported from page-roi-score.ts as one shared constant
+// rather than two independently-maintained magic numbers.
 
 interface PagePriorityWeights {
   traffic_potential: number;

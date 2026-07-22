@@ -21,6 +21,7 @@ const {
   LINK_DEFICIT_SCORE,
   SCHEMA_GAP_SCORE,
   META_QUALITY_SCORE,
+  MAX_ACTIONABLE_VOLUME,
 } = await import("./page-roi-score");
 
 describe("wordCountGap", () => {
@@ -263,6 +264,30 @@ describe("computePageRoiScores", () => {
     expect(result.effortScore).toBeCloseTo(0.125, 6);
     // roi = 60 / max(0.125, 0.05) = 480
     expect(result.roiScore).toBeCloseTo(480, 6);
+  });
+
+  it("excludes a keyword above the volume ceiling from trafficPotential, keeps one under it", async () => {
+    const { from } = makeSupabaseMock({
+      pageRows: [{ id: "pg-1", word_count: null, content_type: null }],
+      keywordRows: [
+        { id: "kw-noise", search_volume: MAX_ACTIONABLE_VOLUME + 1, cpc: null },
+        { id: "kw-real", search_volume: 1000, cpc: null },
+      ],
+      kpmRows: [
+        { page_id: "pg-1", keyword_id: "kw-noise", position: 9, clicks: 0 },
+        { page_id: "pg-1", keyword_id: "kw-real", position: 8, clicks: 0 },
+      ],
+      pmRows: [],
+      ctrModel: { positions: { "1": 0.28, "5": 0.06, "8": 0.035 } },
+    });
+    mockSupabase = { from };
+
+    const [result] = await computePageRoiScores("site-1");
+    // Only kw-real should contribute: avgPosition=8, target=5, ctr[5]=0.06,
+    // projected=1000*0.06=60, current=0 -> gain=60. If kw-noise's ~
+    // millions-scale volume leaked in, this would be orders of magnitude
+    // larger.
+    expect(result.trafficPotential).toBeCloseTo(60, 6);
   });
 
   it("falls back to the site-wide conversion rate when a page is below the 50-session floor", async () => {

@@ -7,7 +7,11 @@ vi.mock("@/lib/seo/logger", () => ({ logger: { info: vi.fn(), warn: vi.fn(), err
 
 vi.mock("./cannibalization", () => ({ detectCannibalization: vi.fn() }));
 vi.mock("./content-decay", () => ({ detectContentDecay: vi.fn() }));
-vi.mock("./page-roi-score", () => ({ computePageRoiScores: vi.fn() }));
+vi.mock("./page-roi-score", async (importOriginal) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const actual = (await importOriginal()) as any;
+  return { ...actual, computePageRoiScores: vi.fn() };
+});
 vi.mock("./keyword-value", () => ({ computeKeywordValues: vi.fn() }));
 vi.mock("./opportunity-score", async (importOriginal) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -39,6 +39,22 @@ const POSITION_IMPROVEMENT_TARGET = 3;
 const EFFORT_FLOOR = 0.05;
 const FETCH_PAGE_SIZE = 1000;
 
+// Same real gap as run-analysis.ts's Opportunity Score ceiling, found while
+// diagnosing why the homepage's "Improve /" action had a suspiciously huge
+// trafficPotential (744,442 projected clicks) despite roiScore landing at
+// 0. Real cause: GSC reports the homepage picking up rare, essentially
+// noise impressions for wildly irrelevant/broad queries it will never
+// convert on — "restaurant near me" (9.14M/mo), "restaurant" (7.48M/mo),
+// "indian restaurant near me" (550K/mo, wrong cuisine entirely), "indian
+// restaurant" (201K/mo at position 111) — every one with 0 real clicks in
+// 30 days. computePageRoiScores summed projectedClickGain across every
+// keyword tied to a page with no sanity check, so a handful of these noise
+// keywords completely dominated the real signal from genuine ones (jollof
+// rice near me, mix grill, suya birmingham, etc.). Exported so
+// run-analysis.ts's create_content gate uses the same single ceiling
+// rather than two independently-maintained magic numbers.
+export const MAX_ACTIONABLE_VOLUME = 50_000;
+
 const EFFORT_WEIGHTS = {
   wordCountGap: 0.25,
   contentAge: 0.15,
@@ -339,6 +355,7 @@ export async function computePageRoiScores(siteId: string): Promise<PageRoiResul
     const pageKeywordCpcs: Array<number | null> = [];
     for (const [keywordId, entry] of byKeyword) {
       const keyword = keywordById.get(keywordId);
+      if (keyword?.search_volume !== null && keyword?.search_volume !== undefined && keyword.search_volume > MAX_ACTIONABLE_VOLUME) continue;
       pageKeywordCpcs.push(keyword?.cpc ?? null);
       const avgPosition =
         entry.positions.length > 0 ? entry.positions.reduce((s, v) => s + v, 0) / entry.positions.length : null;
