@@ -57,7 +57,7 @@ const menuSections: MenuSection[] = [
     id: "rice-specials",
     label: "Rice Specials",
     kicker: "Saucy plates",
-    description: "Comfort plates built for stew, spice, plantain, and delivery.",
+    description: "Birmingham's own jollof rice, plus comfort plates built for stew, spice, plantain, and delivery.",
   },
   {
     id: "soups-swallows",
@@ -325,10 +325,11 @@ export async function generateMetadata() {
   return buildMetadata({
     title: "Menu | Nigerian Food for Dine-In & Uber Eats",
     description:
-      "Explore NaijaGrill's Nigerian and West African menu in Handsworth, Birmingham - rice bowls, egusi, ayamase, suya, mixed grill, pepper soup, fish, sides, and delivery favourites.",
+      "Explore NaijaGrill's Nigerian and West African menu in Handsworth, Birmingham - jollof rice, egusi, ayamase, suya, mixed grill, pepper soup, fish, sides, and delivery favourites.",
     path: "/menu",
     keywords: [
       "order Nigerian food Birmingham",
+      "jollof rice near me Birmingham",
       "jollof rice and suya Birmingham",
       "Nigerian mixed grill Birmingham",
       "Nigerian soup and swallow Birmingham",
@@ -440,6 +441,7 @@ export default async function MenuPage() {
   const cmsItems = await getMenuItems();
   const items = buildMenuDishes(cmsItems);
   const featuredItems = [
+    "Jollof Rice",
     "White Rice with Ofada Stew",
     "Poundo with Egusi",
     "White Rice with Ayamase",
@@ -495,8 +497,8 @@ export default async function MenuPage() {
             </h1>
             <p className="mt-7 max-w-2xl text-lg font-medium leading-[1.65] text-ivory/88 md:text-xl">
               Browse NaijaGrill favourites for dine-in, collection, and Uber
-              Eats: ayamase, ofada stew, egusi, suya, mixed grill, pepper soup,
-              grilled fish, small chops, rice plates, and sides.
+              Eats: jollof rice, ayamase, ofada stew, egusi, suya, mixed
+              grill, pepper soup, grilled fish, small chops, and sides.
             </p>
             <p className="mt-5 inline-flex rounded-full border border-ivory/18 bg-ivory/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-ivory/82 backdrop-blur">
               Uber Eats official ordering
