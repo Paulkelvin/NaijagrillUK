@@ -53,6 +53,22 @@ const ACTION_THRESHOLD = 40;
 // follow-up (see PHASE_2_IMPLEMENTATION.md).
 const EXPIRES_AFTER_DAYS = 90;
 
+// Real gap found reviewing the queue: Opportunity Score (§5.1) has no
+// volume ceiling the way keyword-discovery.ts's long-tail filter does, so
+// it was generating create_content actions for keywords GSC shows real
+// impressions for but that are far too broad/generic for a single-location
+// restaurant to ever meaningfully rank content for — e.g. "restaurants
+// near me" (9.14M/mo) and "restaurant" (7.48M/mo) both surfaced as
+// top-priority "opportunities" alongside "mix grill" (9,900/mo, a real
+// menu-item keyword this business can actually win). A flat ceiling can't
+// perfectly separate generic catch-alls from genuine niche demand (some
+// borderline "near me" terms slip through under it too), but it does catch
+// the multi-million-scale head terms that were clearly never actionable,
+// without excluding real opportunities like "mix grill" that happen to
+// have decent volume. 50,000 sits well above the real menu-item keywords
+// already in this site's queue and well below the multi-million noise.
+const MAX_ACTIONABLE_VOLUME = 50_000;
+
 interface PagePriorityWeights {
   traffic_potential: number;
   conversion_rate: number;
@@ -135,6 +151,7 @@ interface KeywordDisplayRow {
   id: string;
   keyword: string;
   is_target: boolean | null;
+  search_volume: number | null;
 }
 
 interface PageDisplayRow {
@@ -153,7 +170,7 @@ interface ExistingActionRow {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchKeywordsByIds(supabase: any, ids: string[]): Promise<Map<string, KeywordDisplayRow>> {
   if (ids.length === 0) return new Map();
-  const { data, error } = await supabase.from("keywords").select("id, keyword, is_target").in("id", ids);
+  const { data, error } = await supabase.from("keywords").select("id, keyword, is_target, search_volume").in("id", ids);
   if (error) throw new Error(`Failed to fetch keywords for display: ${error.message}`);
   return new Map((data ?? []).map((k: KeywordDisplayRow) => [k.id, k]));
 }
@@ -243,6 +260,7 @@ export async function runAnalysis(siteId: string): Promise<RunAnalysisResult> {
     if (o.score <= ACTION_THRESHOLD) continue;
     const keyword = keywordById.get(o.keywordId);
     if (!keyword || keyword.is_target === true) continue;
+    if (keyword.search_volume !== null && keyword.search_volume > MAX_ACTIONABLE_VOLUME) continue;
     candidates.push({
       type: "create_content",
       sourceModule: "keyword_intelligence",

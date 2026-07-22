@@ -55,7 +55,7 @@ describe("actionDedupKey", () => {
 });
 
 interface MockConfig {
-  keywordRows?: Array<{ id: string; keyword: string; is_target: boolean | null }>;
+  keywordRows?: Array<{ id: string; keyword: string; is_target: boolean | null; search_volume?: number | null }>;
   pageRows?: Array<{ id: string; path: string }>;
   scoringWeights?: Record<string, unknown>;
   existingActions?: Array<{ id: string; type: string; source_module: string; page_id: string | null; keyword_id: string | null }>;
@@ -143,6 +143,25 @@ describe("runAnalysis", () => {
     expect(insertedRows).toHaveLength(1);
     expect(insertedRows[0]).toMatchObject({ type: "create_content", source_module: "keyword_intelligence", keyword_id: "kw-untargeted", status: "queued" });
     expect(insertedRows[0].title).toContain("jollof rice birmingham");
+  });
+
+  it("skips an above-threshold opportunity whose keyword volume is too broad/generic to be actionable, keeps one under the ceiling", async () => {
+    vi.mocked(computeOpportunityScores).mockResolvedValue([
+      { keywordId: "kw-generic", score: 68, bestPosition: 5, components: {} as never },
+      { keywordId: "kw-menu-item", score: 51, bestPosition: 17, components: {} as never },
+    ]);
+    const { from, insertedRows } = makeSupabaseMock({
+      keywordRows: [
+        { id: "kw-generic", keyword: "restaurants near me", is_target: false, search_volume: 9_140_000 },
+        { id: "kw-menu-item", keyword: "mix grill", is_target: false, search_volume: 9_900 },
+      ],
+    });
+    mockSupabase = { from };
+
+    const result = await runAnalysis("site-1");
+    expect(result.actionsCreated).toBe(1);
+    expect(insertedRows).toHaveLength(1);
+    expect(insertedRows[0]).toMatchObject({ keyword_id: "kw-menu-item" });
   });
 
   it("creates a fix_cannibalization action carrying the recommended canonical page", async () => {

@@ -1,7 +1,7 @@
 # Phase 2 Implementation Plan — Intelligence Layer
 
 > **Status:** All 13 Phase 2 milestones (0–12) are now code-complete. The user set up a real DataForSEO account mid-session. Milestone 5 (search volume sync) ran for real against production, not just tested: 81/81 keywords updated with real search volume/CPC/monthly trend data, $0.09 real spend correctly recorded in `api_budgets`. Re-running the analysis engine afterward confirmed Opportunity Score's null-safe design worked exactly as promised — scores went from a flat 50.0 to a real 40.5–56.7 range with zero code changes. Milestone 6 (SERP snapshots) is code-complete and unit-tested against the real response shape, with its Hobby-timeout risk resolved (daily cron, 7-day cache staleness as the natural resumability signal, no Pro-plan upgrade needed) — but **DataForSEO paused the account mid-verification, flagged as "unusual activity"** from the burst of test calls; a full real production run of Milestone 6 is pending the user contacting DataForSEO support to lift the pause. Two real findings from live-testing beyond what any doc assumed: a partial-column `upsert()` bug (Postgres validates NOT NULL columns before conflict resolution even applies — fixed, and the same over-general reasoning corrected in Milestone 10's comment too), and SERP's real cost is $0.002/call, not ARCHITECTURE.md's documented $0.035 (17x cheaper). 363 tests passing total; lint/build clean. `sites.config.brand_terms` is configured, fixing a real cannibalization false positive the first analysis-engine run surfaced. Content decay genuinely cannot produce real output for months (needs 60-90 days of GA4 history); Page ROI Score/Keyword Value still show 0 pending real GA4 conversion volume.
-> **Last updated:** 2026-07-20
+> **Last updated:** 2026-07-22
 > **Owner:** Paul Kelvin
 > **Depends on:** ARCHITECTURE.md (frozen, §5 Intelligence Engine + §6 DataForSEO Strategy), ENGINEERING_STANDARDS.md, Phase 1 (Milestones 0–8, complete and live in production)
 
@@ -775,6 +775,54 @@ Net effect: `effort_score` computes to 0 for every real page today, so `roi_scor
 
 **Risks & rollback:**
 - The `paa_questions` table and `actions` outcome columns are purely additive — dropping them (`DROP TABLE paa_questions;` / the 4 `ALTER TABLE ... DROP COLUMN` statements) would only lose PAA/outcome data, not break any other table. `serp_snapshots`/`actions.supporting_data` are both untouched by this migration.
+
+---
+
+## Milestone 17 — Cannibalization Fix (Real Content) & Opportunity Score Volume Ceiling — ✅ Complete (2026-07-22)
+
+**Objective:** The user asked to fix the platform's own flagged cannibalization issues, "starting with one and the best thing to do." Diagnosing the real data (not just accepting the algorithm's "merge" label) surfaced two separate real problems: (1) 5 flagged keywords all traced to one actual conflict — the homepage and a blog post pitching the identical thing — and (2) reviewing the rest of the action queue while there surfaced a second, unrelated real gap: Opportunity Score had no volume ceiling, so it was recommending content for keywords no single-location restaurant could ever realistically rank for (e.g. "restaurants near me" at 9.14M searches/month).
+
+**Tasks:**
+- [x] Diagnosed all 5 `fix_cannibalization` actions via direct production queries — confirmed they shared the exact same two `page_id`s (homepage `/` vs. `/blog/best-nigerian-restaurant-in-handsworth-birmingham`)
+- [x] Fetched both live pages' real title/meta/content — confirmed near-identical commercial pitch, no differentiation
+- [x] Rewrote the blog post in Sanity as a genuinely different, informational article targeting a real long-tail keyword the platform's own Milestone 15 discovery run had found ("jollof rice origin", 320/mo, difficulty 10) — new slug `jollof-rice-origin-story`
+- [x] Added a permanent redirect (`next.config.ts`) from the old slug so nothing pointing at it 404s
+- [x] Found and fixed a second, would-be overlap before it shipped: the rewrite's angle and one FAQ duplicated an *existing* live post ("What Is Jollof Rice? A Beginner's Guide") — trimmed that post's history section to a teaser with a real internal link to the new article, swapped the duplicate FAQ
+- [x] Removed the now-stale hardcoded fallback blog post entry from `src/sanity/fallbacks.ts` (the real content lives entirely in Sanity now; the leftover fallback both misled and caused `getAllSlugs()` to statically generate the old, now-redirected URL)
+- [x] Marked all 5 `fix_cannibalization` actions `completed`, capturing real `baseline_metrics` for each via the exact code path `/api/seo/actions/[id]` uses, so Milestone 13's outcome tracking will report in ~30 days whether the fix actually worked
+- [x] Found 3 separate `create_content` actions (different source module — `keyword_intelligence`, not `cannibalization`) targeting the *same* keywords as 2 of the just-fixed cannibalization actions and one more equally commercial variant — building those as new dedicated pages would have recreated the exact problem just fixed. Dismissed all 3.
+- [x] `src/lib/seo/intelligence/run-analysis.ts` — added `MAX_ACTIONABLE_VOLUME = 50_000`, gating `create_content` candidate generation in the Opportunity Score loop
+
+**Implementation notes:**
+- **The cannibalization algorithm's "merge" recommendation was a fallback, not a confident signal, and that's worth knowing.** All 5 actions scored `clickSplit: 0`/`dominantShare: 0` because `totalClicks` was 0 for every one of them in the 30-day scoring window — not because clicks were genuinely split evenly, but because there was no click data at all to judge dominance from. The real decision (which page should be canonical) needed human judgment the algorithm's data couldn't supply on its own.
+- **Content rewrite content changes went directly to Sanity, not through this repo** — one scoped `client.patch(docId).set(...)` call per document (2 documents touched: the rewritten post, the beginner's-guide overlap fix), verified live after each write. No broad queries, no deletes.
+- **Opportunity Score's frozen ARCHITECTURE.md §5.1 formula itself was deliberately left untouched.** The ceiling was added at the same point `keyword.is_target === true` is already checked — in `run-analysis.ts`'s "which subset actually surfaces in the action queue" step, which `opportunity-score.ts`'s own docstring already calls out as a separate concern from the scoring formula itself.
+- **A flat volume ceiling can't perfectly separate generic catch-alls from genuine niche demand** — some borderline "near me" terms (e.g. "good food near me", 12,100/mo) still clear a 50,000 ceiling despite being a loose fit. 50,000 was chosen because it's the number that correctly keeps this site's real good opportunities (e.g. "mix grill", 9,900/mo, a real menu item) while excluding the actually-absurd multi-million-scale head terms ("restaurants near me" 9.14M/mo, "restaurant" 7.48M/mo) that were clearly never actionable for a single-location business. Documented as a real, known limitation, not oversold as a complete fix.
+
+**Dependencies:** Milestone 6 (SERP data used to diagnose the conflict), Milestone 7 (Opportunity Score), Milestone 10 (`run-analysis.ts`), Milestone 13 (outcome tracking, used to close the loop), Milestone 15 (keyword discovery, source of the replacement keyword), Milestone 16 (content-format heuristic that flagged "jollof rice origin" as Article-shaped).
+
+**Database changes:** None (Sanity content changes and `actions` status/baseline updates only, no schema change).
+
+**Files created/changed:**
+- `next.config.ts` — permanent redirect, old blog slug → new
+- `src/sanity/fallbacks.ts` — removed stale fallback blog post entry (138 lines)
+- `src/lib/seo/intelligence/run-analysis.ts`, `run-analysis.test.ts` — `MAX_ACTIONABLE_VOLUME` ceiling + regression test
+- Sanity: `post-best-nigerian-restaurant-in-handsworth-birmingham` (rewritten), `post-what-is-jollof-rice-a-beginners-guide` (history section trimmed + linked)
+- Production `actions` table: 5 rows `completed` with baseline metrics, 3 rows `dismissed`
+
+**Tests performed:**
+- Unit: 1 new regression test on `run-analysis.ts` (above-ceiling opportunity skipped, under-ceiling one still created). Full suite: 477 tests passing, lint clean, `tsc --noEmit` clean on all touched files.
+- Real production verification: fetched both live pages before and after the Sanity rewrite to confirm content actually changed; re-queried `actions` after the completed/dismissed writes to confirm status; re-queried `paa_questions`/`keyword_page_metrics` to ground the diagnosis in real data throughout, not assumptions.
+
+**Success criteria (DoD):**
+- All 5 real flagged cannibalization actions resolved with an actual content fix, not just a status change — confirmed via live page fetch
+- No new cannibalization risk introduced by the fix — confirmed by checking the *other* live jollof-rice post for overlap before shipping, not after
+- Opportunity Score no longer recommends unactionable, multi-million-volume generic keywords — confirmed via regression test and real queue data (before: "restaurants near me" 9.14M/mo was priority #1; after: excluded)
+
+**Risks & rollback:**
+- Sanity content changes are live and immediately visible — reverting means patching both documents back via the same scoped approach, or restoring from Sanity's own document history/versioning.
+- `MAX_ACTIONABLE_VOLUME` is a single new constant in `run-analysis.ts`; removing the one `if` check that references it fully reverts the behavior.
+- The 3 dismissed `create_content` actions are a `status` change only (not deleted) — reversible via the API by re-queuing if this judgment call turns out wrong.
 
 ---
 
