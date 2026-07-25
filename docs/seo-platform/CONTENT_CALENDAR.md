@@ -94,10 +94,16 @@ this file:
   this environment, and it needs live query data that a brand-new page
   wouldn't have yet anyway.
 
-- **Google Business Post:** Review-with-photo reminder — the one concrete,
-  low-effort idea kept from the 2026-07-22 Reddit tip assessment above,
-  not yet used in the streak. Photo: existing dining-room shot, not a
-  dish photo.
+- **Google Business Post:** ~~Review-with-photo reminder~~ — reconsidered.
+  User clarified the whole streak's purpose is SEO, not reputation/review
+  volume, so a review ask doesn't serve today's goal. Replaced with an
+  Efo Riro post whose CTA links directly to `/blog/what-is-efo-riro` —
+  reinforces the one page instead of telling a disconnected third story,
+  and gives that new page a real trackable referral + local-keyword
+  copy ("Nigerian," "Handsworth," "Birmingham," the dish name). The
+  review-reminder idea is kept for a future reputation-focused batch,
+  not discarded. Photo: `naijagrill-efo-riro-soup.jpg` (same as the blog
+  post).
 - **Website article:** "What Is Efo Riro?" — continues the "what is
   [dish]" explainer series (egusi, amala, pepper soup, suya, jollof,
   small chops, ayamase) with the one real menu item (`menu-efo-riro`,
