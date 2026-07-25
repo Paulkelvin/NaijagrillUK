@@ -54,5 +54,60 @@ proven.
 
 ---
 
+## Cadence check-in, 2026-07-25
+
+No `trig_...` Routine actually exists for this account (`list_triggers`
+returned empty) — the "fires automatically every ~2 days" mechanism
+described above was never actually created, or was lost. Day 2 below was
+requested manually by the user rather than landing on its own on 24 July
+as planned. Flagged to the user; the Routine can be (re)created once
+confirmed wanted.
+
+Also: Day 1's plan above listed "What Is Suya?" as the website article,
+but the actual live blog post that day (confirmed via the real Sanity
+dataset, not the plan) was **"Where Does Jollof Rice Really Come From?"**
+(`jollof-rice-origin-story`, 2026-07-22), followed the next day by **"What
+Is Ayamase? Nigeria's Bold Green Pepper 'Designer Stew'"**
+(`what-is-ayamase-designer-stew`, 2026-07-23) — a live-content check
+this time confirmed a dedicated "What Is Suya?" post already existed
+(`what-is-suya-everything-you-need-to-know`, since 2026-05-28), so the
+plan correctly got overridden rather than publishing a cannibalizing
+duplicate. Lesson: treat this file as intent, and always verify against
+the real Sanity dataset before writing new content, not just this log.
+
+## Day 2 — 2026-07-25
+
+Cannibalization check performed against the live Sanity dataset (public
+`26qme93a`/`production` GROQ query) before picking today's angle, not just
+this file:
+- Full existing blog slug/title list pulled and reviewed.
+- Candidate topic "What Is Ofada Stew?" rejected — the Ayamase post
+  (2026-07-23) already states "It's also widely called ofada stew" and
+  covers that ground; a separate post would split the same search intent.
+- "Efo Riro" checked and cleared: it only appears in passing inside
+  listicle posts (`best-nigerian-food-to-try-in-birmingham`,
+  `nigerian-takeaway-in-birmingham-top-dishes-to-try`,
+  `what-to-order-at-a-nigerian-restaurant-for-the-first-time`) — no
+  dedicated page targets it, so a "What Is Efo Riro?" explainer doesn't
+  compete with anything live. Real GSC-based `detectCannibalization()`
+  scoring (ARCHITECTURE.md §5.3) wasn't run — no Supabase credentials in
+  this environment, and it needs live query data that a brand-new page
+  wouldn't have yet anyway.
+
+- **Google Business Post:** Review-with-photo reminder — the one concrete,
+  low-effort idea kept from the 2026-07-22 Reddit tip assessment above,
+  not yet used in the streak. Photo: existing dining-room shot, not a
+  dish photo.
+- **Website article:** "What Is Efo Riro?" — continues the "what is
+  [dish]" explainer series (egusi, amala, pepper soup, suya, jollof,
+  small chops, ayamase) with the one real menu item (`menu-efo-riro`,
+  £14.99) that had no dedicated explainer yet. Photo:
+  `naijagrill-efo-riro-soup.jpg`.
+- **Instagram post:** Ayamase spotlight — the 2026-07-23 blog post never
+  got a matching Instagram push; the dish's bold green colour is a strong
+  visual for the feed. Photo: `naijagrill-white-rice-ayamase-stew.jpg`.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*
