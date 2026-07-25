@@ -102,7 +102,10 @@ this file:
   [dish]" explainer series (egusi, amala, pepper soup, suya, jollof,
   small chops, ayamase) with the one real menu item (`menu-efo-riro`,
   £14.99) that had no dedicated explainer yet. Photo:
-  `naijagrill-efo-riro-soup.jpg`.
+  `naijagrill-efo-riro-soup.jpg`. **Published live** 2026-07-25 to Sanity
+  (`post-what-is-efo-riro`, `/blog/what-is-efo-riro`) — re-checked
+  immediately before publish that no new post had landed in the meantime
+  and the slug was still free.
 - **Instagram post:** Ayamase spotlight — the 2026-07-23 blog post never
   got a matching Instagram push; the dish's bold green colour is a strong
   visual for the feed. Photo: `naijagrill-white-rice-ayamase-stew.jpg`.
