@@ -37,7 +37,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           : 0.8,
   }));
 
-  const blogEntries: MetadataRoute.Sitemap = blog.map(({ slug }) => ({
+  // Same real gap as blogCategory below, found in the same live check —
+  // two full duplicate blogPost documents (old "blogPost-*" seed docs
+  // alongside the current "post-*" ones) shared a slug with a real,
+  // already-live post each. Deduped defensively rather than trusting
+  // the data stays clean, same reasoning as the category case.
+  const uniqueBlogSlugs = [...new Set(blog.map(({ slug }) => slug))];
+  const blogEntries: MetadataRoute.Sitemap = uniqueBlogSlugs.map((slug) => ({
     url: `${baseUrl}/blog/${slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly",
