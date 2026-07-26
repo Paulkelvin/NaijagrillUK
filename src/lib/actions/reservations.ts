@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { sendReservationEmails } from "@/lib/email";
+import { checkFormRateLimit } from "./guard";
 import type { ActionResult } from "./types";
 
 const reservationSchema = z.object({
@@ -17,6 +18,9 @@ const reservationSchema = z.object({
 export async function submitReservation(
   formData: FormData,
 ): Promise<ActionResult> {
+  const limited = await checkFormRateLimit("reservation");
+  if (limited) return limited;
+
   const parsed = reservationSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),

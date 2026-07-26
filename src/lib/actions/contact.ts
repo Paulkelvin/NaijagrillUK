@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { sendContactEmails } from "@/lib/email";
+import { checkFormRateLimit } from "./guard";
 import type { ActionResult } from "./types";
 
 const contactSchema = z.object({
@@ -15,6 +16,9 @@ const contactSchema = z.object({
 export async function submitContactMessage(
   formData: FormData,
 ): Promise<ActionResult> {
+  const limited = await checkFormRateLimit("contact");
+  if (limited) return limited;
+
   const parsed = contactSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
