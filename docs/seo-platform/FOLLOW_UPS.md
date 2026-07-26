@@ -5,6 +5,11 @@ CHANGELOG.md/PHASE_2_IMPLEMENTATION.md (which record *completed* work),
 since chat history doesn't persist across sessions and this is the durable
 record of what to check back on and why.
 
+**Related:** OPERATIONS_CHECKLIST.md holds the *recurring* routine (what to
+check daily/weekly/monthly and on which platform). This file is for one-off
+items with a specific date attached; that one is for the work that repeats
+forever.
+
 ---
 
 ## 2026-07-26 — GSC "Discovered, currently not indexed" investigation

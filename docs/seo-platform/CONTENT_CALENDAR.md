@@ -19,6 +19,11 @@ article/blog idea, one Instagram post idea — deliberately not all telling
 the identical story, so the three platforms don't feel like copy-paste
 of each other.
 
+**Related:** OPERATIONS_CHECKLIST.md covers the wider recurring routine this
+streak sits inside (review responses, listing checks, monthly Search Console
+review, and the rule to always check for an existing post before writing a
+new article).
+
 ---
 
 ## Day 1 — 2026-07-22
