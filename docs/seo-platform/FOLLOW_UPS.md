@@ -7,6 +7,41 @@ record of what to check back on and why.
 
 ---
 
+## 2026-07-26 — GSC "Discovered, currently not indexed" investigation
+
+User reported 18 pages (mostly blog: index, category pages, several
+posts) stuck in this status, with a "Validate Fix" click from 7/20
+still pending days later with no progress. Investigated and found a
+real, concrete contributing cause: **duplicate Sanity documents** — an
+old seed (created 2026-06-09, IDs like `blogPost-handsworth`,
+`blogCategory-culture`) was never cleaned up when the site moved to its
+current ID scheme (`post-*`/`category-*`, created 2026-06-15) — 4
+duplicate category docs and 2 duplicate blog post docs, all sharing the
+same slug as their live counterpart. This produced a sitemap with real
+duplicate `<url>` entries (33 total, only 31 unique) — a genuine
+signal-quality issue for a crawler, on top of just being sloppy.
+
+**Fixed:** re-pointed the 2 posts still referencing old category IDs,
+deleted all 6 orphaned duplicate documents, added defensive slug-based
+deduplication in `src/app/sitemap.ts` for both categories and posts (no
+unique constraint exists on Sanity's side, so this could recur without
+the code-level guard). Verified live: sitemap is now 31/31 unique.
+
+**Being honest about what this fix does and doesn't prove:** it removes
+one real, concrete technical issue. It does **not** guarantee the 18
+pages get indexed quickly — "Discovered, currently not indexed" is also
+just a normal pattern for a young site with limited backlink authority,
+and Google's own docs say it can take weeks to resolve on its own, fix
+or no fix. **Next step for the user:** resubmit the sitemap in Search
+Console (Sitemaps → remove and re-add, or just wait for Google's next
+scheduled fetch) and click "Validate Fix" again on the "Discovered - not
+indexed" report now that the sitemap is clean. Check back in 1-2 weeks —
+if the 18-page count hasn't moved by then, worth a deeper look at
+internal linking to the blog section specifically (all the affected
+example URLs were blog-related), not just the sitemap.
+
+---
+
 ## Check back in a few weeks (~mid-to-late August 2026)
 
 On 2026-07-22, real content/product changes went live for 5 keyword
