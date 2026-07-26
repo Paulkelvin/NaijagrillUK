@@ -47,6 +47,54 @@ example URLs were blog-related), not just the sitemap.
 
 ---
 
+## 2026-07-26 — Brand-search finding (check back ~4 weeks)
+
+First real analytics review with enough data to be meaningful. July:
+**565 impressions, 5 clicks, avg position 15.0** vs June's 75 / 1 / 20.2
+(caveat: June had 13 days of data, July 23 — impressions aren't directly
+comparable, but the position improvement is real).
+
+**The finding:** ~45% of all impressions are *brand* searches ("naija
+grill and spice kitchen" 90/mo, "naija grill" 20/mo, "...reviews" 10/mo)
+— people who already know the name. And the site ranked **4th for its own
+name**, behind Just Eat (#1), Instagram (#2) and Uber Eats (#3). 114
+impressions → 4 clicks. The Terms & Conditions page also ranked #7 for
+the brand name.
+
+Root cause was narrow and fixable: the homepage title said "NaijaGrill"
+(one word), while searches — and every other platform listing (Just Eat,
+Uber Eats, Instagram, Companies House) — use "Naija Grill & Spice
+Kitchen". Structured data was already correct; only the title was
+mismatched. This is the NAP-consistency issue with a measurable cost
+attached.
+
+**Fixed:** homepage title/description now lead with the full business
+name (Sanity), keeping "NaijaGrill" as the on-page visual brand.
+
+**Also corrected a mistake from this session's own earlier work:** the
+redirect for the retired `/blog/best-nigerian-restaurant-in-handsworth-
+birmingham` pointed at the jollof-rice-origin-story article. That old URL
+ranked **position 2.1 for "nigerian restaurant in handsworth"** and drew
+brand impressions — commercial intent, sent to a history article. Now
+redirects to `/nigerian-restaurant-birmingham`, the real commercial
+landing page. That page also ranked 2.1 for the same query with **zero
+clicks**, so it was retitled to match the searched phrasing exactly.
+
+**What to check in ~4 weeks:**
+- Has the homepage moved above Just Eat / Uber Eats / Instagram for
+  "naija grill and spice kitchen"? (Position 4 → target top 1-2.)
+- Is brand-search CTR improving from its ~3.5% baseline?
+- Is "nigerian restaurant in handsworth" (position ~2.1) finally
+  converting impressions into clicks after the retitle?
+- Has the Terms page dropped out of the brand-name results?
+
+Note: "nigerian restaurant in handsworth" has **no DataForSEO volume
+data** (null) — it never appeared in any keyword research, only in real
+GSC data. A reminder that GSC surfaces real local queries the paid tools
+miss entirely.
+
+---
+
 ## Check back in a few weeks (~mid-to-late August 2026)
 
 On 2026-07-22, real content/product changes went live for 5 keyword
