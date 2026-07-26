@@ -57,12 +57,21 @@ const nextConfig: NextConfig = {
         // The old commercial-intent blog post was cannibalizing the
         // homepage for "nigerian restaurant birmingham"-type keywords —
         // same pitch, same intent, no differentiation (Milestone 16
-        // cannibalization review). Rewritten in Sanity as a genuinely
-        // different, informational article (jollof rice origin story) at
-        // a new slug; this redirect carries over whatever the old URL had
-        // rather than letting it 404.
+        // cannibalization review). Its content was rewritten in Sanity as a
+        // genuinely different, informational article (jollof rice origin
+        // story) at a new slug.
+        //
+        // Corrected 2026-07-26: this originally pointed at that jollof
+        // article, which was wrong. Real GSC data showed the old URL was
+        // ranking position 2.1 for "nigerian restaurant in handsworth" and
+        // picking up brand-name impressions — commercial, restaurant-intent
+        // traffic. Sending that to an article about the history of jollof
+        // rice is a topical mismatch: right instinct (don't 404), wrong
+        // destination. It now points at the real commercial landing page for
+        // exactly that intent, whose title/H1/description already cover
+        // "Nigerian restaurant" + "Handsworth".
         source: "/blog/best-nigerian-restaurant-in-handsworth-birmingham",
-        destination: "/blog/jollof-rice-origin-story",
+        destination: "/nigerian-restaurant-birmingham",
         permanent: true,
       },
     ];

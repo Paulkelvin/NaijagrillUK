@@ -63,9 +63,15 @@ const faqs: FaqItem[] = [
 
 export async function generateMetadata() {
   return buildMetadata({
-    title: "Nigerian Restaurant Birmingham | NaijaGrill Handsworth",
+    // Phrased to match the real query this page ranks for. GSC showed
+    // "nigerian restaurant in handsworth" sitting at position 2.1 with 29
+    // impressions and *zero* clicks — ranking fine, but the result as
+    // displayed wasn't compelling enough to click. Leads with the exact
+    // phrasing searched, and the description opens with the full business
+    // name people also search by.
+    title: "Nigerian Restaurant in Handsworth, Birmingham | Naija Grill",
     description:
-      "Visit NaijaGrill, a Nigerian restaurant in Handsworth, Birmingham for jollof rice, suya, egusi, reservations, catering, and Uber Eats delivery.",
+      "Naija Grill & Spice Kitchen — a Nigerian restaurant in Handsworth, Birmingham. Jollof rice, suya, egusi and pepper soup. Dine in, reserve, or order delivery.",
     path,
     keywords: [
       "best Nigerian restaurant in Handsworth",
