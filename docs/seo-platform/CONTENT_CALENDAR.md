@@ -24,15 +24,27 @@ of each other.
 ## Day 1 — 2026-07-22
 
 - **Google Business Post:** Suya spotlight — ties directly to real SEO
-  work done today on "suya birmingham"/"suya place near me". Photo:
-  `beef-suya-birmingham-handsworth.jpg` (already sent to the user).
-- **Website article:** "What Is Suya? The Story Behind Nigeria's Favourite
-  Grilled Meat" — mirrors the successful jollof-rice-origin-story
-  playbook (real informational demand, low competition, builds topical
-  authority) rather than repeating the same commercial pitch elsewhere.
+  work done today on "suya birmingham"/"suya place near me". Final photo:
+  `beef-suya-alt-birmingham-handsworth.jpg` (the first suya photo sent
+  was rejected by the user as not liked; a second real photo — the one
+  actually used on the site's own Beef Suya menu item — was pulled from
+  Sanity's CDN and sent as the replacement).
+- **Website article:** ~~"What Is Suya?"~~ **Correction — that post
+  already existed** (published 2026-05-28, found while doing the
+  cannibalization check before writing anything). Redirected to **"What
+  Is Ayamase? Nigeria's Bold Green Pepper 'Designer Stew'"** instead —
+  genuinely uncovered topic, real sourced history (Ikenne-Remo/Ogun
+  State origin, the "designer stew" reputation), a real photo already
+  available (`ayamase-birmingham-handsworth.jpg`). Published:
+  `/blog/what-is-ayamase-designer-stew`. Note: no fresh DataForSEO volume
+  data backs this pick (no live DataForSEO access from this sandbox,
+  see FOLLOW_UPS.md) — chosen on topic fit + existing photo availability,
+  not a precise search-volume number the way jollof-rice-origin-story was.
 - **Instagram post:** Mixed Grill launch — new, genuinely exciting
   product, strongest visual story of anything shipped this session.
-  Needs a real photo (still using a placeholder as of today).
+  Still needs a real photo (placeholder as of today) — a Canva graphic
+  was requested but blocked by the Canva connector repeatedly
+  disconnecting from the session; not yet resolved.
 
 ## Reddit tip assessment (r/GoogleMyBusiness, 2026-07-22)
 
@@ -51,6 +63,38 @@ legitimate, low-effort addition worth folding into the cadence (e.g. as
 a periodic Google Post reminding customers to leave a review with a
 photo), even though the specific Reddit anecdote itself isn't treated as
 proven.
+
+---
+
+## Day 2 — 2026-07-24
+
+Checked first: no existing blog post covers Efo Riro specifically or the
+"jollof rice tesco" angle (both confirmed against the current live post
+list before picking these).
+
+- **Google Business Post:** Efo Riro spotlight — real Uber Eats item
+  ("Efo Riro with Swallow (Halal)"), a real photo already available
+  (`efo-riro-swallow-birmingham.jpg`, sent to the user 2026-07-22), not
+  yet featured anywhere.
+  > **A proper bowl of Efo Riro 🍲**
+  > Spinach and pepper stew, deep and savoury, served the traditional way
+  > with your choice of swallow. One of the dishes that shows what
+  > Nigerian cooking is really about.
+  CTA: Order Online.
+- **Website article:** "Shop-Bought Jollof Rice Mix vs. The Real Thing" —
+  targets a real, still-untouched tracked keyword, **"jollof rice tesco"**
+  (260/mo, sitting queued/un-actioned since Milestone 15's discovery run —
+  see FOLLOW_UPS.md). Genuinely distinctive comparison angle nobody else
+  in the current SERP field is running; builds on the existing jollof
+  rice content pillar rather than starting a new one from scratch.
+- **Instagram post:** Halal certification spotlight — a real
+  differentiator found while auditing the live Uber Eats listing (nearly
+  every dish there is explicitly labelled "(Halal)"), which currently
+  isn't surfaced on the website or social at all, and ties to a real,
+  still-open keyword ("halal places to eat near me", queued/un-actioned).
+  Can reuse the existing "Is Nigerian Food Halal?" blog post
+  (`/blog/nigerian-food-dietary-requirements-birmingham`, already live)
+  as the link-out rather than needing new long-form content.
 
 ---
 
