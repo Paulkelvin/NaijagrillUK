@@ -86,27 +86,40 @@ list before picking these).
   > with your choice of swallow. One of the dishes that shows what
   > Nigerian cooking is really about.
   CTA: Order Online.
-- **Website article:** ✅ **PUBLISHED 2026-07-27** —
-  `/blog/jollof-rice-mix-vs-real-thing`. Targets the real, previously
-  un-actioned tracked keyword **"jollof rice tesco"** (260/mo, queued
-  since Milestone 15's discovery run). Cannibalization check run first
-  against all 17 existing posts: distinct from
-  `what-is-jollof-rice-a-beginners-guide` (definition),
-  `jollof-rice-origin-story` (history) and
-  `why-party-jollof-belongs-on-a-premium-table` (brand positioning) —
-  this one is a practical cooking comparison. Internal-linked to the
-  origin story rather than restating any of it.
+- **Website article:** ✅ **PUBLISHED 2026-07-27** — `/blog/what-is-asun`.
 
-  Facts grounded before writing (Tropical Sun jollof seasoning really is
-  stocked at Tesco), and deliberately written as an honest comparison —
-  "use the packet on a Tuesday, it's fine" — rather than a bait-and-switch
-  that trashes shop-bought to sell a table. **Known caveat, stated when
-  the keyword was first flagged and still true:** "jollof rice tesco" is
-  supermarket-shopper intent, not restaurant intent, so it will likely
-  draw non-local traffic that never converts. Justified on topical
-  authority around jollof (the site's strongest pillar) rather than
-  direct conversion — worth revisiting if it pulls volume but zero
-  engagement.
+  **First attempt was published and then withdrawn same day.** A
+  "Shop-Bought Jollof Rice Mix vs the Real Thing" piece targeting
+  **"jollof rice tesco"** (260/mo) went live, and the user rejected it
+  immediately: supermarket content isn't related to the business. They
+  were right, and this was a self-inflicted miss — the exact same
+  intent-mismatch concern had been raised when the keyword was first
+  discovered ("could be people searching for a Tesco-bought jollof mix,
+  not your restaurant, in which case it's not a fit"), then published
+  anyway on a topical-authority argument. Deleted ~10 minutes after
+  publishing, before indexing.
+
+  **Rule going forward: search volume does not override brand fit.**
+  "jollof rice tesco" should now be treated as permanently out of scope,
+  not re-suggested in a later cycle. Retire it from the queue rather than
+  leaving it to resurface.
+
+  **Replacement, published same day:** "What Is Asun? Nigeria's Smoky,
+  Spicy Grilled Goat". Chosen because it's the obvious gap in the site's
+  already-working "What Is X?" series (amala, egusi, suya, ayamase, efo
+  riro, pepper soup, small chops, jollof — no asun), and asun is a real
+  menu item on both the website and Uber Eats. Facts grounded first
+  (Yoruba origin, Ondo/Ekiti states, the name meaning "to smoke/roast").
+  Includes an asun-vs-suya section, since those two are genuinely
+  confused and the site sells both.
+
+  **Photo gap, handled honestly:** no asun photo exists in the CMS (one
+  of three gaps, with Gizdodo and the Peppered Turkey combo). Deliberately
+  did *not* reuse the Beef Suya photo — the article's whole argument is
+  that suya and asun are different dishes, so labelling a suya skewer
+  photo as asun would contradict the text and put a false claim in the
+  alt text. Using a neutral house image until a real asun photo exists.
+  **Swap it when one is taken.**
 - **Instagram post:** Halal certification spotlight — a real
   differentiator found while auditing the live Uber Eats listing (nearly
   every dish there is explicitly labelled "(Halal)"), which currently
