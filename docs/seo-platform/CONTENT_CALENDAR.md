@@ -86,12 +86,27 @@ list before picking these).
   > with your choice of swallow. One of the dishes that shows what
   > Nigerian cooking is really about.
   CTA: Order Online.
-- **Website article:** "Shop-Bought Jollof Rice Mix vs. The Real Thing" —
-  targets a real, still-untouched tracked keyword, **"jollof rice tesco"**
-  (260/mo, sitting queued/un-actioned since Milestone 15's discovery run —
-  see FOLLOW_UPS.md). Genuinely distinctive comparison angle nobody else
-  in the current SERP field is running; builds on the existing jollof
-  rice content pillar rather than starting a new one from scratch.
+- **Website article:** ✅ **PUBLISHED 2026-07-27** —
+  `/blog/jollof-rice-mix-vs-real-thing`. Targets the real, previously
+  un-actioned tracked keyword **"jollof rice tesco"** (260/mo, queued
+  since Milestone 15's discovery run). Cannibalization check run first
+  against all 17 existing posts: distinct from
+  `what-is-jollof-rice-a-beginners-guide` (definition),
+  `jollof-rice-origin-story` (history) and
+  `why-party-jollof-belongs-on-a-premium-table` (brand positioning) —
+  this one is a practical cooking comparison. Internal-linked to the
+  origin story rather than restating any of it.
+
+  Facts grounded before writing (Tropical Sun jollof seasoning really is
+  stocked at Tesco), and deliberately written as an honest comparison —
+  "use the packet on a Tuesday, it's fine" — rather than a bait-and-switch
+  that trashes shop-bought to sell a table. **Known caveat, stated when
+  the keyword was first flagged and still true:** "jollof rice tesco" is
+  supermarket-shopper intent, not restaurant intent, so it will likely
+  draw non-local traffic that never converts. Justified on topical
+  authority around jollof (the site's strongest pillar) rather than
+  direct conversion — worth revisiting if it pulls volume but zero
+  engagement.
 - **Instagram post:** Halal certification spotlight — a real
   differentiator found while auditing the live Uber Eats listing (nearly
   every dish there is explicitly labelled "(Halal)"), which currently
