@@ -149,7 +149,7 @@ angles.
   > party starter, built for sharing. Order for the table or send it
   > straight to your door.
   CTA: Order Online.
-- **Website article:** "What Is Nigerian Grilled Fish?" — the clearest
+- **Website article:** ✅ **PUBLISHED 2026-07-27** — `/blog/what-is-nigerian-grilled-fish`. The clearest
   remaining gap in the "What Is X?" series. Grilled Fish is a real menu
   item on **both** the website (£18.99) and Uber Eats (Grilled Tilapia,
   £20–24, the higher-ticket end of the menu), **has a real photo**
@@ -158,7 +158,11 @@ angles.
   tilapia, the pepper marinade, why it's served with fried yam and
   plantain, and how it differs from the peppered hake dish also on the
   menu. Cannibalization check clean: `what-is-nigerian-pepper-soup` is a
-  broth, not grilled fish.
+  broth, not grilled fish. Shipped with the **real** grilled fish photo
+  (unlike asun). Includes a "grilled fish or peppered fish?" section that
+  explicitly separates the two fish dishes on the menu — they get ordered
+  interchangeably by mistake, so it does double duty as customer guidance
+  and internal differentiation between two live menu items.
 - **Instagram post:** Ewa Agoyin with plantain — mashed beans in smoky
   palm-oil pepper sauce. Chosen partly because the user personally flagged
   this dish when correcting a mislabelled photo on 2026-07-22, so the
