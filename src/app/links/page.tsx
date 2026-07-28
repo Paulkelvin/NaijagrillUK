@@ -33,13 +33,6 @@ interface BioLink {
 
 const links: BioLink[] = [
   {
-    label: "Order on Uber Eats",
-    sub: "Delivery across Handsworth & Birmingham",
-    href: BUSINESS.order.uberEatsUrl,
-    tone: "primary",
-    external: true,
-  },
-  {
     label: "Order on WhatsApp",
     sub: "Message us directly",
     href: BUSINESS.whatsappUrl,
@@ -47,13 +40,12 @@ const links: BioLink[] = [
     external: true,
   },
   {
-    label: "Book a table",
-    sub: "Reserve for dine-in",
-    href: "/reservations#reserve",
-    tone: "secondary",
-    external: false,
+    label: "Order on Uber Eats",
+    sub: "Delivery across Handsworth & Birmingham",
+    href: BUSINESS.order.uberEatsUrl,
+    tone: "primary",
+    external: true,
   },
-  { label: "See the full menu", href: "/menu", tone: "secondary", external: false },
   {
     label: "Call us",
     sub: BUSINESS.phoneDisplay,
@@ -72,6 +64,13 @@ const links: BioLink[] = [
     label: "Leave us a review",
     sub: "It genuinely helps us",
     href: BUSINESS.reviews.leaveReviewUrl,
+    tone: "secondary",
+    external: true,
+  },
+  {
+    label: "Follow us on TikTok",
+    sub: "@naija.grill.spicy",
+    href: BUSINESS.social.tiktok,
     tone: "secondary",
     external: true,
   },

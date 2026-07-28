@@ -49,6 +49,10 @@ export const BUSINESS = {
   priceRange: "£££",
   social: {
     instagram: "https://www.instagram.com/naijagrill_2025/",
+    // Stored without the ?_t=/&_r= params TikTok appends to share links —
+    // those are per-share tracking tokens, not part of the profile address,
+    // and they'd look untidy anywhere this URL is rendered or shared on.
+    tiktok: "https://www.tiktok.com/@naija.grill.spicy",
   },
   order: {
     uberEatsUrl:
