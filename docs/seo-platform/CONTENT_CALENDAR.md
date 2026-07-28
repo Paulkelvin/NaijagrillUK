@@ -131,5 +131,49 @@ list before picking these).
 
 ---
 
+## Day 3 — 2026-07-29
+
+Selection method this cycle: cross-referenced every live menu item against
+(a) whether a real photo exists in the CMS and (b) whether any existing
+article covers it. That surfaced the genuine gaps rather than guessing.
+Deliberately avoids Day 1's suya/Mixed Grill and Day 2's efo riro/halal
+angles.
+
+- **Google Business Post:** Small Chops Platter — real menu item (£9.99
+  site / on Uber Eats as "Puff Puff (Halal)" and the platter), real photo
+  already in hand (`small-chops-platter-handsworth.jpg`, sent 2026-07-22),
+  and it ties directly to "small chops near me" (110/mo), which had on-page
+  copy work done on 2026-07-22 but has never been posted about.
+  > **Small chops, done properly 🍢**
+  > Puff puff, samosas, spring rolls and peppered chicken — the Nigerian
+  > party starter, built for sharing. Order for the table or send it
+  > straight to your door.
+  CTA: Order Online.
+- **Website article:** "What Is Nigerian Grilled Fish?" — the clearest
+  remaining gap in the "What Is X?" series. Grilled Fish is a real menu
+  item on **both** the website (£18.99) and Uber Eats (Grilled Tilapia,
+  £20–24, the higher-ticket end of the menu), **has a real photo**
+  (`naijagrill-grilled-fish-yam-plantain.jpg`) — unlike asun, which had to
+  ship on a neutral house image — and no article touches it. Angle: whole
+  tilapia, the pepper marinade, why it's served with fried yam and
+  plantain, and how it differs from the peppered hake dish also on the
+  menu. Cannibalization check clean: `what-is-nigerian-pepper-soup` is a
+  broth, not grilled fish.
+- **Instagram post:** Ewa Agoyin with plantain — mashed beans in smoky
+  palm-oil pepper sauce. Chosen partly because the user personally flagged
+  this dish when correcting a mislabelled photo on 2026-07-22, so the
+  photo (`ewa-agoyin-plantain-birmingham-handsworth.jpg`) is confirmed
+  accurate by them. Visually distinctive, and it's a "if you know, you
+  know" dish that suits Instagram better than search — the kind of post
+  that earns comments from people who grew up eating it.
+
+**Alternative GBP post held in reserve** (not used yet, worth rotating in
+around Day 5–6): a review request. Google tracks review *velocity* and
+response rate as real ranking factors, and the research this session
+supports asking for reviews that include **text and a photo**, not just a
+star rating. Low effort, genuinely useful, and hasn't been used yet.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*
