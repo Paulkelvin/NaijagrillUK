@@ -195,7 +195,7 @@ this one shows the room instead.
   > Marinated in pepper and spice, grilled until the skin chars, served
   > with fried yam and sweet plantain. Made to be shared.
   CTA: Order Online (or Learn More → the new article).
-- **Website article:** "What Is Nigerian Fried Rice?" — the last obvious
+- **Website article:** ✅ **PUBLISHED 2026-07-27** — `/blog/what-is-nigerian-fried-rice`. The last obvious
   gap in the "What Is X?" series with a real photo already available
   (`naijagrill-fried-rice-peppered-hake-plantain.jpg`). Real menu item on
   both channels (£12.99 site, "Naija Fried Rice" on Uber Eats).
@@ -204,7 +204,18 @@ this one shows the room instead.
   Chinese-style (curry powder and thyme rather than soy, the liver/protein,
   the vegetable mix), and — the genuinely useful part — **jollof or fried
   rice?**, which is the actual question customers weigh at the counter.
-  Internal-links to the existing jollof pieces rather than restating them.
+
+  **Real cannibalization risk caught by checking body text, not just
+  titles:** `what-is-jollof-rice-a-beginners-guide` already carried an FAQ
+  answering "What is the difference between jollof rice and fried rice?" —
+  exactly this article's planned centrepiece. A title-and-excerpt check
+  (which is what the first pass did) would have missed it entirely.
+  Resolved with the same hub-and-spoke fix used when the jollof origin
+  story overlapped that guide's history section: the new article owns the
+  comparison in full, and the guide's FAQ was rewritten to answer briefly
+  then point here, so the two pages stop competing for the same query.
+  **Lesson for future cycles: check `pt::text(body)` and FAQ questions,
+  not just titles and excerpts.**
 - **Instagram post:** the dining room. Photos exist
   (`naija-grill-and-spice-room1.jpg`, `room2.jpg`). Three straight food
   posts is enough — atmosphere is what supports the "premium Nigerian
