@@ -179,5 +179,44 @@ star rating. Low effort, genuinely useful, and hasn't been used yet.
 
 ---
 
+## Day 4 — 2026-07-31
+
+Two deliberate shifts this cycle. First, the Google Post now **follows** an
+article rather than running independently — Day 3 published the grilled
+fish piece, so Day 4 promotes that dish, which gets the article in front of
+people instead of leaving it to search alone. Second, Instagram breaks the
+dish-photo run: Days 1–3 were all food (Mixed Grill, halal, ewa agoyin), so
+this one shows the room instead.
+
+- **Google Business Post:** Grilled Fish — the premium end of the menu
+  (£18.99 site, £20–24 on Uber Eats as Grilled Tilapia), real photo in the
+  CMS, and it now has a supporting article published 2026-07-27 to link to.
+  > **Whole grilled fish, straight off the fire 🔥🐟**
+  > Marinated in pepper and spice, grilled until the skin chars, served
+  > with fried yam and sweet plantain. Made to be shared.
+  CTA: Order Online (or Learn More → the new article).
+- **Website article:** "What Is Nigerian Fried Rice?" — the last obvious
+  gap in the "What Is X?" series with a real photo already available
+  (`naijagrill-fried-rice-peppered-hake-plantain.jpg`). Real menu item on
+  both channels (£12.99 site, "Naija Fried Rice" on Uber Eats).
+  Cannibalization check clean: confirmed **zero** existing posts mention
+  fried rice in title or excerpt. Angle: what makes it Nigerian rather than
+  Chinese-style (curry powder and thyme rather than soy, the liver/protein,
+  the vegetable mix), and — the genuinely useful part — **jollof or fried
+  rice?**, which is the actual question customers weigh at the counter.
+  Internal-links to the existing jollof pieces rather than restating them.
+- **Instagram post:** the dining room. Photos exist
+  (`naija-grill-and-spice-room1.jpg`, `room2.jpg`). Three straight food
+  posts is enough — atmosphere is what supports the "premium Nigerian
+  dining" positioning the site's own copy claims, and it's the thing a
+  photo of a plate can't communicate. Also useful ahead of any push on
+  reservations, since people book a *room* as much as a meal.
+
+**Still held in reserve** (unused, worth rotating in around Day 5–6): the
+review request post — text-and-photo reviews, tied to review velocity and
+response rate as real ranking factors.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*
