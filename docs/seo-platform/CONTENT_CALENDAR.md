@@ -229,5 +229,53 @@ response rate as real ranking factors.
 
 ---
 
+## Day 5 — 2026-08-02
+
+First cycle to run the **full-depth** cannibalization scan up front (title +
+excerpt + `pt::text(body)` + FAQ questions across all 20 posts) rather than
+discovering an overlap mid-write, per the Day 4 lesson. Results below are
+from that scan, not assumption.
+
+- **Google Business Post:** the **review request** — held in reserve since
+  Day 3 and now due. Four dish posts in a row (suya, efo riro, small chops,
+  grilled fish) is enough; this is the first post asking for something
+  rather than showing something. Grounded in real ranking research from
+  this session: review *velocity* and response rate carry real weight
+  (~16–20% of local ranking factors), and reviews containing **text and a
+  photo** are worth more than a bare star rating.
+  > **Eaten with us recently? 🌟**
+  > A quick review genuinely helps people in Birmingham find us — and if
+  > you can add a line about what you ate and a photo of the plate, even
+  > better. Thank you for backing a local kitchen.
+  CTA: Learn More → `BUSINESS.reviews.leaveReviewUrl`.
+- **Website article:** "What Is Ewa Agoyin?" — **zero** occurrences of
+  "ewa agoyin"/"agoyin" anywhere across all 20 posts (title, excerpt, body
+  or FAQs), so this is genuinely uncovered. Verified the four "beans" hits
+  are unrelated: gbegiri (black-eyed beans) in the amala piece, iru
+  (fermented locust beans) in ayamase and efo riro, and green beans in
+  fried rice. Real menu item ("Beans with Plantain", £8.99), and the photo
+  is the one the **user personally corrected** on 2026-07-22
+  (`ewa-agoyin-plantain-birmingham-handsworth.jpg`), so its accuracy is
+  confirmed by them rather than assumed by me. Angle: the Agege/Lagos
+  street-food origin, why the beans are mashed rather than stewed, the
+  smoky burnt-pepper sauce that defines it, and why it's eaten with
+  plantain or bread. One adjacency to handle carefully in the writing:
+  `what-is-amala` describes gbegiri as a bean soup — different dish,
+  different technique, worth a sentence distinguishing them rather than
+  ignoring the overlap.
+- **Instagram post:** Puff Puff. Deliberately chosen *despite* appearing in
+  four existing articles — that matters for search, not for Instagram,
+  where there's no cannibalization to cause. Visually it's one of the
+  strongest things on the menu (golden, round, uniform) and it has a real
+  photo. Follows Day 4's dining-room post, so the feed alternates food and
+  atmosphere rather than running one type into the ground.
+
+**Reserve list now empty** — the review post has been used. Ideas worth
+considering for Day 6+: behind-the-scenes at the grill (no photo exists
+yet), a staff/founder post, or the three dishes still missing photos
+entirely (Asun, Gizdodo, Peppered Turkey combo) once someone shoots them.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*
