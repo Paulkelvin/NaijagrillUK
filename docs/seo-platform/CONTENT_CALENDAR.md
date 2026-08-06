@@ -277,5 +277,44 @@ entirely (Asun, Gizdodo, Peppered Turkey combo) once someone shoots them.
 
 ---
 
+## Day 6 — 2026-08-04
+
+**Day 5's article was never written.** Checked the live post list before
+planning this cycle: still 20 posts, no ewa agoyin. It was suggested, the
+user didn't ask for it, and the routine fired again. Rather than stack a
+sixth article suggestion on top of an unwritten fifth, **the article slot
+this cycle is Day 5's carried forward, not a new topic.** Ideas are cheap;
+published pages are the asset.
+
+- **Google Business Post:** Nigerian Fried Rice — continues the Day 4
+  pattern of the Google Post *following* an article rather than running
+  independently. `/blog/what-is-nigerian-fried-rice` published 2026-07-27,
+  real photo in the CMS, real menu item (£12.99 site, "Naija Fried Rice"
+  on Uber Eats).
+  > **Naija fried rice, not the takeaway kind 🍚**
+  > Cooked in seasoned stock, lifted with curry and thyme, stirred through
+  > with vegetables. Lighter than jollof and completely its own thing.
+  CTA: Learn More → the article, or Order Online.
+- **Website article:** ⏸ **carried over from Day 5 — "What Is Ewa
+  Agoyin?"**, still unwritten. Full-depth scan re-run this cycle and it
+  remains genuinely uncovered (zero occurrences of "ewa agoyin"/"agoyin"
+  across all 20 posts). Everything in the Day 5 entry still applies: real
+  menu item (£8.99), user-verified photo, and the gbegiri adjacency in
+  `what-is-amala` to distinguish rather than ignore.
+- **Instagram post:** Amala, Ewedu & Gbegiri (Abula) — visually the most
+  distinctive thing on the menu: near-black amala, green ewedu, ochre
+  gbegiri, all in one bowl. Real photo exists
+  (`abula-assorted-meat-birmingham.jpg`, sent 2026-07-22). Alternates back
+  to food after Day 5's puff puff, and it's a dish that reliably pulls a
+  reaction from people who grew up on it.
+
+**Honest limitation of this log, worth stating once:** it records what was
+*suggested*, and articles can be verified as published (they're on the
+site). Google Posts and Instagram posts cannot — there's no visibility
+into whether those were actually posted. Treat the GBP/Instagram entries
+as a queue of ideas, not a record of completed work.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*
