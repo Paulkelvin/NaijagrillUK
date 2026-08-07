@@ -48,8 +48,18 @@ const localMenuImages: Record<string, string> = {
   "Puff Puff": "/images/menu/naijagrill-small-chops-platter.jpg",
   "Vegetable Samosa": "/images/menu/naijagrill-small-chops-platter.jpg",
   "Spring Rolls": "/images/menu/naijagrill-small-chops-platter.jpg",
-  "Fried Plantain": "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
-  "Moi Moi": "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
+  // "Fried Plantain" and "Moi Moi" deliberately have no entry here — they
+  // were both hardcoded to naijagrill-beans-plantain-pepper-sauce.jpg,
+  // which is a photo of Ewa Agoyin with plantain: a different dish that
+  // merely has plantain in frame. Removing the override drops the
+  // duplication, but it does NOT fix the picture: menu-fried-plantain in
+  // Sanity points at that same asset, so Fried Plantain still renders a
+  // beans photo. There is no photo of plain fried plantain anywhere, and
+  // the generic fallback is a jollof plate, so every available option is
+  // wrong — the real fix is a real photo. Tracked as a known photo gap in
+  // docs/seo-platform/CONTENT_CALENDAR.md alongside Asun, Gizdodo and the
+  // Peppered Turkey combo.
+  "Ewa Agoyin with Plantain": "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",
 };
 
 const menuSections: MenuSection[] = [
