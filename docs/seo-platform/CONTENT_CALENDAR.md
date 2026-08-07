@@ -295,12 +295,29 @@ published pages are the asset.
   > Cooked in seasoned stock, lifted with curry and thyme, stirred through
   > with vegetables. Lighter than jollof and completely its own thing.
   CTA: Learn More → the article, or Order Online.
-- **Website article:** ⏸ **carried over from Day 5 — "What Is Ewa
-  Agoyin?"**, still unwritten. Full-depth scan re-run this cycle and it
+- **Website article:** ✅ **PUBLISHED 2026-07-27** — `/blog/what-is-ewa-agoyin` (carried over from Day 5, backlog now clear). Full-depth scan re-run this cycle and it
   remains genuinely uncovered (zero occurrences of "ewa agoyin"/"agoyin"
   across all 20 posts). Everything in the Day 5 entry still applies: real
   menu item (£8.99), user-verified photo, and the gbegiri adjacency in
   `what-is-amala` to distinguish rather than ignore.
+
+  Shipped with a real hook rather than a generic explainer: the dish is
+  named after the **Agoyin/Aganyin people** of present-day Benin and Togo
+  who brought it to Lagos from the 1960s — so it isn't originally Nigerian
+  at all, which is the same kind of genuinely surprising angle that made
+  the jollof origin story work. Includes the planned gbegiri distinction
+  (soup vs mashed dish) rather than ignoring the adjacency.
+
+  **Real discrepancy found while writing, needs a decision:** the menu
+  lists this as **"Beans with Plantain"** and describes it as *"stewed
+  beans"*, but the user calls it ewa agoyin — and genuine ewa agoyin is
+  **mashed**, not stewed, under a burnt-pepper sauce. The article's closing
+  line was deliberately written to describe the menu item accurately
+  ("beans with fried plantain and pepper sauce") rather than assert the two
+  are the same. If the kitchen does make it the real way, renaming the menu
+  item to "Ewa Agoyin" is a free win — it's what people actually search and
+  what the owner himself calls it. If it genuinely is stewed rather than
+  mashed, the current name is the honest one and should stay.
 - **Instagram post:** Amala, Ewedu & Gbegiri (Abula) — visually the most
   distinctive thing on the menu: near-black amala, green ewedu, ochre
   gbegiri, all in one bowl. Real photo exists
