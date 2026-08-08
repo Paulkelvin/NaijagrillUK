@@ -333,5 +333,54 @@ as a queue of ideas, not a record of completed work.
 
 ---
 
+## Day 7 — 2026-08-06
+
+Backlog clear (21 posts live, ewa agoyin published). Full-depth scan run
+first as standard.
+
+**The finding this cycle is bigger than a content idea.** The Uber Eats
+audit from 2026-07-22 recorded *Jollof or Fried Rice w/ Peppered Turkey
+(Halal)* at **£16.99, 87% likes from 48 ratings — the single most-rated,
+most-liked item on the whole listing**, with the Peppered Beef version
+second at 70%/30. Checked the CMS this cycle: **neither exists as a menu
+item at all.** No entry, no photo, no article. The best-selling dish is
+completely invisible on the business's own website — customers only find
+it on a third-party platform that already outranks the site for its own
+brand name. That is a revenue-relevant gap, not just a content one.
+
+- **Google Business Post:** Ewa Agoyin — the dish was renamed on the menu
+  this cycle after the owner confirmed it's made the traditional way
+  (mashed, agoyin sauce), and the article published 2026-07-27. Continues
+  the article→post pattern from Days 4 and 6. Real photo exists and is
+  owner-verified.
+  > **Ewa Agoyin, the Lagos way 🫘🔥**
+  > Beans mashed soft, agoyin sauce cooked down dark and smoky, sweet
+  > fried plantain alongside. Street food done properly.
+  CTA: Learn More → the article, or Order Online.
+- **Website article:** the **Peppered Turkey combo** — justified by real
+  customer preference data rather than a topic gap: it is the top-rated
+  item on the live Uber Eats menu. Zero occurrences of "peppered turkey"
+  or even "turkey" across all 21 posts. Angle: what peppered turkey
+  actually is (turkey cooked through a pepper-and-onion sauce rather than
+  dry-rubbed), why turkey rather than chicken is a genuinely Nigerian
+  choice, and the jollof-or-fried-rice decision the dish itself forces —
+  which now has two published articles to link to rather than needing to
+  re-explain either.
+  **Blocked on nothing, but two real caveats:** no photo exists, so it
+  would ship on a neutral image like asun did; and the dish should be
+  **added to the website menu** regardless of whether the article gets
+  written, which matters more.
+- **Instagram post:** Suya Chicken Wings — real menu item (£8.99), real
+  photo in the CMS, zero prior use in this streak, and zero occurrences of
+  "suya wings" in any article. Wings photograph well and travel further on
+  Instagram than a stew does. Alternates back to food after Day 6's Abula.
+
+**Photo gap list now at four** (Asun, Gizdodo, Peppered Turkey combo,
+plain Fried Plantain — the last added 2026-08-04 when a hardcoded override
+was found captioning a beans dish as plantain). All four are one short
+kitchen shoot.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*

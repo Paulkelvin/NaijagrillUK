@@ -165,6 +165,15 @@ that's a manual step for the user to do in Google's Menu editor. Real
 photos pulled from the website (11 files) plus 3 user-supplied photos
 (Native Village Rice, Okro Soup with Seafood, Ewa Agoyin with Plantain)
 were renamed and sent to the user for upload. Still missing real photos:
+**2026-08-06 — the Peppered Turkey combo isn't on the website menu at
+all.** Not just missing a photo: there is no `menuItem` for it in Sanity.
+The Uber Eats audit recorded it at £16.99 with 87% likes from 48 ratings —
+the most-rated and best-liked item on the entire listing, with the Peppered
+Beef version second. So the best-selling dish is invisible on the
+business's own site, discoverable only via a third-party platform that
+already outranks the site for its own brand name. **Adding both combos to
+the menu is the action here**, ahead of any article about them.
+
 **Asun, Gizdodo, and the Peppered Turkey combo** — no photo exists on the
 website or was supplied for these three.
 
