@@ -382,5 +382,48 @@ kitchen shoot.
 
 ---
 
+## Day 8 — 2026-08-08
+
+**State check first, and it's worth being blunt: the streak is now
+producing faster than it's being consumed.** Still 21 posts — Day 7's
+Peppered Turkey article wasn't written. More importantly, the *menu item*
+action flagged alongside it (adding the two combo dishes that don't exist
+on the site at all) also hasn't happened. That was the higher-value item
+of the two.
+
+So this cycle deliberately **does not invent a new article topic**. The
+article slot carries Day 7's forward for a second time. Adding an eighth
+idea on top of an unwritten seventh makes the log longer without making
+the site better.
+
+- **Google Business Post:** Jollof Rice. Never used as a Google Post
+  across seven cycles, despite being the flagship dish, the biggest real
+  keyword opportunity on the site (**"jollof rice near me", 2,400/mo**),
+  and the subject of on-page work back on 2026-07-22 that has never been
+  promoted anywhere. Real photo, two published articles to link to.
+  > **Party jollof, finished over fire 🔥🍚**
+  > Smoky, tomato-rich, and cooked the way it's meant to be — with the
+  > bottom of the pot catching just enough to matter. Plantain on the
+  > side, protein of your choice.
+  CTA: Order Online (or Learn More → the jollof origin story).
+- **Website article:** ⏸ **carried forward again — the Peppered Turkey
+  combo.** Everything in the Day 7 entry stands: top-rated item on the
+  live Uber Eats listing (87%, 48 ratings), zero coverage across all 21
+  posts, no photo. **The menu-item addition remains the priority over the
+  article** — a dish customers can't find on the site is a bigger problem
+  than a dish without a blog post.
+- **Instagram post:** Poundo with Egusi — real menu item (£16.99), real
+  photo in the CMS, unused across all seven prior cycles. Egusi is the
+  dish most likely to stop a Nigerian scroller mid-feed, and pounded yam
+  photographs with a texture contrast that a rice plate can't match.
+  Alternates back to food after Day 7's wings without repeating a grill
+  item.
+
+**Unchanged and still outstanding:** the four-dish photo gap (Asun,
+Gizdodo, Peppered Turkey, plain Fried Plantain), and the Peppered
+Turkey/Beef combos missing from the menu entirely.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*
