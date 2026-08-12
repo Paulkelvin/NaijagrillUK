@@ -425,5 +425,51 @@ Turkey/Beef combos missing from the menu entirely.
 
 ---
 
+## Day 9 — 2026-08-10
+
+**Third consecutive cycle with nothing acted on.** Still 21 posts, still no
+Peppered Turkey menu item. Days 7, 8 and 9 now carry the same outstanding
+work. The routine fires on a schedule regardless of whether the previous
+batch was used, so left alone it will keep generating ideas and commits
+indefinitely — which makes this file longer without making the site
+better.
+
+**Recommendation: pause the routine** (`trig_01AWtUUPZS35xBfHCoiym549`)
+until the backlog below clears, and restart it then. The cadence was the
+right idea; running it into an unconsumed queue is not. A short batch is
+still recorded below because the routine asked for one, but the
+consolidated list is the actually useful part of this entry.
+
+### Consolidated backlog — everything outstanding, in priority order
+
+1. **Add the Peppered Turkey (£16.99) and Peppered Beef (£15.99) combos to
+   the website menu.** Top-rated and second-rated items on the live Uber
+   Eats listing; neither exists on the site. **Genuinely blocked on a
+   decision, not on effort:** website and Uber Eats prices differ
+   substantially (jollof is £12.99 on the site vs £6.00 on Uber Eats), so
+   the combos can't simply be copied across at Uber Eats prices — someone
+   has to say which price applies on the website.
+2. **One kitchen photo shoot clears four gaps at once:** Asun, Gizdodo,
+   Peppered Turkey combo, plain Fried Plantain.
+3. **Write the Peppered Turkey article** (carried from Day 7). Lower
+   priority than 1 and 2.
+4. **Swap the asun article's neutral placeholder image** once a real asun
+   photo exists.
+5. **Add the Just Eat store URL** to `business.ts` — it ranks #1 for the
+   brand name and is missing from `/links`.
+
+### Day 9 batch (short, by design)
+
+- **Google Business Post:** Abula (Amala, Ewedu & Gbegiri) — real item
+  (£13.99), real photo, an existing article to link to
+  (`/blog/what-is-amala`), and unused as a Google Post across eight
+  cycles.
+- **Website article:** ⏸ still the Peppered Turkey combo. Third carry.
+- **Instagram post:** Grilled Fish — real photo, published article, never
+  used on Instagram (Day 4 used it as a *Google* Post, different surface).
+  Whole fish is the most dramatic single image on the menu.
+
+---
+
 *Add a new `## Day N — date` section each cycle. Don't delete prior days —
 this is the record of what's already been used.*
