@@ -17,7 +17,7 @@ export function Hero({ data }: { data: HomepageData }) {
         ) : (
           <EditorialImage
             src={data.heroImage}
-            alt="Nigerian cuisine at NaijaGrill"
+            alt="Nigerian cuisine at NaijaGrill, Handsworth, Birmingham"
             priority
             sizes="100vw"
           />

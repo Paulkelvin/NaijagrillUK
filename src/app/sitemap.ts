@@ -25,6 +25,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getBlogCategories(),
   ]);
 
+  const routeImages: Record<string, readonly string[]> = {
+    "": BUSINESS.images,
+    "/menu": BUSINESS.images.filter((path) => path.startsWith("/images/menu/")),
+  };
+
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
@@ -35,6 +40,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         : route === "/nigerian-restaurant-birmingham"
           ? 0.9
           : 0.8,
+    ...(routeImages[route]?.length
+      ? { images: routeImages[route].map((path) => `${baseUrl}${path}`) }
+      : {}),
   }));
 
   const blogEntries: MetadataRoute.Sitemap = blog.map(({ slug }) => ({

@@ -7,7 +7,7 @@ export function ExperienceSection({ data }: { data: HomepageData }) {
       <div className="image-vignette absolute inset-0">
         <EditorialImage
           src={data.experienceImage}
-          alt="Intimate dining atmosphere at NaijaGrill"
+          alt="Intimate dining atmosphere at NaijaGrill, a Nigerian restaurant in Handsworth, Birmingham"
           sizes="100vw"
         />
       </div>

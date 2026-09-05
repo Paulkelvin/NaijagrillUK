@@ -60,7 +60,7 @@ export function HeroVideo({
           landscape, so both fill the hero edge-to-edge with object-cover. */}
       <EditorialImage
         src={image}
-        alt="Nigerian cuisine at NaijaGrill"
+        alt="Nigerian cuisine at NaijaGrill, Handsworth, Birmingham"
         priority
         sizes="100vw"
       />

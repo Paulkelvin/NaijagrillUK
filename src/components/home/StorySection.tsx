@@ -51,7 +51,7 @@ export function StorySection({ data }: { data: HomepageData }) {
                   // No video uploaded yet — show poster image until one is added in Sanity Studio
                   <img
                     src={posterUrl}
-                    alt="A glimpse inside NaijaGrill"
+                    alt="A glimpse inside NaijaGrill, Handsworth, Birmingham"
                     className="block aspect-[4/5] w-full object-cover"
                   />
                 ) : (

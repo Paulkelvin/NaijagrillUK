@@ -45,6 +45,17 @@ export const BUSINESS = {
   // WhatsApp — same number as mobile, E.164 without leading +
   whatsappUrl: "https://wa.me/447438757560?text=Hi%20NaijaGrill%2C%20I%27d%20like%20to%20make%20an%20enquiry.",
   website: SITE_URL,
+  // Real storefront/interior/dish photos for structured data and the image
+  // sitemap — Google Images/local-result thumbnails draw from these, not
+  // just the single generic og-image.jpg used for social share cards.
+  images: [
+    "/images/Naija-grill-and-spice-front.webp",
+    "/images/naija-grill-and-spice-hero.jpg",
+    "/images/naija-grill-and-spice-room1.jpg",
+    "/images/naija-grill-and-spice-room2.jpg",
+    "/images/menu/naijagrill-beef-suya.jpg",
+    "/images/menu/naijagrill-jollof-rice-assorted-meat-egg.jpg",
+  ],
   cuisine: "Nigerian",
   priceRange: "£££",
   social: {

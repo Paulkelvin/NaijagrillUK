@@ -20,7 +20,7 @@ export function VisitSection({
           <div className="image-vignette relative aspect-[16/10] overflow-hidden">
             <EditorialImage
               src={visitImage}
-              alt="NaijaGrill restaurant interior"
+              alt="NaijaGrill restaurant interior in Handsworth, Birmingham"
               sizes="(max-width: 1024px) 100vw, 42vw"
             />
           </div>

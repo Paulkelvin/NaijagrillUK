@@ -83,7 +83,7 @@ export function restaurantSchema() {
     name: BUSINESS.legalName,
     alternateName: BUSINESS.alternateNames,
     description: BUSINESS.description,
-    image: `${BUSINESS.website}/og-image.jpg`,
+    image: BUSINESS.images.map((path) => `${BUSINESS.website}${path}`),
     logo: `${BUSINESS.website}/icons/icon-512.png`,
     url: BUSINESS.website,
     telephone: BUSINESS.phone,
@@ -122,7 +122,7 @@ export function localBusinessSchema(openingHours?: OpeningHoursSpecification[]) 
     url: BUSINESS.website,
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
-    image: `${BUSINESS.website}/og-image.jpg`,
+    image: BUSINESS.images.map((path) => `${BUSINESS.website}${path}`),
     logo: `${BUSINESS.website}/icons/icon-512.png`,
     address: {
       "@type": "PostalAddress",
