@@ -11,7 +11,10 @@ const reservationSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   phone: z
     .string()
-    .refine((v) => v.replace(/\D/g, "").length >= 10, "Please enter your phone number"),
+    .refine(
+      (v) => /^0\d{9,10}$/.test(v.replace(/\D/g, "").replace(/^44/, "0")),
+      "Please enter a valid UK phone number",
+    ),
   date: z.string().min(1, "Please select a date"),
   guests: z.coerce.number().int().min(2).max(25),
   notes: z.string().optional(),
