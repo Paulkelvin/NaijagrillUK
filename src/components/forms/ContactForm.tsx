@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { submitContactMessage } from "@/lib/actions/contact";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
+import { TrackOnMount } from "@/components/analytics/TrackOnMount";
 import { FormMessage } from "./FormMessage";
 import { PhoneInput } from "./PhoneInput";
 
@@ -17,7 +18,12 @@ export function ContactForm() {
   );
 
   if (state.success) {
-    return <FormMessage success message={state.message} />;
+    return (
+      <>
+        <TrackOnMount event="contact_submit" />
+        <FormMessage success message={state.message} />
+      </>
+    );
   }
 
   const inputClass =

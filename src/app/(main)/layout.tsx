@@ -1,4 +1,5 @@
 import { Analytics } from "@/components/analytics/Analytics";
+import { ConversionTracking } from "@/components/analytics/ConversionTracking";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingMobileCta } from "@/components/layout/FloatingMobileCta";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
@@ -61,6 +62,7 @@ export default async function MainLayout({
       <FloatingMobileCta />
       <WhatsAppButton />
       <Analytics />
+      <ConversionTracking />
     </>
   );
 }

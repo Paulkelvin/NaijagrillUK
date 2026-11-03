@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { submitEventInquiry } from "@/lib/actions/event-inquiries";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
+import { TrackOnMount } from "@/components/analytics/TrackOnMount";
 import { FormMessage } from "./FormMessage";
 import { PhoneInput } from "./PhoneInput";
 
@@ -37,7 +38,12 @@ export function EventInquiryForm({
   const [eventType, setEventType] = useState("");
 
   if (state.success) {
-    return <FormMessage success message={state.message} />;
+    return (
+      <>
+        <TrackOnMount event="event_inquiry_submit" />
+        <FormMessage success message={state.message} />
+      </>
+    );
   }
 
   const isDark = variant === "dark";

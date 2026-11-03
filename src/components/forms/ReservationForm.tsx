@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { submitReservation } from "@/lib/actions/reservations";
 import type { ActionResult } from "@/lib/actions/types";
 import { FormField } from "./FormField";
+import { TrackOnMount } from "@/components/analytics/TrackOnMount";
 import { FormMessage } from "./FormMessage";
 import { PhoneInput } from "./PhoneInput";
 
@@ -20,6 +21,7 @@ export function ReservationForm() {
   if (state.success) {
     return (
       <div className="mt-8 rounded-[1.5rem] bg-ivory p-6">
+        <TrackOnMount event="reservation_submit" />
         <FormMessage success message={state.message} />
       </div>
     );
