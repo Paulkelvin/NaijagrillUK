@@ -31,7 +31,9 @@ export function ReservationForm() {
   const visibleStep =
     state.fieldErrors?.date || state.fieldErrors?.guests
       ? 1
-      : state.fieldErrors?.name || state.fieldErrors?.email
+      : state.fieldErrors?.name ||
+          state.fieldErrors?.email ||
+          state.fieldErrors?.phone
         ? 2
         : step;
 
@@ -131,7 +133,7 @@ export function ReservationForm() {
               />
             </div>
 
-            <FormField label="Phone (optional)" name="phone">
+            <FormField label="Phone" name="phone" error={state.fieldErrors?.phone}>
               <PhoneInput name="phone" className={inputClass} />
             </FormField>
 

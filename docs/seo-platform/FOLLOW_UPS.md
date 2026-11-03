@@ -5,6 +5,94 @@ CHANGELOG.md/PHASE_2_IMPLEMENTATION.md (which record *completed* work),
 since chat history doesn't persist across sessions and this is the durable
 record of what to check back on and why.
 
+**Related:** OPERATIONS_CHECKLIST.md holds the *recurring* routine (what to
+check daily/weekly/monthly and on which platform). This file is for one-off
+items with a specific date attached; that one is for the work that repeats
+forever.
+
+---
+
+## 2026-07-26 — GSC "Discovered, currently not indexed" investigation
+
+User reported 18 pages (mostly blog: index, category pages, several
+posts) stuck in this status, with a "Validate Fix" click from 7/20
+still pending days later with no progress. Investigated and found a
+real, concrete contributing cause: **duplicate Sanity documents** — an
+old seed (created 2026-06-09, IDs like `blogPost-handsworth`,
+`blogCategory-culture`) was never cleaned up when the site moved to its
+current ID scheme (`post-*`/`category-*`, created 2026-06-15) — 4
+duplicate category docs and 2 duplicate blog post docs, all sharing the
+same slug as their live counterpart. This produced a sitemap with real
+duplicate `<url>` entries (33 total, only 31 unique) — a genuine
+signal-quality issue for a crawler, on top of just being sloppy.
+
+**Fixed:** re-pointed the 2 posts still referencing old category IDs,
+deleted all 6 orphaned duplicate documents, added defensive slug-based
+deduplication in `src/app/sitemap.ts` for both categories and posts (no
+unique constraint exists on Sanity's side, so this could recur without
+the code-level guard). Verified live: sitemap is now 31/31 unique.
+
+**Being honest about what this fix does and doesn't prove:** it removes
+one real, concrete technical issue. It does **not** guarantee the 18
+pages get indexed quickly — "Discovered, currently not indexed" is also
+just a normal pattern for a young site with limited backlink authority,
+and Google's own docs say it can take weeks to resolve on its own, fix
+or no fix. **Next step for the user:** resubmit the sitemap in Search
+Console (Sitemaps → remove and re-add, or just wait for Google's next
+scheduled fetch) and click "Validate Fix" again on the "Discovered - not
+indexed" report now that the sitemap is clean. Check back in 1-2 weeks —
+if the 18-page count hasn't moved by then, worth a deeper look at
+internal linking to the blog section specifically (all the affected
+example URLs were blog-related), not just the sitemap.
+
+---
+
+## 2026-07-26 — Brand-search finding (check back ~4 weeks)
+
+First real analytics review with enough data to be meaningful. July:
+**565 impressions, 5 clicks, avg position 15.0** vs June's 75 / 1 / 20.2
+(caveat: June had 13 days of data, July 23 — impressions aren't directly
+comparable, but the position improvement is real).
+
+**The finding:** ~45% of all impressions are *brand* searches ("naija
+grill and spice kitchen" 90/mo, "naija grill" 20/mo, "...reviews" 10/mo)
+— people who already know the name. And the site ranked **4th for its own
+name**, behind Just Eat (#1), Instagram (#2) and Uber Eats (#3). 114
+impressions → 4 clicks. The Terms & Conditions page also ranked #7 for
+the brand name.
+
+Root cause was narrow and fixable: the homepage title said "NaijaGrill"
+(one word), while searches — and every other platform listing (Just Eat,
+Uber Eats, Instagram, Companies House) — use "Naija Grill & Spice
+Kitchen". Structured data was already correct; only the title was
+mismatched. This is the NAP-consistency issue with a measurable cost
+attached.
+
+**Fixed:** homepage title/description now lead with the full business
+name (Sanity), keeping "NaijaGrill" as the on-page visual brand.
+
+**Also corrected a mistake from this session's own earlier work:** the
+redirect for the retired `/blog/best-nigerian-restaurant-in-handsworth-
+birmingham` pointed at the jollof-rice-origin-story article. That old URL
+ranked **position 2.1 for "nigerian restaurant in handsworth"** and drew
+brand impressions — commercial intent, sent to a history article. Now
+redirects to `/nigerian-restaurant-birmingham`, the real commercial
+landing page. That page also ranked 2.1 for the same query with **zero
+clicks**, so it was retitled to match the searched phrasing exactly.
+
+**What to check in ~4 weeks:**
+- Has the homepage moved above Just Eat / Uber Eats / Instagram for
+  "naija grill and spice kitchen"? (Position 4 → target top 1-2.)
+- Is brand-search CTR improving from its ~3.5% baseline?
+- Is "nigerian restaurant in handsworth" (position ~2.1) finally
+  converting impressions into clicks after the retitle?
+- Has the Terms page dropped out of the brand-name results?
+
+Note: "nigerian restaurant in handsworth" has **no DataForSEO volume
+data** (null) — it never appeared in any keyword research, only in real
+GSC data. A reminder that GSC surfaces real local queries the paid tools
+miss entirely.
+
 ---
 
 ## Check back in a few weeks (~mid-to-late August 2026)
@@ -77,6 +165,15 @@ that's a manual step for the user to do in Google's Menu editor. Real
 photos pulled from the website (11 files) plus 3 user-supplied photos
 (Native Village Rice, Okro Soup with Seafood, Ewa Agoyin with Plantain)
 were renamed and sent to the user for upload. Still missing real photos:
+**2026-08-06 — the Peppered Turkey combo isn't on the website menu at
+all.** Not just missing a photo: there is no `menuItem` for it in Sanity.
+The Uber Eats audit recorded it at £16.99 with 87% likes from 48 ratings —
+the most-rated and best-liked item on the entire listing, with the Peppered
+Beef version second. So the best-selling dish is invisible on the
+business's own site, discoverable only via a third-party platform that
+already outranks the site for its own brand name. **Adding both combos to
+the menu is the action here**, ahead of any article about them.
+
 **Asun, Gizdodo, and the Peppered Turkey combo** — no photo exists on the
 website or was supplied for these three.
 

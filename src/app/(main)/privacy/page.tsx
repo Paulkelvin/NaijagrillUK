@@ -64,7 +64,7 @@ export default function PrivacyPage() {
             <ul className="ml-5 list-disc space-y-2 marker:text-gold">
               <li>
                 <strong>Reservations:</strong> your name, email address, phone
-                number (optional), preferred date, party size, and any notes you add.
+                number, preferred date, party size, and any notes you add.
               </li>
               <li>
                 <strong>Events &amp; catering enquiries:</strong> your name, email,

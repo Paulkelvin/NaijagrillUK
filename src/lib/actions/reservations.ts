@@ -3,12 +3,18 @@
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { sendReservationEmails } from "@/lib/email";
+import { checkFormRateLimit } from "./guard";
 import type { ActionResult } from "./types";
 
 const reservationSchema = z.object({
   name: z.string().min(2, "Please enter your name"),
   email: z.string().email("Please enter a valid email"),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .refine(
+      (v) => /^0\d{9,10}$/.test(v.replace(/\D/g, "").replace(/^44/, "0")),
+      "Please enter a valid UK phone number",
+    ),
   date: z.string().min(1, "Please select a date"),
   guests: z.coerce.number().int().min(2).max(25),
   notes: z.string().optional(),
@@ -17,10 +23,13 @@ const reservationSchema = z.object({
 export async function submitReservation(
   formData: FormData,
 ): Promise<ActionResult> {
+  const limited = await checkFormRateLimit("reservation");
+  if (limited) return limited;
+
   const parsed = reservationSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
-    phone: formData.get("phone") || undefined,
+    phone: formData.get("phone") ?? "",
     date: formData.get("date"),
     guests: formData.get("guests"),
     notes: formData.get("notes") || undefined,
@@ -57,7 +66,7 @@ export async function submitReservation(
   const { error } = await supabase.from("reservations").insert({
     name: parsed.data.name,
     email: parsed.data.email,
-    phone: parsed.data.phone ?? null,
+    phone: parsed.data.phone,
     reservation_date: parsed.data.date,
     guests: parsed.data.guests,
     notes: parsed.data.notes ?? null,

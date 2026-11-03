@@ -289,9 +289,9 @@ export const fallbackMenuItems: MenuItemData[] = [
   },
   {
     _id: "menu-beans-plantain",
-    title: "Beans with Plantain",
+    title: "Ewa Agoyin with Plantain",
     description:
-      "Stewed beans served with sweet fried plantain and a spoon of pepper sauce.",
+      "Beans mashed soft under a dark, slow-caramelised agoyin pepper sauce, with sweet fried plantain.",
     price: 8.99,
     section: "sides-drinks",
     image: "/images/menu/naijagrill-beans-plantain-pepper-sauce.jpg",

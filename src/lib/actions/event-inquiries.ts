@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { sendEventInquiryEmails } from "@/lib/email";
+import { checkFormRateLimit } from "./guard";
 import type { ActionResult } from "./types";
 
 const eventInquirySchema = z.object({
@@ -19,6 +20,9 @@ const eventInquirySchema = z.object({
 export async function submitEventInquiry(
   formData: FormData,
 ): Promise<ActionResult> {
+  const limited = await checkFormRateLimit("event-inquiry");
+  if (limited) return limited;
+
   const parsed = eventInquirySchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),

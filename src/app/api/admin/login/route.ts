@@ -1,8 +1,20 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createSessionToken, SESSION_COOKIE_NAME, SESSION_DURATION_MS } from "@/lib/auth/session";
+import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit";
+import { logger } from "@/lib/seo/logger";
 
 export const dynamic = "force-dynamic";
+
+// A single password guards the whole admin dashboard, and until this was
+// added nothing slowed down repeated guesses — the password comparison
+// being timing-safe doesn't help at all against sheer volume. 10 attempts
+// per 15 minutes per IP: comfortably above a real owner fat-fingering their
+// password a few times, far below anything useful for a brute-force script.
+// See src/lib/rate-limit.ts for the honest limits of an in-memory counter
+// on serverless.
+const LOGIN_MAX_ATTEMPTS = 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 // The rest of this codebase already treats secret comparison as
 // timing-safe (CRON_SECRET in every cron route, the session HMAC in
@@ -25,6 +37,17 @@ function timingSafePasswordEqual(provided: string, expected: string): boolean {
  * flow.
  */
 export async function POST(request: NextRequest) {
+  const ip = clientIpFromHeaders(request.headers);
+  const limit = checkRateLimit(`login:${ip}`, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS);
+  if (!limit.allowed) {
+    logger.warn("admin_login_rate_limited", { ip, retryAfterSeconds: limit.retryAfterSeconds });
+    const loginUrl = new URL("/admin/login", request.url);
+    loginUrl.searchParams.set("error", "rate_limited");
+    const response = NextResponse.redirect(loginUrl, { status: 303 });
+    response.headers.set("Retry-After", String(limit.retryAfterSeconds));
+    return response;
+  }
+
   const formData = await request.formData();
   const username = String(formData.get("username") ?? "");
   const password = String(formData.get("password") ?? "");

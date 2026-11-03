@@ -45,16 +45,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       : {}),
   }));
 
-  const blogEntries: MetadataRoute.Sitemap = blog.map(({ slug }) => ({
+  // Same real gap as blogCategory below, found in the same live check —
+  // two full duplicate blogPost documents (old "blogPost-*" seed docs
+  // alongside the current "post-*" ones) shared a slug with a real,
+  // already-live post each. Deduped defensively rather than trusting
+  // the data stays clean, same reasoning as the category case.
+  const uniqueBlogSlugs = [...new Set(blog.map(({ slug }) => slug))];
+  const blogEntries: MetadataRoute.Sitemap = uniqueBlogSlugs.map((slug) => ({
     url: `${baseUrl}/blog/${slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly",
     priority: 0.7,
   }));
 
-  const categoryEntries: MetadataRoute.Sitemap = categories.map(
-    (category) => ({
-      url: `${baseUrl}/blog/category/${category.slug}`,
+  // Sanity has no unique constraint on blogCategory.slug, so a duplicate
+  // document (same slug, different _id — a real one found live: two full
+  // sets of "Culture"/"Events"/"Local Guides"/"Nigerian Food" categories)
+  // would otherwise produce two sitemap <url> entries for the same page.
+  // Deduped defensively here rather than trusting the data stays clean.
+  const uniqueCategorySlugs = [...new Set(categories.map((category) => category.slug))];
+  const categoryEntries: MetadataRoute.Sitemap = uniqueCategorySlugs.map(
+    (slug) => ({
+      url: `${baseUrl}/blog/category/${slug}`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.6,

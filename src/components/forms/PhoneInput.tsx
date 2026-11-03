@@ -3,55 +3,33 @@
 import { useState, type InputHTMLAttributes } from "react";
 
 /**
- * Formats a raw string into UK phone format as the user types.
- *
- * Domestic (leading 0, 11 digits total): mobiles (07xxx xxxxxx) get the
- * 5+6 grouping actually used for them; other numbers (landlines, whose
- * area-code length varies by region) get the generic 4+3+4 grouping UK
- * forms commonly fall back to:
- *   "07438757560"  -> "07438 757560"
- *   "01212160249"  -> "0121 216 0249"
- *
- * International (typed with a leading "+" or "44"/"0044" country code —
- * the trunk 0 is dropped, per how "+44" numbers are actually written):
- *   "+447935252534"   -> "+44 7935 252534"
- *   "447935252534"    -> "+44 7935 252534"
- *   "+441214960000"   -> "+44 121 496 0000"
- * A redundant leading 0 typed after the country code by habit (e.g.
- * "+44 07935 ...") is dropped rather than kept as part of the number.
+ * Formats a raw string into UK phone format as the user types:
+ *   "07438757560"   -> "07438 757560"   (mobiles and most 01 area codes)
+ *   "02079460018"   -> "020 7946 0018"  (02 area codes)
+ *   "01212345678"   -> "0121 234 5678"  (011x/01x1 cities, 03/08/09 numbers)
+ *   "+447438757560" -> "07438 757560"   (international prefix converted)
+ * Non-digits are stripped and the number is capped at 11 digits.
  */
 export function formatUkPhone(value: string): string {
-  const hasPlus = value.trim().startsWith("+");
-  const rawDigits = value.replace(/\D/g, "");
-  const digits = rawDigits.startsWith("0044") ? rawDigits.slice(2) : rawDigits;
-  const isInternational = hasPlus || digits.startsWith("44");
+  let digits = value.replace(/\D/g, "");
+  if (digits.startsWith("44")) digits = `0${digits.slice(2)}`;
+  digits = digits.slice(0, 11);
 
-  if (isInternational) {
-    let subscriber = digits.startsWith("44") ? digits.slice(2) : digits;
-    if (subscriber.startsWith("0")) subscriber = subscriber.slice(1);
-    subscriber = subscriber.slice(0, 10);
+  const groups = /^02/.test(digits)
+    ? [3, 4]
+    : /^(01\d1|011|0[389])/.test(digits)
+      ? [4, 3]
+      : [5];
 
-    if (subscriber.length === 0) return "+44";
-    if (subscriber.startsWith("7")) {
-      return subscriber.length <= 4
-        ? `+44 ${subscriber}`
-        : `+44 ${subscriber.slice(0, 4)} ${subscriber.slice(4)}`;
-    }
-    if (subscriber.length <= 3) return `+44 ${subscriber}`;
-    if (subscriber.length <= 6) return `+44 ${subscriber.slice(0, 3)} ${subscriber.slice(3)}`;
-    return `+44 ${subscriber.slice(0, 3)} ${subscriber.slice(3, 6)} ${subscriber.slice(6)}`;
+  const parts: string[] = [];
+  let rest = digits;
+  for (const size of groups) {
+    if (rest.length <= size) break;
+    parts.push(rest.slice(0, size));
+    rest = rest.slice(size);
   }
-
-  const local = digits.slice(0, 11);
-  const { length } = local;
-  if (length === 0) return "";
-  if (local.startsWith("07")) {
-    if (length <= 5) return local;
-    return `${local.slice(0, 5)} ${local.slice(5)}`;
-  }
-  if (length <= 4) return local;
-  if (length <= 7) return `${local.slice(0, 4)} ${local.slice(4)}`;
-  return `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`;
+  if (rest) parts.push(rest);
+  return parts.join(" ");
 }
 
 type PhoneInputProps = Omit<
@@ -65,7 +43,7 @@ type PhoneInputProps = Omit<
 export function PhoneInput({
   name,
   defaultValue = "",
-  placeholder = "07700 900000",
+  placeholder = "07123 456789",
   ...props
 }: PhoneInputProps) {
   const [value, setValue] = useState(() => formatUkPhone(defaultValue));
@@ -81,8 +59,7 @@ export function PhoneInput({
       value={value}
       onChange={(event) => setValue(formatUkPhone(event.target.value))}
       onKeyDown={(event) => {
-        // Block obvious letter/symbol entry; allow control & navigation keys
-        // and "+" for a leading country code.
+        // Block obvious letter/symbol entry; allow "+" for +44 and control keys.
         if (
           event.key.length === 1 &&
           !event.metaKey &&
