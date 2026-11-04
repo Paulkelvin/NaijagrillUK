@@ -12,7 +12,8 @@ const appDir = path.join(root, "src/app");
 const iconsDir = path.join(root, "public/icons");
 
 // Brand colour also used as the manifest theme/background.
-const BG = { r: 255, g: 255, b: 255, alpha: 1 }; // white — best legibility at 16px
+const BG = { r: 255, g: 255, b: 255, alpha: 1 }; // opaque white (apple/maskable)
+const CLEAR = { r: 0, g: 0, b: 0, alpha: 0 }; // the logo is a circle, so tab/PWA icons stay transparent
 
 fs.mkdirSync(iconsDir, { recursive: true });
 
@@ -57,17 +58,20 @@ function pngToIco(pngBuffer, dim) {
 async function run() {
   const logo = await trimmedLogo();
 
-  // Favicon (browser tab) + classic .ico fallback.
-  await sharp(await squareIcon(logo, 512, 0.06)).toFile(path.join(appDir, "icon.png"));
-  const ico64 = await squareIcon(logo, 64, 0.06);
-  fs.writeFileSync(path.join(appDir, "favicon.ico"), pngToIco(ico64, 64));
+  // Favicon (browser tab) + classic .ico fallback. Google only uses favicons
+  // whose size is a multiple of 48px, so ship 48/96 explicitly as well.
+  await sharp(await squareIcon(logo, 512, 0.02, CLEAR)).toFile(path.join(appDir, "icon.png"));
+  const ico48 = await squareIcon(logo, 48, 0.02, CLEAR);
+  fs.writeFileSync(path.join(appDir, "favicon.ico"), pngToIco(ico48, 48));
+  await sharp(ico48).toFile(path.join(iconsDir, "favicon-48.png"));
+  await sharp(await squareIcon(logo, 96, 0.02, CLEAR)).toFile(path.join(iconsDir, "favicon-96.png"));
 
   // Apple touch icon (must be opaque — iOS renders transparency as black).
   await sharp(await squareIcon(logo, 180, 0.1)).toFile(path.join(appDir, "apple-icon.png"));
 
   // PWA / Android manifest icons.
-  await sharp(await squareIcon(logo, 192, 0.08)).toFile(path.join(iconsDir, "icon-192.png"));
-  await sharp(await squareIcon(logo, 512, 0.08)).toFile(path.join(iconsDir, "icon-512.png"));
+  await sharp(await squareIcon(logo, 192, 0.03, CLEAR)).toFile(path.join(iconsDir, "icon-192.png"));
+  await sharp(await squareIcon(logo, 512, 0.03, CLEAR)).toFile(path.join(iconsDir, "icon-512.png"));
   // Maskable needs the logo inside the ~80% safe zone.
   await sharp(await squareIcon(logo, 512, 0.2)).toFile(path.join(iconsDir, "maskable-512.png"));
 
