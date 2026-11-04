@@ -71,8 +71,8 @@ export const BUSINESS = {
   },
   reviews: {
     provider: "Google",
-    rating: 5.0 as number | undefined,
-    reviewCount: 4 as number | undefined,
+    rating: 4.4 as number | undefined,
+    reviewCount: 40 as number | undefined,
     profileUrl: "https://share.google/95Cf3n8hOcPSL4U4G",
     readReviewsUrl:
       "https://share.google/95Cf3n8hOcPSL4U4G",
