@@ -229,7 +229,7 @@ async function seed() {
 
   for (const post of posts) {
     try {
-      await client.createOrReplace(post);
+      await client.createIfNotExists(post);
       console.log(`✓ ${post.slug.current}`);
     } catch (err) {
       console.error(`✗ ${post.slug.current}:`, err.message);

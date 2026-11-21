@@ -138,7 +138,7 @@ async function seedHomepage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const existing: any = await client.getDocument("homepage").catch(() => null);
 
-  await client.createOrReplace({
+  await client.createIfNotExists({
     _id: "homepage",
     _type: "homepage",
     heroEyebrow: hp.heroEyebrow,
@@ -167,7 +167,7 @@ async function seedHomepage() {
 async function seedOpeningHours() {
   console.log("\nOpening hours:");
   const oh = fallbackOpeningHours;
-  await client.createOrReplace({
+  await client.createIfNotExists({
     _id: "openingHours",
     _type: "openingHours",
     summary: oh.summary,
@@ -190,7 +190,7 @@ async function seedTestimonials() {
   console.log("\nTestimonials:");
   for (let i = 0; i < fallbackTestimonials.length; i++) {
     const t = fallbackTestimonials[i];
-    await client.createOrReplace({
+    await client.createIfNotExists({
       _id: t._id,
       _type: "testimonial",
       quote: t.quote,
@@ -205,7 +205,7 @@ async function seedTestimonials() {
 async function seedContactInfo() {
   console.log("\nContact info:");
   const c = fallbackContact;
-  await client.createOrReplace({
+  await client.createIfNotExists({
     _id: "contactInfo",
     _type: "contactInfo",
     email: c.email,
@@ -226,7 +226,7 @@ async function seedGallery() {
   console.log("\nGallery images:");
   for (const item of fallbackGalleryImages) {
     const image = await toImageField(item.image, item.alt);
-    await client.createOrReplace({
+    await client.createIfNotExists({
       _id: item._id,
       _type: "galleryImage",
       title: item.title,
@@ -243,7 +243,7 @@ async function seedEvents() {
   console.log("\nEvents:");
   for (const event of fallbackEvents) {
     const image = await toImageField(event.featuredImage, event.title);
-    await client.createOrReplace({
+    await client.createIfNotExists({
       _id: event._id,
       _type: "event",
       title: event.title,
@@ -276,7 +276,7 @@ async function seedExplorePage() {
 
   const heroImage = await toImageField(ex.heroImage, ex.title);
 
-  await client.createOrReplace({
+  await client.createIfNotExists({
     _id: "explorePage",
     _type: "explorePage",
     title: ex.title,
@@ -299,7 +299,7 @@ async function seedMenuItems() {
   console.log("\nMenu items:");
   for (const item of fallbackMenuItems) {
     const image = await toImageField(item.image, item.title);
-    await client.createOrReplace({
+    await client.createIfNotExists({
       _id: item._id,
       _type: "menuItem",
       title: item.title,
@@ -324,7 +324,7 @@ async function seedBlog() {
   console.log("\nBlog categories:");
   for (const category of fallbackBlogCategories) {
     const _id = `category-${category.slug}`;
-    await client.createOrReplace({
+    await client.createIfNotExists({
       _id,
       _type: "blogCategory",
       title: category.title,
@@ -370,7 +370,7 @@ async function seedBlog() {
 
     if (post.seo) doc.seo = seoField(post.seo);
 
-    await client.createOrReplace(doc as { _id: string; _type: string });
+    await client.createIfNotExists(doc as { _id: string; _type: string });
   }
 }
 
