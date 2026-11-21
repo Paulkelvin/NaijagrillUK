@@ -13,7 +13,9 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function Header() {
+type HeaderPromo = { text: string; shortText: string; href: string };
+
+export function Header({ promo }: { promo?: HeaderPromo | null }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -37,6 +39,18 @@ export function Header() {
           : "border-b border-ivory/10 shadow-[0_8px_32px_rgba(26,24,20,0.12)]"
       }`}
     >
+      {promo && (
+        <Link
+          href={promo.href}
+          className="flex items-center justify-center gap-3 bg-gold px-4 py-2 text-center text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-charcoal transition-colors duration-300 hover:bg-ivory"
+        >
+          <span className="hidden sm:inline">{promo.text}</span>
+          <span className="sm:hidden">{promo.shortText}</span>
+          <span aria-hidden className="underline underline-offset-4">
+            See offers
+          </span>
+        </Link>
+      )}
       <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4 md:px-12 lg:px-16">
         <Link
           href="/"

@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/Header";
 export const revalidate = 60;
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AmbientGraphics } from "@/components/ui/AmbientGraphics";
+import { getActivePromotion } from "@/lib/offers";
 import {
   type OpeningHoursSpecification,
   localBusinessSchema,
@@ -21,6 +22,7 @@ export default async function MainLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const promotion = getActivePromotion();
   const [contact, hours] = await Promise.all([
     getContactInfo(),
     getOpeningHours(),
@@ -51,7 +53,17 @@ export default async function MainLayout({
         Skip to content
       </a>
       <AmbientGraphics />
-      <Header />
+      <Header
+        promo={
+          promotion
+            ? {
+                text: promotion.bannerText,
+                shortText: promotion.bannerTextShort,
+                href: "/offers",
+              }
+            : null
+        }
+      />
       <main
         id="main-content"
         className="flex min-h-screen flex-1 flex-col"

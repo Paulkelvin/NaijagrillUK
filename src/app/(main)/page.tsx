@@ -3,6 +3,8 @@ import { ExperienceSection } from "@/components/home/ExperienceSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import { JournalSection } from "@/components/home/JournalSection";
+import { OffersSection } from "@/components/offers/OffersSection";
+import { getActivePromotion } from "@/lib/offers";
 // import { NewsletterSection } from "@/components/home/NewsletterSection"; // £10 welcome offer — temporarily disabled
 import { PrivateDiningTeaser } from "@/components/home/PrivateDiningTeaser";
 import { StorySection } from "@/components/home/StorySection";
@@ -39,12 +41,15 @@ export default async function Home() {
     getBlogPosts(),
   ]);
 
+  const promotion = getActivePromotion();
+
   return (
     <>
       <JsonLd
         data={breadcrumbSchema([{ name: "Home", path: "/" }])}
       />
       <Hero data={homepage} />
+      {promotion && <OffersSection promotion={promotion} />}
       <Reveal><StorySection data={homepage} /></Reveal>
       <Reveal><CuisineEditorial data={homepage} /></Reveal>
       <Reveal><PrivateDiningTeaser /></Reveal>
