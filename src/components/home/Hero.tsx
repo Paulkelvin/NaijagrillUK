@@ -1,10 +1,18 @@
 import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import { HeroVideo } from "@/components/home/HeroVideo";
+import Link from "next/link";
 import { BUSINESS } from "@/lib/business";
+import type { Promotion } from "@/lib/offers";
 import type { HomepageData } from "@/sanity/types";
 
-export function Hero({ data }: { data: HomepageData }) {
+export function Hero({
+  data,
+  promotion,
+}: {
+  data: HomepageData;
+  promotion?: Promotion | null;
+}) {
   return (
     <section className="relative h-[100svh] overflow-hidden">
       <div className="image-vignette absolute inset-0">
@@ -28,6 +36,17 @@ export function Hero({ data }: { data: HomepageData }) {
 
       <div className="relative flex h-full flex-col justify-end px-6 pb-28 pt-20 md:px-12 md:pb-16 md:pt-28 lg:px-16 lg:pb-20">
         <div className="mx-auto w-full max-w-[1600px]">
+          {promotion && (
+            <Link
+              href="#offers"
+              className="mb-6 inline-flex max-w-full items-center gap-3 rounded-full bg-gold px-5 py-3 text-[0.6875rem] font-black uppercase tracking-[0.16em] text-charcoal shadow-[0_18px_44px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-ivory"
+            >
+              <span>{promotion.bannerText}</span>
+              <span aria-hidden className="hidden sm:inline">
+                &middot; ends {promotion.endsLabel}&nbsp;&rarr;
+              </span>
+            </Link>
+          )}
           <p className="editorial-caption-light image-text-contrast">
             {data.heroEyebrow}
           </p>

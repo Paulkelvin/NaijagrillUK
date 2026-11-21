@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getActivePromotion, PROMOTION } from "./offers";
+import { getActivePromotion, getPromotionState, PROMOTION } from "./offers";
 
 describe("getActivePromotion", () => {
   it("is off the day before the promotion starts", () => {
@@ -16,5 +16,11 @@ describe("getActivePromotion", () => {
 
   it("switches off after the end date", () => {
     expect(getActivePromotion(new Date("2026-12-02T00:00:00Z"))).toBeNull();
+  });
+
+  it("reports upcoming, active and ended states", () => {
+    expect(getPromotionState(new Date("2026-11-21T12:00:00Z"))).toBe("upcoming");
+    expect(getPromotionState(new Date("2026-11-25T12:00:00Z"))).toBe("active");
+    expect(getPromotionState(new Date("2026-12-05T12:00:00Z"))).toBe("ended");
   });
 });

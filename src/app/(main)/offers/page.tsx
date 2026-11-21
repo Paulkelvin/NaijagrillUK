@@ -3,7 +3,7 @@ import { OfferCards } from "@/components/offers/OfferCards";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PageHero } from "@/components/ui/PageHero";
 import { BUSINESS } from "@/lib/business";
-import { getActivePromotion } from "@/lib/offers";
+import { getPromotionState, PROMOTION } from "@/lib/offers";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { breadcrumbSchema } from "@/lib/seo/structured-data";
 
@@ -17,7 +17,8 @@ export async function generateMetadata() {
 }
 
 export default function OffersPage() {
-  const promotion = getActivePromotion();
+  const state = getPromotionState();
+  const promotion = state === "ended" ? null : PROMOTION;
 
   return (
     <>
@@ -28,7 +29,13 @@ export default function OffersPage() {
         ])}
       />
       <PageHero
-        eyebrow={promotion ? `Ends ${promotion.endsLabel}` : "Offers"}
+        eyebrow={
+          promotion
+            ? state === "upcoming"
+              ? "Starts 22 November"
+              : `Ends ${promotion.endsLabel}`
+            : "Offers"
+        }
         title={promotion ? "Eat well. Save more." : "No offers right now"}
         description={
           promotion

@@ -76,9 +76,15 @@ export const PROMOTION: Promotion = {
   ],
 };
 
-export function getActivePromotion(now: Date = new Date()): Promotion | null {
+export type PromotionState = "upcoming" | "active" | "ended";
+
+export function getPromotionState(now: Date = new Date()): PromotionState {
   const time = now.getTime();
-  const starts = Date.parse(PROMOTION.startsAt);
-  const ends = Date.parse(PROMOTION.endsAt);
-  return time >= starts && time <= ends ? PROMOTION : null;
+  if (time < Date.parse(PROMOTION.startsAt)) return "upcoming";
+  if (time > Date.parse(PROMOTION.endsAt)) return "ended";
+  return "active";
+}
+
+export function getActivePromotion(now: Date = new Date()): Promotion | null {
+  return getPromotionState(now) === "active" ? PROMOTION : null;
 }

@@ -48,7 +48,7 @@ export default async function Home() {
       <JsonLd
         data={breadcrumbSchema([{ name: "Home", path: "/" }])}
       />
-      <Hero data={homepage} />
+      <Hero data={homepage} promotion={promotion} />
       {promotion && <OffersSection promotion={promotion} />}
       <Reveal><StorySection data={homepage} /></Reveal>
       <Reveal><CuisineEditorial data={homepage} /></Reveal>
