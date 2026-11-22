@@ -392,3 +392,14 @@ button:not(:disabled):active,
     transition: none;
   }
 }
+
+/* Bottom-pinned elements follow the visible bottom edge as the browser toolbar
+   shows and hides (see ViewportBottomSync). Hidden while the keyboard is open. */
+.vv-bottom-pin {
+  transform: translate3d(0, var(--vv-bottom-shift, 0px), 0);
+  will-change: transform;
+}
+
+html[data-keyboard="open"] .vv-bottom-pin {
+  display: none;
+}

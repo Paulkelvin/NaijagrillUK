@@ -7,7 +7,7 @@ export function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with NaijaGrill on WhatsApp"
-      className="group fixed bottom-[5.5rem] right-4 z-50 lg:bottom-6 lg:right-6"
+      className="vv-bottom-pin group fixed bottom-[5.5rem] right-4 z-50 lg:bottom-6 lg:right-6"
     >
       {/* Pulse ring — 3 pulses on load then stops */}
       <span

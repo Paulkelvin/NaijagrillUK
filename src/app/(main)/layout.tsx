@@ -2,6 +2,7 @@ import { Analytics } from "@/components/analytics/Analytics";
 import { ConversionTracking } from "@/components/analytics/ConversionTracking";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingMobileCta } from "@/components/layout/FloatingMobileCta";
+import { ViewportBottomSync } from "@/components/layout/ViewportBottomSync";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { Header } from "@/components/layout/Header";
 
@@ -71,6 +72,7 @@ export default async function MainLayout({
         {children}
       </main>
       <Footer contact={contact} hours={hours} />
+      <ViewportBottomSync />
       <FloatingMobileCta />
       <WhatsAppButton />
       <Analytics />
