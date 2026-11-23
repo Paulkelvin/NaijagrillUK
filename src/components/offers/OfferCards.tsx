@@ -19,6 +19,9 @@ export function OfferCards({ cards }: { cards: OfferCard[] }) {
           </div>
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-charcoal via-charcoal/75 to-charcoal/5" />
           <div className="absolute inset-x-0 top-0 -z-10 h-1 bg-gold" />
+          <span className="absolute right-5 top-5 rounded-full border border-gold/50 bg-charcoal/55 px-3.5 py-1.5 text-[0.625rem] font-bold uppercase tracking-[0.18em] text-gold backdrop-blur">
+            {card.tag}
+          </span>
 
           <div className="p-7 md:p-8">
             <p className="editorial-display whitespace-nowrap [font-variant-numeric:lining-nums] text-[4.75rem] font-light leading-[0.9] text-gold md:text-[5.25rem]">
@@ -29,6 +32,9 @@ export function OfferCards({ cards }: { cards: OfferCard[] }) {
               {card.title}
             </h3>
             <p className="mt-3 text-sm leading-[1.6] text-ivory/80">{card.body}</p>
+            <p className="mt-4 border-t border-ivory/15 pt-4 text-xs leading-[1.6] text-gold/90">
+              {card.claim}
+            </p>
           </div>
         </article>
       ))}

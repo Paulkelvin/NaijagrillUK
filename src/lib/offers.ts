@@ -6,13 +6,11 @@ export type OfferCard = {
   body: string;
   image: string;
   alt: string;
+  tag: string;
+  claim: string;
 };
 
 export type Promotion = {
-  startsAt: string;
-  endsAt: string;
-  endsLabel: string;
-  window: string;
   bannerText: string;
   bannerTextShort: string;
   cards: OfferCard[];
@@ -20,13 +18,37 @@ export type Promotion = {
   terms: string[];
 };
 
-// London is on GMT (UTC+0) from late October to late March, so these UTC
-// instants are the same as London local time for this promotion.
+// Flip to false to hide every offer across the site (header strip, hero badge,
+// homepage section and the /offers page). There is no date window: the offers
+// run until this is switched off.
+export const OFFERS_ACTIVE = true;
+
+export const HOW_IT_WORKS = [
+  { step: "1", title: "Pick your dishes", body: "Browse the menu or just tell us what you fancy." },
+  { step: "2", title: "Order with us", body: "Dine in, or message us on WhatsApp and collect in person." },
+  { step: "3", title: "Mention the offer", body: "We take it off your bill. No codes, no vouchers." },
+] as const;
+
+export const OFFER_FAQS = [
+  {
+    q: "Can I use these offers on Uber Eats?",
+    a: "No. The offers are for dine-in and in-person collection at the restaurant only, not Uber Eats or delivery.",
+  },
+  {
+    q: "Do I need a code or voucher?",
+    a: "No. Just mention the offer when you order and we will apply it.",
+  },
+  {
+    q: "Can I combine two offers?",
+    a: "Offers cannot be combined with other discounts. Ask us if you are unsure and we will tell you what works best for your order.",
+  },
+  {
+    q: "Can I order ahead and collect?",
+    a: "Yes. Message us on WhatsApp or call, tell us what you would like and the time you will arrive, then collect in person and mention the offer.",
+  },
+] as const;
+
 export const PROMOTION: Promotion = {
-  startsAt: "2026-11-22T00:00:00Z",
-  endsAt: "2026-12-01T23:59:59Z",
-  endsLabel: "1 December",
-  window: "22 November to 1 December 2026",
   bannerText: "20% off when you dine in or collect",
   bannerTextShort: "20% off dine-in & collection",
   cards: [
@@ -38,6 +60,8 @@ export const PROMOTION: Promotion = {
       body: "Efo riro, egusi, ogbono, okro, seafood okro, ayamase, ofada and the chops platter.",
       image: "/images/menu/naijagrill-pounded-yam-efo-riro.jpg",
       alt: "Pounded yam with efo riro vegetable soup",
+      tag: "Dine-in & collection",
+      claim: "Order any of these dishes at the restaurant and the 20% comes off your bill.",
     },
     {
       id: "bogof",
@@ -47,6 +71,8 @@ export const PROMOTION: Promotion = {
       body: "Choose jollof rice or fried rice with peppered turkey or peppered chicken.",
       image: "/images/menu/naijagrill-jollof-rice-chicken-wings.jpg",
       alt: "Jollof rice with chicken wings",
+      tag: "Rice & peppered meat",
+      claim: "Order one jollof or fried rice with peppered chicken or turkey and ask for your free one.",
     },
     {
       id: "puff-puff",
@@ -56,6 +82,8 @@ export const PROMOTION: Promotion = {
       body: "Spend over £30 and we will add a portion of golden puff puff on the house.",
       image: "/images/menu/naijagrill-puff-puff.jpg",
       alt: "Golden Nigerian puff puff",
+      tag: "Orders over £30",
+      claim: "Spend over £30 and ask for your free puff puff when you order.",
     },
   ],
   twentyOffDishes: [
@@ -69,22 +97,13 @@ export const PROMOTION: Promotion = {
     "Ofada with white rice",
   ],
   terms: [
-    "Valid 22 November to 1 December 2026.",
     "Dine-in and in-person collection at the restaurant only. Not available on Uber Eats or delivery.",
     "Soups, ogbono, okro and seafood okro come with your choice of swallow.",
     "Offers cannot be combined with other discounts.",
+    "Offers are for a limited time and may change without notice.",
   ],
 };
 
-export type PromotionState = "upcoming" | "active" | "ended";
-
-export function getPromotionState(now: Date = new Date()): PromotionState {
-  const time = now.getTime();
-  if (time < Date.parse(PROMOTION.startsAt)) return "upcoming";
-  if (time > Date.parse(PROMOTION.endsAt)) return "ended";
-  return "active";
-}
-
-export function getActivePromotion(now: Date = new Date()): Promotion | null {
-  return getPromotionState(now) === "active" ? PROMOTION : null;
+export function getActivePromotion(): Promotion | null {
+  return OFFERS_ACTIVE ? PROMOTION : null;
 }

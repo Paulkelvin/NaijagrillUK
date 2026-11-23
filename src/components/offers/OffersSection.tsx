@@ -16,7 +16,7 @@ export function OffersSection({ promotion }: { promotion: Promotion }) {
       <div className="relative mx-auto max-w-[1500px]">
         <div className="mx-auto max-w-3xl text-center">
           <p className="editorial-caption-light">
-            Limited time &middot; Ends {promotion.endsLabel}
+            Offers right now
           </p>
           <h2 className="editorial-display mt-4 text-[clamp(2.6rem,6vw,5rem)] font-light leading-[0.98]">
             Eat well. <em className="text-gold">Save more.</em>
@@ -55,7 +55,6 @@ export function OffersSection({ promotion }: { promotion: Promotion }) {
         </div>
         <p className="mt-6 text-center text-xs text-ivory/50">
           Dine-in and in-person collection only. Not available on Uber Eats.
-          Valid {promotion.window}.
         </p>
       </div>
     </section>

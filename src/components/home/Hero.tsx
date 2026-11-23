@@ -43,7 +43,7 @@ export function Hero({
             >
               <span>{promotion.bannerText}</span>
               <span aria-hidden className="hidden sm:inline">
-                &middot; ends {promotion.endsLabel}&nbsp;&rarr;
+                &middot; see offers&nbsp;&rarr;
               </span>
             </Link>
           )}
