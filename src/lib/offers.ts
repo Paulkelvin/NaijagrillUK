@@ -23,13 +23,20 @@ export type Promotion = {
 // run until this is switched off.
 export const OFFERS_ACTIVE = true;
 
-export type BulkOption = { size: string; price: number };
+export type BulkOption = { size: string; note?: string; price: number };
 export type BulkItem = { name: string; options: BulkOption[]; note?: string };
-export type BulkGroup = { id: string; title: string; blurb: string; items: BulkItem[] };
+export type BulkGroup = {
+  id: string;
+  title: string;
+  blurb: string;
+  image: string;
+  alt: string;
+  items: BulkItem[];
+};
 
 const L = (litres: number, price: number): BulkOption => ({ size: `${litres} litre${litres > 1 ? "s" : ""}`, price });
-const HALF = (price: number): BulkOption => ({ size: "Half cooler · 12 litres", price });
-const FULL = (price: number): BulkOption => ({ size: "Full cooler · 24 litres", price });
+const HALF = (price: number): BulkOption => ({ size: "Half cooler", note: "12 litres", price });
+const FULL = (price: number): BulkOption => ({ size: "Full cooler", note: "24 litres", price });
 const PCS = (n: number, price: number): BulkOption => ({ size: `${n} pieces`, price });
 
 // Festive bulk orders: priced per litre / cooler / pieces. Placed by
@@ -46,6 +53,8 @@ export const FESTIVE = {
       id: "rice",
       title: "Party rice",
       blurb: "The centrepiece of every table.",
+      image: "/images/menu/naijagrill-jollof-rice-plantain-assorted-meat.jpg",
+      alt: "Jollof rice with plantain and assorted meat",
       items: [
         { name: "Jollof rice", options: [L(2, 15), L(5, 35), HALF(65), FULL(120)] },
         { name: "Fried rice with prawns", options: [L(2, 20), L(5, 40), HALF(70), FULL(130)] },
@@ -55,6 +64,8 @@ export const FESTIVE = {
       id: "stews",
       title: "Stews & soups",
       blurb: "Rich, slow-cooked and made for sharing.",
+      image: "/images/menu/naijagrill-poundo-egusi-soup.jpg",
+      alt: "Egusi soup with pounded yam",
       items: [
         { name: "Ayamase stew", options: [L(2, 40), L(5, 90)] },
         { name: "Ofada stew", options: [L(2, 40), L(5, 90)] },
@@ -68,6 +79,8 @@ export const FESTIVE = {
       id: "peppered",
       title: "Peppered & grilled",
       blurb: "Bold, hot and gone in minutes.",
+      image: "/images/menu/naijagrill-peppered-beef.jpg",
+      alt: "Peppered beef in a wooden bowl",
       items: [
         { name: "Gizdodo", options: [L(1, 20), L(2, 35), L(5, 80)] },
         { name: "Asun", options: [L(1, 20), L(2, 35), L(5, 80)] },
@@ -81,6 +94,8 @@ export const FESTIVE = {
       id: "sides",
       title: "Sides",
       blurb: "Add them to any order.",
+      image: "/images/menu/naijagrill-pounded-yam-efo-riro.jpg",
+      alt: "Pounded yam with efo riro",
       items: [
         { name: "Moin moin", options: [{ size: "Per cupcake", price: 2 }] },
         { name: "Pounded yam", options: [{ size: "Per wrap", price: 2 }] },
