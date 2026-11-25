@@ -41,6 +41,16 @@ export function FestivePriceBoard() {
 
         {/* £100 bonus */}
         <div className="mx-auto mt-10 max-w-3xl rounded-[2rem] bg-[linear-gradient(135deg,#f3d48a_0%,#d19a3a_55%,#a46b1c_100%)] px-6 py-6 text-center text-charcoal shadow-[0_24px_70px_rgba(0,0,0,0.4)] md:px-10">
+          <div className="mb-3 flex justify-center gap-3">
+            {FESTIVE.bonusPhotos.map((photo) => (
+              <div
+                key={photo.src}
+                className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-charcoal/80 shadow-[0_6px_16px_rgba(0,0,0,0.35)] md:h-20 md:w-20"
+              >
+                <EditorialImage src={photo.src} alt={photo.alt} sizes="80px" />
+              </div>
+            ))}
+          </div>
           <p className="text-[0.6875rem] font-black uppercase tracking-[0.24em]">
             Orders over £{FESTIVE.bonusThreshold} come with
           </p>
@@ -69,15 +79,25 @@ export function FestivePriceBoard() {
         <div className="mt-8 md:columns-2 md:gap-x-16">
           {FESTIVE.groups.map((group) => (
             <div key={group.id} id={`festive-${group.id}`} className="mb-12 scroll-mt-40 break-inside-avoid">
-              <div className="relative h-36 overflow-hidden rounded-[1.5rem] border border-gold/30 md:h-44">
-                <EditorialImage src={group.image} alt={group.alt} sizes="(max-width: 768px) 100vw, 560px" />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/70 to-charcoal/10" />
-                <div className="absolute inset-x-0 bottom-0 p-5">
-                  <h3 className="editorial-display text-[2.1rem] font-normal leading-none text-gold [text-shadow:0_2px_14px_rgba(0,0,0,0.7)]">
-                    {group.title}
-                  </h3>
-                  <p className="mt-1.5 text-xs text-ivory/75">{group.blurb}</p>
-                </div>
+              <div
+                className={`grid h-32 gap-1.5 md:h-40 ${
+                  group.photos.length > 2 ? "grid-cols-[1.35fr_1fr_1fr]" : "grid-cols-2"
+                }`}
+              >
+                {group.photos.map((photo) => (
+                  <div
+                    key={photo.src}
+                    className="relative overflow-hidden rounded-2xl border border-gold/25 first:rounded-l-[1.5rem] last:rounded-r-[1.5rem]"
+                  >
+                    <EditorialImage src={photo.src} alt={photo.alt} sizes="(max-width: 768px) 40vw, 240px" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-baseline justify-between gap-4 border-b border-gold/50 pb-3">
+                <h3 className="editorial-display whitespace-nowrap text-[2rem] font-light leading-none text-gold">
+                  {group.title}
+                </h3>
+                <p className="hidden text-right text-xs text-ivory/60 sm:block">{group.blurb}</p>
               </div>
               <ul>
                 {group.items.map((item) => (
