@@ -71,7 +71,7 @@ export default async function MainLayout({
       >
         {children}
       </main>
-      <Footer contact={contact} hours={hours} />
+      <Footer contact={contact} hours={hours} showOffers={Boolean(promotion)} />
       <ViewportBottomSync />
       <FloatingMobileCta />
       <WhatsAppButton />

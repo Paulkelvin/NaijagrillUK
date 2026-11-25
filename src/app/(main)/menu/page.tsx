@@ -1,4 +1,5 @@
 import { JsonLd } from "@/components/seo/JsonLd";
+import { OffersPointer } from "@/components/offers/OffersPointer";
 import { UberEatsLink } from "@/components/order/UberEatsLink";
 import { EditorialImage } from "@/components/ui/EditorialImage";
 import { BUSINESS } from "@/lib/business";
@@ -559,6 +560,8 @@ export default async function MenuPage() {
           </div>
         </div>
       </section>
+
+      <OffersPointer />
 
       <nav
         aria-label="Menu categories"

@@ -1,5 +1,6 @@
 import { EventInquiryForm } from "@/components/forms/EventInquiryForm";
 import { EditorialImage } from "@/components/ui/EditorialImage";
+import { OffersPointer } from "@/components/offers/OffersPointer";
 import { PageHero } from "@/components/ui/PageHero";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SmoothScrollToHash } from "@/components/util/SmoothScrollToHash";
@@ -77,6 +78,7 @@ export default function EventsCateringPage() {
         imageAlt="NaijaGrill dining room with burgundy leather booths and warm pendant lighting"
         heightClassName="min-h-[64vh]"
       />
+      <OffersPointer variant="festive" />
 
       <section className="mx-auto max-w-[1500px] px-6 py-16 md:px-12 md:py-20 lg:px-16">
         <div className="mb-10 grid gap-8 lg:grid-cols-[0.45fr_1fr] lg:items-end">

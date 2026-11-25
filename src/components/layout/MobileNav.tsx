@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 const navLinks = [
   { href: "/menu", label: "Menu" },
+  { href: "/offers", label: "Offers" },
   { href: "/story", label: "Our Story" },
   { href: "/blog", label: "Journal" },
   { href: "/events-catering", label: "Events & Catering" },
@@ -12,7 +13,14 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
+export function MobileNav({
+  scrolled = false,
+  showOffers = false,
+}: {
+  scrolled?: boolean;
+  showOffers?: boolean;
+}) {
+  const links = navLinks.filter((link) => showOffers || link.href !== "/offers");
   const [open, setOpen] = useState(false);
   const barColor = scrolled || open ? "bg-ivory" : "bg-ivory";
 
@@ -61,7 +69,7 @@ export function MobileNav({ scrolled = false }: { scrolled?: boolean }) {
           className="flex h-dvh flex-col overflow-y-auto px-8 pb-12 pt-28"
         >
           <ul className="space-y-6">
-            {navLinks.map((link, index) => (
+            {links.map((link, index) => (
               <li
                 key={link.href}
                 className="transition-all duration-500"

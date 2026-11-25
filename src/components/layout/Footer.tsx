@@ -9,9 +9,11 @@ import type { ContactInfoData, OpeningHoursData } from "@/sanity/types";
 export function Footer({
   contact,
   hours,
+  showOffers = false,
 }: {
   contact: ContactInfoData;
   hours: OpeningHoursData;
+  showOffers?: boolean;
 }) {
   return (
     <footer className="bg-charcoal text-ivory pb-20 lg:pb-0">
@@ -38,6 +40,11 @@ export function Footer({
               <Link href="/menu" className="transition-colors hover:text-gold">
                 Menu
               </Link>
+              {showOffers && (
+                <Link href="/offers" className="text-gold transition-colors hover:text-ivory">
+                  Offers
+                </Link>
+              )}
               <Link href="/blog" className="transition-colors hover:text-gold">
                 Journal
               </Link>

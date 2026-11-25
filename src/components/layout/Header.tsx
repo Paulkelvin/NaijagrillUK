@@ -6,6 +6,7 @@ import { MobileNav } from "./MobileNav";
 
 const navLinks = [
   { href: "/menu", label: "Menu" },
+  { href: "/offers", label: "Offers" },
   { href: "/story", label: "Our Story" },
   { href: "/blog", label: "Journal" },
   { href: "/events-catering", label: "Events & Catering" },
@@ -63,7 +64,9 @@ export function Header({ promo }: { promo?: HeaderPromo | null }) {
           aria-label="Primary"
           className="hidden items-center gap-8 xl:gap-10 lg:flex"
         >
-          {navLinks.map((link) => (
+          {navLinks
+            .filter((link) => promo || link.href !== "/offers")
+            .map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -74,7 +77,7 @@ export function Header({ promo }: { promo?: HeaderPromo | null }) {
           ))}
         </nav>
 
-        <MobileNav scrolled={scrolled} />
+        <MobileNav scrolled={scrolled} showOffers={Boolean(promo)} />
       </div>
     </header>
   );

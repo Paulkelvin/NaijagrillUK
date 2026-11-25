@@ -8,6 +8,7 @@ import {
 const staticRoutes = [
   "",
   "/menu",
+  "/offers",
   "/story",
   "/blog",
   "/nigerian-restaurant-birmingham",

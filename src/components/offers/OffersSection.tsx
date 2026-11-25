@@ -27,6 +27,24 @@ export function OffersSection({ promotion }: { promotion: Promotion }) {
           </p>
         </div>
 
+        <Link
+          href="/offers#festive"
+          className="group mx-auto mt-10 flex max-w-3xl flex-col items-center gap-2 rounded-[2rem] bg-[linear-gradient(135deg,#f3d48a_0%,#d19a3a_55%,#a46b1c_100%)] px-6 py-6 text-center text-charcoal shadow-[0_24px_70px_rgba(0,0,0,0.4)] transition-transform duration-300 hover:-translate-y-0.5 md:px-10"
+        >
+          <span className="text-[0.6875rem] font-black uppercase tracking-[0.24em]">
+            ✦ New for the festive season ✦
+          </span>
+          <span className="editorial-display text-[1.7rem] font-medium leading-[1.15] md:text-[2.4rem]">
+            Bulk festive orders by the litre
+          </span>
+          <span className="text-sm md:text-base">
+            Jollof, fried rice, stews and peppered meats for office parties and family feasts.
+          </span>
+          <span className="mt-1 text-[0.6875rem] font-black uppercase tracking-[0.2em] underline underline-offset-4 group-hover:no-underline">
+            See festive prices &rarr;
+          </span>
+        </Link>
+
         <div className="mt-12">
           <OfferCards cards={promotion.cards} />
         </div>
