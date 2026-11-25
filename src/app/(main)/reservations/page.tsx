@@ -1,5 +1,6 @@
 import { ReservationForm } from "@/components/forms/ReservationForm";
 import { ReviewProof } from "@/components/reviews/ReviewProof";
+import { OffersPointer } from "@/components/offers/OffersPointer";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PageHero } from "@/components/ui/PageHero";
 import { SmoothScrollToHash } from "@/components/util/SmoothScrollToHash";
@@ -42,6 +43,7 @@ export default async function ReservationsPage() {
         imageAlt="Elegant restaurant table set for dinner"
         heightClassName="min-h-[62vh]"
       />
+      <OffersPointer />
 
       <section
         id="reserve"

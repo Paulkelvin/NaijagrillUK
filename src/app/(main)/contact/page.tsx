@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CopyablePhoneLink } from "@/components/ui/CopyablePhoneLink";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { OpeningHours } from "@/components/local/OpeningHours";
+import { OffersPointer } from "@/components/offers/OffersPointer";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { PageHero } from "@/components/ui/PageHero";
 import { BUSINESS, googleMapsEmbedQuery } from "@/lib/business";
@@ -64,6 +65,7 @@ export default async function ContactPage() {
         imageAlt="Warm restaurant entrance and bar details"
         heightClassName="min-h-[62vh]"
       />
+      <OffersPointer />
 
       <section className="mx-auto max-w-[1500px] px-6 py-14 md:px-12 md:py-20 lg:px-16">
         <div className="grid gap-5 md:grid-cols-3">
