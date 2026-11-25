@@ -23,6 +23,85 @@ export type Promotion = {
 // run until this is switched off.
 export const OFFERS_ACTIVE = true;
 
+export type BulkOption = { size: string; price: number };
+export type BulkItem = { name: string; options: BulkOption[]; note?: string };
+export type BulkGroup = { id: string; title: string; blurb: string; items: BulkItem[] };
+
+const L = (litres: number, price: number): BulkOption => ({ size: `${litres} litre${litres > 1 ? "s" : ""}`, price });
+const HALF = (price: number): BulkOption => ({ size: "Half cooler · 12 litres", price });
+const FULL = (price: number): BulkOption => ({ size: "Full cooler · 24 litres", price });
+const PCS = (n: number, price: number): BulkOption => ({ size: `${n} pieces`, price });
+
+// Festive bulk orders: priced per litre / cooler / pieces. Placed by
+// WhatsApp or phone, so these are not on the Uber Eats menu.
+export const FESTIVE = {
+  eyebrow: "The festive season",
+  title: "Festive feasts, by the litre.",
+  intro:
+    "From office parties to family feasts, let us handle the heavy lifting with bulk festive orders.",
+  bonusThreshold: 100,
+  bonusItems: ["Small chops", "Puff puff", "Samosas", "Spring rolls"],
+  groups: [
+    {
+      id: "rice",
+      title: "Party rice",
+      blurb: "The centrepiece of every table.",
+      items: [
+        { name: "Jollof rice", options: [L(2, 15), L(5, 35), HALF(65), FULL(120)] },
+        { name: "Fried rice with prawns", options: [L(2, 20), L(5, 40), HALF(70), FULL(130)] },
+      ],
+    },
+    {
+      id: "stews",
+      title: "Stews & soups",
+      blurb: "Rich, slow-cooked and made for sharing.",
+      items: [
+        { name: "Ayamase stew", options: [L(2, 40), L(5, 90)] },
+        { name: "Ofada stew", options: [L(2, 40), L(5, 90)] },
+        { name: "Efo riro", options: [L(2, 40), L(5, 90)] },
+        { name: "Efo egusi", options: [L(2, 40), L(5, 90)] },
+        { name: "Seafood okro", options: [L(2, 35), L(5, 80)] },
+        { name: "Assorted meats, stewed", options: [L(2, 40), L(5, 90)] },
+      ],
+    },
+    {
+      id: "peppered",
+      title: "Peppered & grilled",
+      blurb: "Bold, hot and gone in minutes.",
+      items: [
+        { name: "Gizdodo", options: [L(1, 20), L(2, 35), L(5, 80)] },
+        { name: "Asun", options: [L(1, 20), L(2, 35), L(5, 80)] },
+        { name: "Peppered beef", options: [PCS(20, 50), PCS(40, 95)] },
+        { name: "Peppered chicken", options: [PCS(20, 30), PCS(40, 55)] },
+        { name: "Peppered turkey", options: [PCS(20, 50), PCS(40, 95)] },
+        { name: "Peppered hake fish", options: [PCS(20, 40), PCS(40, 75)] },
+      ],
+    },
+    {
+      id: "sides",
+      title: "Sides",
+      blurb: "Add them to any order.",
+      items: [
+        { name: "Moin moin", options: [{ size: "Per cupcake", price: 2 }] },
+        { name: "Pounded yam", options: [{ size: "Per wrap", price: 2 }] },
+      ],
+    },
+  ] satisfies BulkGroup[],
+  steps: [
+    { step: "1", title: "Choose your dishes", body: "Pick the dishes and sizes from the price list." },
+    { step: "2", title: "Message us", body: "Tell us what you need, how many you are feeding and when." },
+    { step: "3", title: "We prepare it", body: "We confirm your order and have it ready for you." },
+  ],
+  terms: [
+    "Festive bulk orders are placed by WhatsApp or phone and are not on Uber Eats.",
+    "Prices are per portion size shown. Please message us to confirm availability and timing.",
+  ],
+} as const;
+
+export function formatPrice(price: number) {
+  return `£${price}`;
+}
+
 export const HOW_IT_WORKS = [
   { step: "1", title: "Pick your dishes", body: "Browse the menu or just tell us what you fancy." },
   { step: "2", title: "Order with us", body: "Dine in, or message us on WhatsApp and collect in person." },
@@ -30,6 +109,14 @@ export const HOW_IT_WORKS = [
 ] as const;
 
 export const OFFER_FAQS = [
+  {
+    q: "How do I place a festive bulk order?",
+    a: "Message us on WhatsApp or call. Tell us the dishes and sizes you want, how many you are feeding and when you need it, and we will confirm.",
+  },
+  {
+    q: "What comes with orders over £100?",
+    a: "Festive bulk orders over £100 come with small chops, puff puff, samosas and spring rolls.",
+  },
   {
     q: "Can I use these offers on Uber Eats?",
     a: "No. The offers are for dine-in and in-person collection at the restaurant only, not Uber Eats or delivery.",
@@ -49,8 +136,8 @@ export const OFFER_FAQS = [
 ] as const;
 
 export const PROMOTION: Promotion = {
-  bannerText: "20% off when you dine in or collect",
-  bannerTextShort: "20% off dine-in & collection",
+  bannerText: "Festive bulk orders & 20% off dine-in",
+  bannerTextShort: "Festive bulk orders & offers",
   cards: [
     {
       id: "twenty-off",
