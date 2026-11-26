@@ -393,13 +393,9 @@ button:not(:disabled):active,
   }
 }
 
-/* Bottom-pinned elements follow the visible bottom edge as the browser toolbar
-   shows and hides (see ViewportBottomSync). Hidden while the keyboard is open. */
-.vv-bottom-pin {
-  transform: translate3d(0, var(--vv-bottom-shift, 0px), 0);
-  will-change: transform;
-}
-
+/* Bottom-pinned elements (mobile action bar, WhatsApp button) are plain
+   position:fixed. They are only hidden while a form field is focused, so the
+   keyboard never has them floating over the input (see ViewportBottomSync). */
 html[data-keyboard="open"] .vv-bottom-pin {
   display: none;
 }
